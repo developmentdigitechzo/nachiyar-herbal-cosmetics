@@ -1113,8 +1113,189 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Load reviews on boot
   loadPublicReviews();
 
+  // ==========================================
+  // MOBILE-ONLY HERO SCROLL-DRIVEN ANIMATION (<= 767px)
+  // Desktop remains 100% UNTOUCHED
+  // ==========================================
+  function initMobileHeroScroll() {
+    const showcase = document.getElementById('mobileHeroShowcase');
+    const track = document.getElementById('mHeroScrollTrack');
+    if (!showcase || !track) return null;
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return null;
+    }
+
+    showcase.classList.add('m-hero-animated');
+
+    const stageHeading = showcase.querySelector('.m-hero-stage--heading');
+    const stageOil = showcase.querySelector('.m-hero-stage--oil');
+    const stageShampoo = showcase.querySelector('.m-hero-stage--shampoo');
+    const stageBuyOil = showcase.querySelector('.m-hero-stage--buy-oil');
+    const stageBuyShampoo = showcase.querySelector('.m-hero-stage--buy-shampoo');
+    const stageDesc = showcase.querySelector('.m-hero-stage--desc');
+    const stageCta = showcase.querySelector('.m-hero-stage--cta');
+
+    // Stage 1: Heading entrance on load / hero enter
+    const headingTimer = setTimeout(() => {
+      if (stageHeading) stageHeading.classList.add('is-revealed');
+    }, 120);
+
+    // Initial 2-second delay for Stage 2 (Oil) if user does not scroll immediately
+    let initialAutoRevealed = false;
+    const initialRevealTimer = setTimeout(() => {
+      if (stageOil && !stageOil.classList.contains('is-revealed')) {
+        stageOil.classList.add('is-revealed');
+        initialAutoRevealed = true;
+      }
+    }, 2000);
+
+    let ticking = false;
+
+    function evaluateScrollProgress() {
+      const rect = track.getBoundingClientRect();
+      const totalScroll = rect.height - window.innerHeight;
+      if (totalScroll <= 0) return;
+
+      const currentScroll = -rect.top;
+      const progress = Math.min(1, Math.max(0, currentScroll / totalScroll));
+
+      // Stage 1: Heading
+      if (stageHeading) {
+        if (progress >= 0) stageHeading.classList.add('is-revealed');
+      }
+
+      // Stage 2: Herbal Hair Oil (Progress >= 0.12 or auto-timer)
+      if (stageOil) {
+        if (progress >= 0.12) {
+          stageOil.classList.add('is-revealed');
+        } else if (progress < 0.08 && !initialAutoRevealed) {
+          stageOil.classList.remove('is-revealed');
+        }
+      }
+
+      // Stage 3: Hibiscus Shampoo (Progress >= 0.28)
+      if (stageShampoo) {
+        if (progress >= 0.28) {
+          stageShampoo.classList.add('is-revealed');
+        } else if (progress < 0.22) {
+          stageShampoo.classList.remove('is-revealed');
+        }
+      }
+
+      // Stage 4: Buy Now Buttons below bottles (Progress >= 0.44)
+      if (stageBuyOil && stageBuyShampoo) {
+        if (progress >= 0.44) {
+          stageBuyOil.classList.add('is-revealed');
+          stageBuyShampoo.classList.add('is-revealed');
+        } else if (progress < 0.38) {
+          stageBuyOil.classList.remove('is-revealed');
+          stageBuyShampoo.classList.remove('is-revealed');
+        }
+      }
+
+      // Stage 5: Description Paragraph (Progress >= 0.60)
+      if (stageDesc) {
+        if (progress >= 0.60) {
+          stageDesc.classList.add('is-revealed');
+        } else if (progress < 0.54) {
+          stageDesc.classList.remove('is-revealed');
+        }
+      }
+
+      // Stage 6: CTA Buttons (Progress >= 0.76)
+      if (stageCta) {
+        if (progress >= 0.76) {
+          stageCta.classList.add('is-revealed');
+        } else if (progress < 0.70) {
+          stageCta.classList.remove('is-revealed');
+        }
+      }
+
+      // Stage 7: Hero Completion (Progress >= 0.90 reaches final resting position,
+      // and natural unpin transitions smoothly into next section)
+
+      ticking = false;
+    }
+
+    function onScrollProgress() {
+      if (!ticking) {
+        requestAnimationFrame(evaluateScrollProgress);
+        ticking = true;
+      }
+    }
+
+    window.addEventListener('scroll', onScrollProgress, { passive: true });
+    evaluateScrollProgress();
+
+    // Direct event binding for mobile Buy Now buttons to guarantee instant checkout integration
+    const btnBuyOil = showcase.querySelector('.m-hero-stage--buy-oil .btn-quick-add');
+    if (btnBuyOil) {
+      btnBuyOil.onclick = (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        addToCart({
+          id: 'prod_oil_01',
+          name: 'Herbal Hair Oil',
+          price: 599,
+          img: 'assets/new-oil-bottle-card.jpg',
+          size: '200ml Glass Bottle',
+          qty: 1
+        }, e);
+      };
+    }
+
+    const btnBuyShampoo = showcase.querySelector('.m-hero-stage--buy-shampoo .btn-quick-add');
+    if (btnBuyShampoo) {
+      btnBuyShampoo.onclick = (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        addToCart({
+          id: 'prod_shampoo_02',
+          name: 'Hibiscus Flower Shampoo',
+          price: 549,
+          img: 'assets/new-shampoo-bottle-card.jpg',
+          size: '250ml Pump Bottle',
+          qty: 1
+        }, e);
+      };
+    }
+
+    // Cleanup function when resizing to desktop
+    return function cleanup() {
+      clearTimeout(headingTimer);
+      clearTimeout(initialRevealTimer);
+      window.removeEventListener('scroll', onScrollProgress);
+      showcase.classList.remove('m-hero-animated');
+      showcase.querySelectorAll('.m-hero-stage').forEach(stage => {
+        stage.classList.remove('is-revealed');
+      });
+    };
+  }
+
+  // Responsive controller: activates mobile hero scroll ONLY on <= 767px
+  let mobileHeroCleanupFn = null;
+  function handleMobileHeroLifecycle() {
+    const isMobile = window.matchMedia('(max-width: 767px)').matches;
+    if (isMobile) {
+      if (!mobileHeroCleanupFn) {
+        mobileHeroCleanupFn = initMobileHeroScroll();
+      }
+    } else {
+      if (mobileHeroCleanupFn) {
+        mobileHeroCleanupFn();
+        mobileHeroCleanupFn = null;
+      }
+    }
+  }
+
+  window.addEventListener('resize', handleMobileHeroLifecycle);
+  window.addEventListener('orientationchange', handleMobileHeroLifecycle);
+  handleMobileHeroLifecycle();
+
   updateCartUI();
 
 });
+
 
 
