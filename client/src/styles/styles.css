@@ -4295,12 +4295,28 @@ textarea.form-input {
     right: 8px;
   }
   .review-card {
-    width: 320px;
-    min-width: 320px;
-    padding: 20px 22px;
+    width: min(320px, calc(100vw - 32px));
+    min-width: min(290px, calc(100vw - 32px));
+    padding: 20px 18px;
+  }
+  .modal-overlay {
+    padding: 12px;
   }
   .modal-box--review {
-    padding: 24px 20px;
+    padding: 22px 18px;
+    border-radius: 18px;
+    max-height: 94vh;
+  }
+  .review-modal-footer {
+    flex-direction: column-reverse;
+    gap: 10px;
+  }
+  .review-modal-footer .btn--secondary,
+  .review-modal-footer .btn--primary {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+    padding-block: 12px;
   }
 }
 

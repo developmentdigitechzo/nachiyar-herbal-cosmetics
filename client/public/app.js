@@ -982,12 +982,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (ratingValueLabel) ratingValueLabel.textContent = ratingDescriptions[5];
       const starButtons = starRatingSelector?.querySelectorAll('.star-btn');
       starButtons?.forEach(btn => btn.classList.add('active'));
-      closeReviewModal(); finally {
-        if (submitBtn) {
-          submitBtn.disabled = false;
-          submitBtn.innerHTML = originalBtnText;
-        }
+      closeReviewModal();
+
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnText;
       }
+
+      // Reload public reviews so newly submitted review shows up
+      loadPublicReviews();
     });
   }
 
