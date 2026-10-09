@@ -1008,8 +1008,42 @@ document.addEventListener('DOMContentLoaded', async () => {
   const spotlightDesc = document.getElementById('spotlightDesc');
   const orbitNodes = document.querySelectorAll('.orbit-node');
 
+  function adjustTooltip(node) {
+    if (!node) return;
+    const tooltip = node.querySelector('.node-tooltip');
+    const avatar = node.querySelector('.node-avatar-wrap');
+    if (!tooltip || !avatar) return;
+
+    tooltip.classList.remove('tooltip--flip-down', 'tooltip--align-left', 'tooltip--align-right');
+
+    const avatarRect = avatar.getBoundingClientRect();
+    const stage = document.getElementById('orbitStage');
+    const stageRect = stage ? stage.getBoundingClientRect() : { top: 0, height: window.innerHeight };
+
+    // 1. Vertical: If node is in upper half of stage or close to viewport top, flip tooltip downwards
+    const distFromStageTop = avatarRect.top - stageRect.top;
+    if (distFromStageTop < (stageRect.height * 0.48) || avatarRect.top < 240) {
+      tooltip.classList.add('tooltip--flip-down');
+    }
+
+    // 2. Horizontal: If node is near viewport sides, align inward
+    const viewportWidth = window.innerWidth;
+    if (avatarRect.left < 140) {
+      tooltip.classList.add('tooltip--align-left');
+    } else if (viewportWidth - avatarRect.right < 140) {
+      tooltip.classList.add('tooltip--align-right');
+    }
+
+    orbitNodes.forEach(n => {
+      if (n !== node) n.classList.remove('is-active');
+    });
+    node.classList.add('is-active');
+  }
+
   function showSpotlight(node) {
     if (!node) return;
+    adjustTooltip(node);
+
     const name = node.dataset.name || '';
     const tag = node.dataset.tag || 'Botanical';
     const desc = node.dataset.desc || '';
@@ -1040,10 +1074,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     node.addEventListener('mouseleave', () => {
+      node.classList.remove('is-active');
       hideSpotlight();
     });
 
-    // Touch support for mobile devices
+    // Touch and click support for mobile and desktop
     node.addEventListener('click', (e) => {
       e.stopPropagation();
       showSpotlight(node);
@@ -1053,6 +1088,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Tapping outside on mobile dismisses active card immediately
   document.addEventListener('click', (e) => {
     if (!e.target.closest('.orbit-node') && !e.target.closest('#orbitSpotlightBar')) {
+      orbitNodes.forEach(n => n.classList.remove('is-active'));
       hideSpotlight();
     }
   });

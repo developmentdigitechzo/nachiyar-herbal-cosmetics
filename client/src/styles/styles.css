@@ -4377,12 +4377,13 @@ textarea.form-input {
 .orbit-stage-wrapper {
   width: 100%;
   max-width: 100vw;
-  overflow: hidden;
+  overflow: visible;
   display: flex;
   flex-direction: column;
   align-items: center;
   position: relative;
-  padding: 15px 0 25px;
+  padding: 55px 16px 25px;
+  box-sizing: border-box;
 }
 
 .orbit-stage {
@@ -4395,6 +4396,7 @@ textarea.form-input {
   justify-content: center;
   margin: 0 auto;
   user-select: none;
+  overflow: visible;
 }
 
 /* Concentric Background Orbital Rings */
@@ -4584,6 +4586,13 @@ textarea.form-input {
   height: 0;
   pointer-events: auto;
   transform: rotate(var(--angle)) translateY(calc(-1 * var(--orbit-radius))) rotate(calc(-1 * var(--angle)));
+  z-index: 10;
+}
+
+.orbit-node:hover,
+.orbit-node:focus-within,
+.orbit-node.is-active {
+  z-index: 99999 !important;
 }
 
 .orbit-node-inner {
@@ -4598,6 +4607,12 @@ textarea.form-input {
   will-change: transform;
   z-index: 22;
   padding: 8px;
+}
+
+.orbit-node:hover .orbit-node-inner,
+.orbit-node:focus-within .orbit-node-inner,
+.orbit-node.is-active .orbit-node-inner {
+  z-index: 99999 !important;
 }
 
 /* Large, Sharp, Crisp Botanical Avatars */
@@ -4660,23 +4675,25 @@ textarea.form-input {
 /* Shown ONLY when hovering over that specific ingredient, immediately hidden on mouse leave */
 .node-tooltip {
   position: absolute;
-  bottom: calc(100% + 16px);
+  bottom: calc(100% + 14px);
   left: 50%;
-  transform: translateX(-50%) translateY(12px) scale(0.9);
+  transform: translateX(-50%) translateY(8px) scale(0.92);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  width: 230px;
+  width: 240px;
+  max-width: calc(100vw - 36px);
   background: rgba(255, 255, 255, 0.98);
   border: 1.5px solid #C5A059;
   border-radius: 16px;
   padding: 14px 16px;
-  box-shadow: 0 18px 42px rgba(39, 20, 52, 0.26), 0 0 20px rgba(197, 160, 89, 0.2);
-  transition: opacity 0.16s ease-out, transform 0.16s ease-out, visibility 0.16s ease-out;
-  z-index: 70;
+  box-shadow: 0 18px 45px rgba(39, 20, 52, 0.28), 0 0 22px rgba(197, 160, 89, 0.25);
+  transition: opacity 0.18s ease-out, transform 0.18s ease-out, visibility 0.18s ease-out;
+  z-index: 100000 !important;
   text-align: left;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+  box-sizing: border-box;
 }
 
 .node-tooltip::after {
@@ -4689,11 +4706,83 @@ textarea.form-input {
   border-top-color: #C5A059;
 }
 
-.orbit-node:hover .node-tooltip {
+.orbit-node:hover .node-tooltip,
+.orbit-node.is-active .node-tooltip {
   opacity: 1;
   visibility: visible;
   pointer-events: none;
   transform: translateX(-50%) translateY(0) scale(1);
+}
+
+/* Flipped downwards (when node is near top boundary) */
+.node-tooltip.tooltip--flip-down {
+  bottom: auto;
+  top: calc(100% + 14px);
+  transform: translateX(-50%) translateY(-8px) scale(0.92);
+}
+
+.orbit-node:hover .node-tooltip.tooltip--flip-down,
+.orbit-node.is-active .node-tooltip.tooltip--flip-down {
+  transform: translateX(-50%) translateY(0) scale(1);
+}
+
+.node-tooltip.tooltip--flip-down::after {
+  top: auto;
+  bottom: 100%;
+  border-top-color: transparent;
+  border-bottom-color: #C5A059;
+}
+
+/* Align left (near left viewport edge) */
+.node-tooltip.tooltip--align-left {
+  left: 0;
+  transform: translateX(0) translateY(8px) scale(0.92);
+}
+
+.node-tooltip.tooltip--align-left::after {
+  left: 36px;
+  transform: translateX(0);
+}
+
+.orbit-node:hover .node-tooltip.tooltip--align-left,
+.orbit-node.is-active .node-tooltip.tooltip--align-left {
+  transform: translateX(0) translateY(0) scale(1);
+}
+
+.node-tooltip.tooltip--align-left.tooltip--flip-down {
+  transform: translateX(0) translateY(-8px) scale(0.92);
+}
+
+.orbit-node:hover .node-tooltip.tooltip--align-left.tooltip--flip-down,
+.orbit-node.is-active .node-tooltip.tooltip--align-left.tooltip--flip-down {
+  transform: translateX(0) translateY(0) scale(1);
+}
+
+/* Align right (near right viewport edge) */
+.node-tooltip.tooltip--align-right {
+  left: auto;
+  right: 0;
+  transform: translateX(0) translateY(8px) scale(0.92);
+}
+
+.node-tooltip.tooltip--align-right::after {
+  left: auto;
+  right: 36px;
+  transform: translateX(0);
+}
+
+.orbit-node:hover .node-tooltip.tooltip--align-right,
+.orbit-node.is-active .node-tooltip.tooltip--align-right {
+  transform: translateX(0) translateY(0) scale(1);
+}
+
+.node-tooltip.tooltip--align-right.tooltip--flip-down {
+  transform: translateX(0) translateY(-8px) scale(0.92);
+}
+
+.orbit-node:hover .node-tooltip.tooltip--align-right.tooltip--flip-down,
+.orbit-node.is-active .node-tooltip.tooltip--align-right.tooltip--flip-down {
+  transform: translateX(0) translateY(0) scale(1);
 }
 
 .tooltip-tag {
