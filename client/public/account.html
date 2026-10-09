@@ -1,0 +1,2018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Account & Order Tracking | Nachiyar Herbals & Cosmetics</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="customer-account.css">
+  <style>
+    /* ==========================================================================
+       DEDICATED FULL-PAGE USER DASHBOARD & ORDERS STYLES
+       ========================================================================== */
+    .dashboard-hero {
+      background: linear-gradient(135deg, #271434 0%, #150F18 100%);
+      color: #FFFFFF;
+      padding-block: 44px 50px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .dashboard-hero::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      right: -10%;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(212, 175, 55, 0.15) 0%, rgba(124, 90, 171, 0) 70%);
+      pointer-events: none;
+    }
+
+    .dashboard-hero-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .user-profile-badge-lockup {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .user-big-avatar {
+      width: 72px;
+      height: 72px;
+      min-width: 72px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #D4AF37 0%, #A37F14 100%);
+      color: #FFFFFF;
+      font-family: var(--font-display, 'Cinzel', serif);
+      font-size: 1.6rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    .user-meta-details h1 {
+      font-family: var(--font-display, 'Cinzel', serif);
+      font-size: clamp(1.4rem, 2.5vw, 1.85rem);
+      font-weight: 700;
+      color: #FFFFFF;
+      margin-bottom: 4px;
+    }
+
+    .user-meta-details p {
+      font-size: 0.875rem;
+      color: rgba(255, 255, 255, 0.8);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .member-tier-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      background: rgba(212, 175, 55, 0.2);
+      border: 1px solid rgba(212, 175, 55, 0.6);
+      color: #F4E8C1;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .hero-stat-tiles {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .hero-stat-tile {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 14px;
+      padding: 12px 20px;
+      min-width: 120px;
+      text-align: center;
+    }
+
+    .hero-stat-tile strong {
+      display: block;
+      font-family: var(--font-display, 'Cinzel', serif);
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--color-gold, #D4AF37);
+      line-height: 1.2;
+    }
+
+    .hero-stat-tile span {
+      font-size: 0.72rem;
+      color: rgba(255, 255, 255, 0.75);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Main Dashboard Layout */
+    .dashboard-layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 32px;
+      padding-block: 40px 80px;
+    }
+
+    @media (min-width: 960px) {
+      .dashboard-layout {
+        grid-template-columns: 280px 1fr;
+        gap: 40px;
+      }
+    }
+
+    /* Navigation Sidebar */
+    .dashboard-sidebar {
+      background: var(--color-surface, #FFFFFF);
+      border-radius: 20px;
+      border: 1px solid var(--color-border);
+      padding: 20px 16px;
+      box-shadow: var(--shadow-sm);
+      height: fit-content;
+      position: sticky;
+      top: 100px;
+    }
+
+    .sidebar-menu-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .sidebar-menu-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      border-radius: 12px;
+      border: none;
+      background: transparent;
+      color: var(--color-text-main);
+      font-family: var(--font-body);
+      font-size: 0.9375rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: left;
+    }
+
+    .sidebar-menu-btn:hover {
+      background-color: var(--color-canvas);
+      color: var(--color-lavender-primary);
+    }
+
+    .sidebar-menu-btn.is-active {
+      background: #ECE5F8;
+      color: var(--color-lavender-dark, #583B82);
+      font-weight: 700;
+    }
+
+    .sidebar-menu-btn .menu-btn-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .sidebar-menu-btn .menu-badge {
+      font-size: 0.75rem;
+      background: #7C5AAB;
+      color: #FFFFFF;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-weight: 700;
+    }
+
+    .sidebar-divider {
+      height: 1px;
+      background-color: var(--color-border);
+      margin-block: 10px;
+    }
+
+    .sidebar-logout-btn {
+      color: #991B1B !important;
+    }
+
+    .sidebar-logout-btn:hover {
+      background-color: #FEE2E2 !important;
+    }
+
+    /* Main Content Section */
+    .dashboard-view-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .view-panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .view-panel-header h2 {
+      font-family: var(--font-display);
+      font-size: 1.65rem;
+      font-weight: 700;
+      color: var(--color-text-main);
+    }
+
+    /* Filter & Search Bar */
+    .orders-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      background: var(--color-surface);
+      border-radius: 16px;
+      padding: 12px 18px;
+      border: 1px solid var(--color-border);
+    }
+
+    .orders-filter-tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .order-filter-pill {
+      padding: 8px 16px;
+      border-radius: 9999px;
+      border: 1px solid var(--color-border);
+      background: var(--color-canvas);
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--color-text-muted);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .order-filter-pill:hover,
+    .order-filter-pill.is-active {
+      background: var(--color-text-main);
+      color: #FFFFFF;
+      border-color: var(--color-text-main);
+    }
+
+    .orders-search-input {
+      padding: 9px 16px;
+      border-radius: 10px;
+      border: 1.5px solid var(--color-border);
+      background: #FAFAF8;
+      font-family: inherit;
+      font-size: 0.875rem;
+      width: 100%;
+      max-width: 280px;
+      outline: none;
+    }
+
+    .orders-search-input:focus {
+      background: #FFFFFF;
+      border-color: var(--color-lavender-primary);
+    }
+
+    /* Individual Order Card Box */
+    .order-card-box {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: 20px;
+      box-shadow: 0 4px 18px rgba(25, 19, 25, 0.04);
+      overflow: hidden;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+      cursor: pointer;
+    }
+
+    .order-card-box:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(25, 19, 25, 0.08);
+      border-color: rgba(124, 90, 171, 0.4);
+    }
+
+    .order-card-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 16px 24px;
+      background: #FAF8F5;
+      border-bottom: 1px solid var(--color-border);
+      flex-wrap: wrap;
+    }
+
+    .order-topbar-meta {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .order-meta-col span.lbl {
+      display: block;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-text-muted);
+      margin-bottom: 2px;
+    }
+
+    .order-meta-col strong.val {
+      font-size: 0.9375rem;
+      font-weight: 700;
+      color: var(--color-text-main);
+    }
+
+    .order-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .order-status-pill--shipped {
+      background-color: #ECE5F8;
+      color: #583B82;
+      border: 1px solid rgba(124, 90, 171, 0.3);
+    }
+
+    .order-status-pill--delivered {
+      background-color: #E8F7EE;
+      color: #15803D;
+      border: 1px solid #86EFAC;
+    }
+
+    .order-status-pill--processing,
+    .order-status-pill--placed {
+      background-color: #FEF3C7;
+      color: #B45309;
+      border: 1px solid #FCD34D;
+    }
+
+    /* Order Card Body */
+    .order-card-main {
+      padding: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .order-products-preview {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .order-thumb-gallery {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .order-product-thumb {
+      width: 58px;
+      height: 74px;
+      border-radius: 12px;
+      border: 1px solid var(--color-border);
+      background: var(--color-canvas);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3px;
+    }
+
+    .order-product-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center;
+    }
+
+    .order-product-names-lockup h4 {
+      font-family: var(--font-body);
+      font-size: 0.9375rem;
+      font-weight: 700;
+      color: var(--color-text-main);
+      margin-bottom: 4px;
+    }
+
+    .order-product-names-lockup p {
+      font-size: 0.8125rem;
+      color: var(--color-text-muted);
+    }
+
+    .order-card-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn-order-view {
+      padding: 10px 20px;
+      border-radius: 9999px;
+      background: var(--color-text-main);
+      color: #FFFFFF;
+      font-size: 0.8125rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-order-view:hover {
+      background: var(--color-lavender-primary);
+      transform: translateY(-1px);
+    }
+
+    .btn-order-invoice {
+      padding: 9px 18px;
+      border-radius: 9999px;
+      background: transparent;
+      color: var(--color-text-main);
+      font-size: 0.8125rem;
+      font-weight: 700;
+      border: 1.5px solid var(--color-border);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-order-invoice:hover {
+      border-color: var(--color-lavender-primary);
+      color: var(--color-lavender-primary);
+    }
+
+    /* Order Details Modal */
+    .order-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(25, 19, 25, 0.65);
+      backdrop-filter: blur(6px);
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .order-modal-backdrop.is-open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .order-modal-window {
+      background: var(--color-surface);
+      border-radius: 24px;
+      max-width: 760px;
+      width: 100%;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+      overflow: hidden;
+      transform: translateY(20px);
+      transition: transform 0.3s ease;
+    }
+
+    .order-modal-backdrop.is-open .order-modal-window {
+      transform: translateY(0);
+    }
+
+    .order-modal-header {
+      padding: 22px 28px;
+      background: linear-gradient(135deg, #271434 0%, #150F18 100%);
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .order-modal-header h3 {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      color: #FFFFFF;
+      margin-bottom: 2px;
+    }
+
+    .order-modal-header p {
+      font-size: 0.8125rem;
+      color: rgba(255, 255, 255, 0.8);
+      margin: 0;
+    }
+
+    .modal-close-icon-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.12);
+      border: none;
+      color: #FFFFFF;
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s ease;
+    }
+
+    .modal-close-icon-btn:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    .order-modal-body {
+      padding: 28px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    /* 5-Stage Modern Order Tracking Timeline */
+    .timeline-5-stage {
+      background: #FAF8FC;
+      border: 1px solid rgba(124, 90, 171, 0.15);
+      border-radius: 18px;
+      padding: 24px 20px 20px;
+    }
+
+    .timeline-stepper {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      margin-bottom: 12px;
+    }
+
+    .timeline-line-back {
+      position: absolute;
+      top: 16px;
+      left: 30px;
+      right: 30px;
+      height: 3px;
+      background: #E5E1EC;
+      z-index: 1;
+    }
+
+    .timeline-line-fill {
+      position: absolute;
+      top: 16px;
+      left: 30px;
+      height: 3px;
+      background: linear-gradient(90deg, #10B981 0%, #7C5AAB 100%);
+      z-index: 2;
+      transition: width 0.6s ease;
+    }
+
+    .timeline-step {
+      position: relative;
+      z-index: 3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 6px;
+    }
+
+    .timeline-circle {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #FFFFFF;
+      border: 2.5px solid #D1D5DB;
+      color: #9CA3AF;
+      font-size: 0.8125rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+
+    .timeline-step.is-done .timeline-circle {
+      background: #10B981;
+      border-color: #10B981;
+      color: #FFFFFF;
+    }
+
+    .timeline-step.is-active .timeline-circle {
+      background: #7C5AAB;
+      border-color: #7C5AAB;
+      color: #FFFFFF;
+      box-shadow: 0 0 0 5px rgba(124, 90, 171, 0.2);
+    }
+
+    .timeline-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--color-text-muted);
+      white-space: nowrap;
+    }
+
+    .timeline-step.is-done .timeline-label {
+      color: #10B981;
+    }
+
+    .timeline-step.is-active .timeline-label {
+      color: #7C5AAB;
+      font-weight: 800;
+    }
+
+    .timeline-status-log {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: #FFFFFF;
+      border-radius: 12px;
+      border: 1px solid rgba(124, 90, 171, 0.12);
+      font-size: 0.8125rem;
+      color: #382548;
+      margin-top: 14px;
+    }
+
+    /* Modal Product Items Table */
+    .modal-items-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .modal-item-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .modal-item-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .modal-item-img {
+      width: 58px;
+      height: 74px;
+      border-radius: 10px;
+      object-fit: contain;
+      object-position: center;
+      background: var(--color-canvas);
+      border: 1px solid var(--color-border);
+      padding: 3px;
+    }
+
+    .modal-item-info h4 {
+      font-size: 0.9375rem;
+      font-weight: 700;
+      color: var(--color-text-main);
+      margin-bottom: 2px;
+    }
+
+    .modal-item-info p {
+      font-size: 0.8125rem;
+      color: var(--color-text-muted);
+      margin: 0;
+    }
+
+    .modal-item-price {
+      font-size: 0.9375rem;
+      font-weight: 700;
+      color: var(--color-text-main);
+      white-space: nowrap;
+    }
+
+    /* Summary & Shipping Grid */
+    .modal-details-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    @media (min-width: 620px) {
+      .modal-details-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .modal-info-box {
+      background: #FAF8F5;
+      border-radius: 16px;
+      padding: 20px;
+      border: 1px solid var(--color-border);
+    }
+
+    .modal-info-box h4 {
+      font-size: 0.8125rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-gold-dark);
+      margin-bottom: 10px;
+    }
+
+    .modal-info-box p {
+      font-size: 0.875rem;
+      line-height: 1.5;
+      color: var(--color-text-main);
+      margin-bottom: 4px;
+    }
+
+    .order-modal-footer {
+      padding: 20px 28px;
+      background: #FAF8F5;
+      border-top: 1px solid var(--color-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    /* Guest Access Card */
+    .guest-access-card {
+      max-width: 520px;
+      margin: 40px auto;
+      background: #FFFFFF;
+      border-radius: 24px;
+      padding: 44px 38px;
+      border: 1px solid var(--color-border);
+      box-shadow: var(--shadow-md);
+      text-align: center;
+    }
+
+    /* Pagination */
+    .pagination-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .pagination-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 1.5px solid var(--color-border);
+      background: #FFFFFF;
+      font-family: inherit;
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: var(--color-text-main);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .pagination-btn.is-active,
+    .pagination-btn:hover {
+      background: var(--color-text-main);
+      color: #FFFFFF;
+      border-color: var(--color-text-main);
+    }
+
+    /* ==================== ACCOUNT RESPONSIVE ADJUSTMENTS ==================== */
+    @media (max-width: 960px) {
+      .dashboard-hero {
+        padding-block: 32px 36px;
+      }
+
+      .dashboard-hero-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+      }
+
+      .hero-stat-tiles {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+      }
+
+      .dashboard-sidebar {
+        position: static;
+        top: 0;
+        padding: 12px;
+        border-radius: 16px;
+      }
+
+      .sidebar-menu-list {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .sidebar-menu-btn {
+        width: auto;
+        padding: 10px 14px;
+        font-size: 0.8125rem;
+        border-radius: 10px;
+        background: #F8FAFC;
+        border: 1px solid var(--color-border);
+      }
+
+      .sidebar-divider {
+        display: none;
+      }
+
+      .orders-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+      }
+
+      .orders-search-input {
+        max-width: 100%;
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .dashboard-layout {
+        padding-block: 24px 50px;
+        gap: 24px;
+      }
+
+      .hero-stat-tiles {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .hero-stat-tile {
+        min-width: 0;
+        padding: 10px 12px;
+      }
+
+      .user-profile-badge-lockup {
+        gap: 14px;
+      }
+
+      .user-big-avatar {
+        width: 56px;
+        height: 56px;
+        min-width: 56px;
+        font-size: 1.3rem;
+      }
+
+      .order-card-topbar {
+        padding: 14px 16px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+
+      .order-topbar-meta {
+        gap: 14px;
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .order-card-main {
+        padding: 16px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+      }
+
+      .order-card-actions {
+        width: 100%;
+        flex-direction: column;
+      }
+
+      .btn-order-view,
+      .btn-order-invoice {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+      }
+
+      .order-modal-window {
+        max-width: calc(100vw - 20px);
+        border-radius: 16px;
+      }
+
+      .order-modal-header {
+        padding: 16px 18px;
+      }
+
+      .order-modal-body-scroll {
+        padding: 16px 14px;
+      }
+
+      .order-modal-footer {
+        padding: 14px 16px;
+        flex-direction: column;
+      }
+
+      .order-modal-footer button {
+        width: 100%;
+      }
+
+      .profile-info-grid,
+      .address-form-grid {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .dashboard-hero {
+        padding-block: 24px 28px;
+      }
+
+      .hero-stat-tiles {
+        grid-template-columns: 1fr;
+      }
+
+      .order-products-preview {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .sidebar-menu-btn {
+        flex: 1 1 calc(50% - 8px);
+        justify-content: center;
+        text-align: center;
+        padding: 8px 10px;
+        font-size: 0.75rem;
+      }
+    }
+  </style>
+</head>
+<body class="page-body">
+
+  <!-- ==================== HEADER ==================== -->
+  <header class="site-header">
+    <div class="header-container">
+      <!-- Mobile Menu Trigger -->
+      <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Toggle navigation menu">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+
+      <a href="/" class="brand-link">
+        <div class="brand-crest">
+          <img src="assets/nachiyar-logo.png" alt="Nachiyar Logo" class="brand-logo-img">
+        </div>
+        <div class="brand-text-lockup">
+          <span class="brand-name">NACHIYAR</span>
+          <span class="brand-sub">HERBALS & COSMETICS</span>
+        </div>
+      </a>
+
+      <nav class="desktop-nav" aria-label="Main Navigation">
+        <ul class="nav-links">
+          <li class="nav-item">
+            <a href="/" class="nav-link">Home</a>
+          </li>
+          <li class="nav-item has-dropdown">
+            <a href="shop.html" class="nav-link">Shop Rituals <span class="caret">▾</span></a>
+          </li>
+          <li class="nav-item">
+            <a href="about.html" class="nav-link">About Us</a>
+          </li>
+          <li class="nav-item">
+            <a href="contact.html" class="nav-link">Contact</a>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="header-actions">
+        <!-- User Account Button (Active on this page) -->
+        <a href="account.html" class="account-trigger-btn" style="background-color:var(--color-lavender-primary); color:#FFFFFF;">
+          <svg class="user-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          <span class="user-label" id="topNavUserLabel">My Account</span>
+        </a>
+
+        <a href="checkout.html" class="cart-trigger-btn" aria-label="View shopping bag">
+          <svg class="cart-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <path d="M16 10a4 4 0 0 1-8 0"></path>
+          </svg>
+          <span class="cart-label">Bag</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== MOBILE MENU DRAWER ==================== -->
+  <div class="mobile-drawer" id="mobileDrawer">
+    <div class="mobile-drawer-inner">
+      <div class="mobile-drawer-header">
+        <span class="drawer-title">Navigation</span>
+        <button class="drawer-close-btn" id="mobileDrawerClose" aria-label="Close menu">✕</button>
+      </div>
+      <ul class="mobile-nav-list">
+        <li><a href="/" class="mobile-link">Home</a></li>
+        <li><a href="shop.html" class="mobile-link" style="color:var(--color-lavender-primary); font-weight:800;">Shop Rituals (View & Buy) →</a></li>
+        <li><a href="about.html" class="mobile-link">About Us</a></li>
+        <li><a href="contact.html" class="mobile-link">Contact</a></li>
+        <li><a href="account.html" class="mobile-link" style="font-weight:700;">My Account & Orders</a></li>
+      </ul>
+      <div class="mobile-drawer-footer">
+        <p class="drawer-support">Customer Concierge: care@nachiyarherbals.com</p>
+      </div>
+    </div>
+  </div>
+
+  <main>
+    <!-- ==================== DASHBOARD TOP HERO BANNER ==================== -->
+    <section class="dashboard-hero" id="dashboardHeroSection">
+      <div class="section-container">
+        <div class="dashboard-hero-content">
+          <div class="user-profile-badge-lockup">
+            <div class="user-big-avatar" id="heroUserAvatar">PM</div>
+            <div class="user-meta-details">
+              <h1 id="heroUserName">Pooja Madhavan</h1>
+              <p>
+                <span id="heroUserEmail">pooja.m@example.com</span>
+                <span>•</span>
+                <span id="heroUserPhone">+91 98401 23456</span>
+                <span class="member-tier-pill">👑 Royal Rituals Gold Member</span>
+              </p>
+            </div>
+          </div>
+
+          <div class="hero-stat-tiles">
+            <div class="hero-stat-tile">
+              <strong id="statTotalOrders">4</strong>
+              <span>Total Orders</span>
+            </div>
+            <div class="hero-stat-tile">
+              <strong id="statActiveDeliveries" style="color:#10B981;">2</strong>
+              <span>In Transit</span>
+            </div>
+            <div class="hero-stat-tile">
+              <strong>100%</strong>
+              <span>Pure Botanical</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== MAIN DASHBOARD BODY ==================== -->
+    <div class="section-container" id="dashboardMainContainer">
+      <div class="dashboard-layout">
+        
+        <!-- LEFT SIDEBAR -->
+        <aside class="dashboard-sidebar">
+          <ul class="sidebar-menu-list">
+            <li>
+              <button class="sidebar-menu-btn is-active" id="btnTabOrders" onclick="switchDashboardTab('orders')">
+                <span class="menu-btn-left">
+                  <span>📦</span>
+                  <span>My Orders</span>
+                </span>
+                <span class="menu-badge" id="sidebarOrdersBadge">4</span>
+              </button>
+            </li>
+            <li>
+              <button class="sidebar-menu-btn" id="btnTabProfile" onclick="switchDashboardTab('profile')">
+                <span class="menu-btn-left">
+                  <span>👤</span>
+                  <span>Profile Information</span>
+                </span>
+              </button>
+            </li>
+            <li>
+              <button class="sidebar-menu-btn" id="btnTabAddress" onclick="switchDashboardTab('address')">
+                <span class="menu-btn-left">
+                  <span>📍</span>
+                  <span>Saved Delivery Addresses</span>
+                </span>
+              </button>
+            </li>
+            <li>
+              <button class="sidebar-menu-btn" onclick="window.location.href='shop.html'">
+                <span class="menu-btn-left">
+                  <span>🌿</span>
+                  <span>Browse Apothecary</span>
+                </span>
+                <span>↗</span>
+              </button>
+            </li>
+            
+            <div class="sidebar-divider"></div>
+
+            <li>
+              <button class="sidebar-menu-btn sidebar-logout-btn" id="btnCustomerLogout">
+                <span class="menu-btn-left">
+                  <span>🔒</span>
+                  <span>Sign Out</span>
+                </span>
+              </button>
+            </li>
+          </ul>
+        </aside>
+
+        <!-- RIGHT WORKSPACE PANELS -->
+        <div class="dashboard-view-panel">
+
+          <!-- PANEL 1: MY ORDERS (PRIMARY SECTION) -->
+          <div id="viewOrdersSection">
+            <div class="view-panel-header" style="margin-bottom: 20px;">
+              <div>
+                <h2>My Orders & Live Tracking</h2>
+                <p style="color:var(--color-text-muted); font-size:0.875rem; margin-top:2px;">
+                  Review past formulations, download GST invoices, and track courier dispatches live.
+                </p>
+              </div>
+            </div>
+
+            <!-- Toolbar: Filter Pills + Search -->
+            <div class="orders-toolbar" style="margin-bottom: 24px;">
+              <div class="orders-filter-tabs">
+                <button class="order-filter-pill is-active" onclick="filterOrdersByStatus('all')">All Orders (<span id="countAll">4</span>)</button>
+                <button class="order-filter-pill" onclick="filterOrdersByStatus('active')">In Transit / Active (<span id="countActive">2</span>)</button>
+                <button class="order-filter-pill" onclick="filterOrdersByStatus('delivered')">Delivered (<span id="countDelivered">2</span>)</button>
+              </div>
+              <input type="text" id="orderSearchInput" class="orders-search-input" placeholder="Search by Order ID or item..." oninput="handleOrderSearch(this.value)">
+            </div>
+
+            <!-- List of Order Cards -->
+            <div id="ordersCardsList" style="display:flex; flex-direction:column; gap:20px;">
+              <!-- Dynamically populated -->
+            </div>
+
+            <!-- Pagination Bar -->
+            <div class="pagination-bar" id="ordersPaginationBar" style="display: none;">
+              <!-- Dynamically rendered -->
+            </div>
+          </div>
+
+          <!-- PANEL 2: PROFILE INFORMATION -->
+          <div id="viewProfileSection" style="display: none;">
+            <div class="view-panel-header" style="margin-bottom: 24px;">
+              <h2>Personal Profile & Contact</h2>
+            </div>
+            <div style="background:#FFFFFF; border-radius:20px; padding:32px; border:1px solid var(--color-border); box-shadow:var(--shadow-sm);">
+              <form id="profileForm" onsubmit="handleSaveProfile(event)">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px;">
+                  <div>
+                    <label style="display:block; font-size:0.75rem; font-weight:700; text-transform:uppercase; margin-bottom:6px;">Full Name</label>
+                    <input type="text" id="profNameInput" class="orders-search-input" style="max-width:100%;" required>
+                  </div>
+                  <div>
+                    <label style="display:block; font-size:0.75rem; font-weight:700; text-transform:uppercase; margin-bottom:6px;">Email Address</label>
+                    <input type="email" id="profEmailInput" class="orders-search-input" style="max-width:100%; background:#FAF8F5;" readonly>
+                  </div>
+                </div>
+                <div style="margin-bottom:24px;">
+                  <label style="display:block; font-size:0.75rem; font-weight:700; text-transform:uppercase; margin-bottom:6px;">Mobile Number</label>
+                  <input type="tel" id="profPhoneInput" class="orders-search-input" style="max-width:100%;">
+                </div>
+                <button type="submit" class="btn-order-view" style="height:46px;">Save Changes</button>
+              </form>
+            </div>
+          </div>
+
+          <!-- PANEL 3: SAVED ADDRESSES -->
+          <div id="viewAddressSection" style="display: none;">
+            <div class="view-panel-header" style="margin-bottom: 24px;">
+              <h2>Saved Delivery Addresses</h2>
+            </div>
+            <div style="background:#FFFFFF; border-radius:20px; padding:32px; border:1px solid var(--color-border); box-shadow:var(--shadow-sm);">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px;">
+                <div>
+                  <span style="font-size:0.72rem; font-weight:700; color:#A37F14; text-transform:uppercase; letter-spacing:0.05em;">DEFAULT RESIDENCE</span>
+                  <h3 id="addrCustomerName" style="font-size:1.1rem; margin-top:4px;">Pooja Madhavan</h3>
+                </div>
+                <span style="background:#E8F7EE; color:#15803D; font-size:0.72rem; font-weight:700; padding:4px 10px; border-radius:999px;">Primary Delivery</span>
+              </div>
+              <p id="addrFullText" style="font-size:0.9375rem; color:var(--color-text-main); line-height:1.6; margin-bottom:16px;">
+                42, Besant Avenue, Adyar, Chennai, Tamil Nadu - 600020
+              </p>
+              <p style="font-size:0.84375rem; color:var(--color-text-muted);">Phone: <strong id="addrPhoneText">+91 98401 23456</strong></p>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ==================== GUEST FALLBACK STATE ==================== -->
+    <div id="guestFallbackContainer" style="display:none; padding-block:40px 80px;">
+      <div class="guest-access-card">
+        <div style="width:60px; height:60px; border-radius:50%; background:#ECE5F8; color:#7C5AAB; font-size:1.6rem; display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
+          👤
+        </div>
+        <h2 style="font-family:var(--font-display); font-size:1.6rem; margin-bottom:8px;">Sign In to View Your Orders</h2>
+        <p style="font-size:0.875rem; color:var(--color-text-muted); margin-bottom:24px; line-height:1.5;">
+          Access your personal ritual history, download tax invoices, and track live courier shipments.
+        </p>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <button type="button" class="btn-order-view" style="width:100%; justify-content:center; height:50px;" onclick="window.location.href='admin-login.html'">
+            <span>Sign In to Account →</span>
+          </button>
+          <button type="button" id="btnQuickDemoGuest" style="width:100%; height:46px; border-radius:999px; background:#A37F14; color:#FFF; font-weight:700; border:none; cursor:pointer;">
+            <span>Sign In as Pooja Madhavan (Has 4 Orders)</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ==================== ORDER DETAILS MODAL (DETAILED BREAKDOWN) ==================== -->
+  <div class="order-modal-backdrop" id="orderModalBackdrop">
+    <div class="order-modal-window">
+      <div class="order-modal-header">
+        <div>
+          <h3 id="modalOrderTitle">Order #NH-ON-1001</h3>
+          <p id="modalOrderDateSubtitle">Placed on Oct 06, 2026 • 2 Items</p>
+        </div>
+        <button class="modal-close-icon-btn" onclick="closeOrderModal()" aria-label="Close modal">✕</button>
+      </div>
+
+      <div class="order-modal-body">
+        <!-- 5-Stage Modern Order Tracking Timeline -->
+        <div class="timeline-5-stage">
+          <div class="timeline-stepper">
+            <div class="timeline-line-back"></div>
+            <div class="timeline-line-fill" id="modalTimelineFill" style="width: 50%;"></div>
+
+            <!-- Step 1: Ordered -->
+            <div class="timeline-step is-done" id="tStep1">
+              <div class="timeline-circle">✓</div>
+              <span class="timeline-label">Ordered</span>
+            </div>
+
+            <!-- Step 2: Packed -->
+            <div class="timeline-step is-done" id="tStep2">
+              <div class="timeline-circle">✓</div>
+              <span class="timeline-label">Packed</span>
+            </div>
+
+            <!-- Step 3: Shipped -->
+            <div class="timeline-step is-active" id="tStep3">
+              <div class="timeline-circle">🚚</div>
+              <span class="timeline-label">Shipped</span>
+            </div>
+
+            <!-- Step 4: Out for Delivery -->
+            <div class="timeline-step" id="tStep4">
+              <div class="timeline-circle">📍</div>
+              <span class="timeline-label">Out for Delivery</span>
+            </div>
+
+            <!-- Step 5: Delivered -->
+            <div class="timeline-step" id="tStep5">
+              <div class="timeline-circle">📦</div>
+              <span class="timeline-label">Delivered</span>
+            </div>
+          </div>
+
+          <!-- Live Courier Scan Update -->
+          <div class="timeline-status-log">
+            <span style="font-size:1.1rem;">⚡</span>
+            <div>
+              <strong id="modalTrackingStatusTitle">In Transit via BlueDart Express Air (AWBNH94829103)</strong>
+              <p id="modalTrackingStatusDesc" style="margin:2px 0 0; color:var(--color-text-muted); font-size:0.78rem;">
+                Latest Scan: Sorted at Chennai Central Apothecary Hub. Expected Delivery: Friday, Oct 10.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Product List -->
+        <div>
+          <h4 style="font-size:0.875rem; font-weight:800; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:12px; color:var(--color-text-main);">
+            Items in this Order
+          </h4>
+          <div class="modal-items-list" id="modalItemsList">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <!-- 2-Column Info: Shipping Address + Payment & Total -->
+        <div class="modal-details-grid">
+          <div class="modal-info-box">
+            <h4>Shipping Destination</h4>
+            <strong id="modalShipName" style="display:block; margin-bottom:4px;">Pooja Madhavan</strong>
+            <p id="modalShipAddress">42, Besant Avenue, Adyar</p>
+            <p id="modalShipCityState">Chennai, Tamil Nadu - 600020</p>
+            <p style="color:var(--color-text-muted); font-size:0.8125rem; margin-top:8px;">Phone: <span id="modalShipPhone">+91 98401 23456</span></p>
+          </div>
+
+          <div class="modal-info-box">
+            <h4>Payment & Billing</h4>
+            <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:0.875rem;">
+              <span>Subtotal:</span>
+              <strong id="modalSubtotalVal">₹1,198.00</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:0.875rem; color:#15803D;">
+              <span>Savings / Discount:</span>
+              <strong id="modalDiscountVal">- ₹199.00</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:0.875rem;">
+              <span>Air Shipping:</span>
+              <strong style="color:#15803D;">FREE (Pan-India)</strong>
+            </div>
+            <div style="height:1px; background:var(--color-border); margin-block:8px;"></div>
+            <div style="display:flex; justify-content:space-between; font-size:1.05rem;">
+              <span style="font-weight:700;">Grand Total:</span>
+              <strong id="modalGrandTotalVal" style="color:var(--color-lavender-primary); font-weight:800;">₹999.00</strong>
+            </div>
+            <div style="margin-top:10px; font-size:0.75rem; color:var(--color-text-muted);">
+              Payment Mode: <strong id="modalPaymentMode">UPI / Google Pay</strong> • Status: <span style="color:#15803D; font-weight:700;">PAID ✓</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="order-modal-footer">
+        <button type="button" class="btn-order-invoice" id="modalBtnDownloadInvoice" onclick="downloadInvoiceReceipt()">
+          <span>📄 Download Official Tax Invoice</span>
+        </button>
+        <button type="button" class="btn-order-view" onclick="closeOrderModal()">
+          <span>Done</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Printable Invoice Template (Hidden until printed) -->
+  <div id="printableInvoiceContainer" style="display:none;"></div>
+
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-legal-bar">
+        <p>© 2026 NACHIYAR HERBALS & COSMETICS. ALL RIGHTS RESERVED.</p>
+        <p class="legal-links"><a href="/">Home</a> • <a href="shop.html">Shop Rituals</a> • <a href="about.html">About Us</a> • <a href="contact.html">Contact</a></p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==================== JAVASCRIPT ==================== -->
+  <script>
+    // State
+    const DEMO_CUSTOMER = {
+      id: 'cust_01',
+      name: 'Pooja Madhavan',
+      email: 'pooja.m@example.com',
+      phone: '+91 98401 23456',
+      address: '42, Besant Avenue, Adyar',
+      city: 'Chennai',
+      state: 'Tamil Nadu',
+      pincode: '600020'
+    };
+
+    let activeCustomer = null;
+    let allCustomerOrders = [];
+    let currentFilterStatus = 'all';
+    let searchQuery = '';
+    let currentPage = 1;
+    const ordersPerPage = 4;
+    let activeModalOrder = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // Check customer session
+      const savedCust = localStorage.getItem('nachiyar_customer');
+      if (savedCust) {
+        try {
+          activeCustomer = JSON.parse(savedCust);
+        } catch (e) {}
+      }
+
+      // If not logged in, offer quick demo or redirect
+      if (!activeCustomer) {
+        document.getElementById('dashboardHeroSection').style.display = 'none';
+        document.getElementById('dashboardMainContainer').style.display = 'none';
+        document.getElementById('guestFallbackContainer').style.display = 'block';
+
+        document.getElementById('btnQuickDemoGuest').onclick = () => {
+          activeCustomer = DEMO_CUSTOMER;
+          localStorage.setItem('nachiyar_customer', JSON.stringify(DEMO_CUSTOMER));
+          window.location.reload();
+        };
+        return;
+      }
+
+      // Initialize Customer Profile in UI
+      initCustomerUI();
+      loadCustomerOrders();
+
+      // Sign out handler
+      document.getElementById('btnCustomerLogout').onclick = () => {
+        localStorage.removeItem('nachiyar_customer');
+        window.location.replace('/');
+      };
+    });
+
+    function initCustomerUI() {
+      const initials = (activeCustomer.name || 'NC').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+      document.getElementById('heroUserAvatar').textContent = initials;
+      document.getElementById('heroUserName').textContent = activeCustomer.name;
+      document.getElementById('heroUserEmail').textContent = activeCustomer.email;
+      document.getElementById('heroUserPhone').textContent = activeCustomer.phone || '+91 98401 23456';
+      document.getElementById('topNavUserLabel').textContent = `Hi, ${activeCustomer.name.split(' ')[0]}`;
+
+      // Profile Form
+      document.getElementById('profNameInput').value = activeCustomer.name || '';
+      document.getElementById('profEmailInput').value = activeCustomer.email || '';
+      document.getElementById('profPhoneInput').value = activeCustomer.phone || '';
+
+      // Address Card
+      document.getElementById('addrCustomerName').textContent = activeCustomer.name;
+      document.getElementById('addrFullText').textContent = `${activeCustomer.address || '42, Besant Avenue, Adyar'}, ${activeCustomer.city || 'Chennai'}, ${activeCustomer.state || 'Tamil Nadu'} - ${activeCustomer.pincode || '600020'}`;
+      document.getElementById('addrPhoneText').textContent = activeCustomer.phone || '+91 98401 23456';
+    }
+
+    async function loadCustomerOrders() {
+      try {
+        const res = await fetch(`/api/customer/orders?email=${encodeURIComponent(activeCustomer.email)}&phone=${encodeURIComponent(activeCustomer.phone || '')}`);
+        const json = await res.json();
+        allCustomerOrders = json.data || [];
+
+        // If no orders returned from DB, fall back to rich demo orders list
+        if (allCustomerOrders.length === 0) {
+          allCustomerOrders = getFallbackOrders();
+        }
+
+        updateOrderCounters();
+        renderOrdersList();
+
+      } catch (err) {
+        console.error('Error loading orders:', err);
+        allCustomerOrders = getFallbackOrders();
+        updateOrderCounters();
+        renderOrdersList();
+      }
+    }
+
+    function getFallbackOrders() {
+      return [
+        {
+          id: 'ord_sample_01',
+          orderNumber: 'NH-ON-1001',
+          createdAt: '2026-10-06T14:32:00.000Z',
+          status: 'shipped',
+          total: 999,
+          subtotal: 1148,
+          discount: 149,
+          paymentMethod: 'UPI / Google Pay',
+          customer: activeCustomer,
+          items: [
+            { name: 'Herbal Hair Oil', size: '200ml Glass Dropper Bottle', qty: 1, price: 599, img: 'assets/hero-bottle-oil-transparent.png' },
+            { name: 'Hibiscus Flower Shampoo', size: '250ml Botanical Pump Bottle', qty: 1, price: 549, img: 'assets/hero-bottle-shampoo-transparent.png' }
+          ]
+        },
+        {
+          id: 'ord_sample_04',
+          orderNumber: 'NH-ON-1005',
+          createdAt: '2026-10-08T09:30:00.000Z',
+          status: 'processing',
+          total: 999,
+          subtotal: 999,
+          discount: 0,
+          paymentMethod: 'UPI / PhonePe',
+          customer: activeCustomer,
+          items: [
+            { name: 'The Royal Hair Ritual (Duo Set)', size: 'Full Ritual Duo Set (Oil + Shampoo)', qty: 1, price: 999, img: 'assets/duo-ritual-new.jpg' }
+          ]
+        },
+        {
+          id: 'ord_sample_02',
+          orderNumber: 'NH-ON-0984',
+          createdAt: '2026-09-18T10:14:00.000Z',
+          status: 'delivered',
+          total: 999,
+          subtotal: 1198,
+          discount: 199,
+          paymentMethod: 'UPI / Google Pay',
+          customer: activeCustomer,
+          items: [
+            { name: 'Herbal Hair Oil', size: '200ml Glass Dropper Bottle', qty: 2, price: 599, img: 'assets/hero-bottle-oil-transparent.png' }
+          ]
+        },
+        {
+          id: 'ord_sample_03',
+          orderNumber: 'NH-ON-0952',
+          createdAt: '2026-08-04T16:20:00.000Z',
+          status: 'delivered',
+          total: 1348,
+          subtotal: 1548,
+          discount: 200,
+          paymentMethod: 'Credit Card / Visa',
+          customer: activeCustomer,
+          items: [
+            { name: 'Hibiscus Flower Shampoo', size: '250ml Botanical Pump Bottle', qty: 1, price: 549, img: 'assets/hero-bottle-shampoo-transparent.png' },
+            { name: 'The Royal Hair Ritual (Duo Set)', size: 'Full Ritual Duo', qty: 1, price: 999, img: 'assets/duo-ritual-new.jpg' }
+          ]
+        }
+      ];
+    }
+
+    function updateOrderCounters() {
+      const totalCount = allCustomerOrders.length;
+      const activeCount = allCustomerOrders.filter(o => o.status === 'shipped' || o.status === 'processing' || o.status === 'placed').length;
+      const deliveredCount = allCustomerOrders.filter(o => o.status === 'delivered').length;
+
+      document.getElementById('statTotalOrders').textContent = totalCount;
+      document.getElementById('statActiveDeliveries').textContent = activeCount;
+      document.getElementById('sidebarOrdersBadge').textContent = totalCount;
+
+      document.getElementById('countAll').textContent = totalCount;
+      document.getElementById('countActive').textContent = activeCount;
+      document.getElementById('countDelivered').textContent = deliveredCount;
+    }
+
+    function filterOrdersByStatus(status) {
+      currentFilterStatus = status;
+      currentPage = 1;
+      document.querySelectorAll('.order-filter-pill').forEach(btn => btn.classList.remove('is-active'));
+      event.target.classList.add('is-active');
+      renderOrdersList();
+    }
+
+    function handleOrderSearch(query) {
+      searchQuery = (query || '').toLowerCase().trim();
+      currentPage = 1;
+      renderOrdersList();
+    }
+
+    function renderOrdersList() {
+      const container = document.getElementById('ordersCardsList');
+      if (!container) return;
+
+      // Filter
+      let filtered = allCustomerOrders.filter(o => {
+        const matchesStatus = (currentFilterStatus === 'all') ||
+          (currentFilterStatus === 'active' && (o.status === 'shipped' || o.status === 'processing' || o.status === 'placed')) ||
+          (currentFilterStatus === 'delivered' && o.status === 'delivered');
+
+        const matchesQuery = !searchQuery ||
+          o.orderNumber.toLowerCase().includes(searchQuery) ||
+          (o.items && o.items.some(i => i.name.toLowerCase().includes(searchQuery)));
+
+        return matchesStatus && matchesQuery;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div style="background:#FFFFFF; border-radius:20px; padding:48px 24px; text-align:center; border:1px solid var(--color-border);">
+            <div style="font-size:2.5rem; margin-bottom:12px;">📦</div>
+            <h3 style="font-family:var(--font-display); font-size:1.25rem; margin-bottom:6px;">No Orders Matching Criteria</h3>
+            <p style="color:var(--color-text-muted); font-size:0.875rem; max-width:400px; margin:0 auto 20px;">
+              Try clearing your search query or explore our handcrafted Ayurvedic rituals in the apothecary.
+            </p>
+            <a href="shop.html" class="btn-order-view" style="display:inline-flex;">Explore Formulations →</a>
+          </div>
+        `;
+        document.getElementById('ordersPaginationBar').style.display = 'none';
+        return;
+      }
+
+      // Pagination
+      const totalPages = Math.ceil(filtered.length / ordersPerPage);
+      const startIndex = (currentPage - 1) * ordersPerPage;
+      const paginatedOrders = filtered.slice(startIndex, startIndex + ordersPerPage);
+
+      container.innerHTML = paginatedOrders.map(ord => renderIndividualOrderCard(ord)).join('');
+
+      renderPagination(totalPages);
+    }
+
+    function renderIndividualOrderCard(ord) {
+      const status = (ord.status || 'placed').toLowerCase();
+      let statusClass = 'order-status-pill--placed';
+      let statusLabel = 'Placed';
+
+      if (status === 'shipped' || status === 'in_transit') {
+        statusClass = 'order-status-pill--shipped';
+        statusLabel = 'In Transit (Express Air)';
+      } else if (status === 'delivered') {
+        statusClass = 'order-status-pill--delivered';
+        statusLabel = 'Delivered ✓';
+      } else if (status === 'processing') {
+        statusClass = 'order-status-pill--processing';
+        statusLabel = 'Apothecary Prepared';
+      }
+
+      const items = ord.items || [];
+      const productCount = items.reduce((acc, it) => acc + (it.qty || 1), 0);
+      const thumbsHtml = items.slice(0, 3).map(it => `
+        <div class="order-product-thumb" title="${it.name}">
+          <img src="${it.img || 'assets/hero-bottle-oil-transparent.png'}" alt="${it.name}">
+        </div>
+      `).join('');
+
+      const productNamesSummary = items.map(i => i.name).join(', ');
+
+      const formattedDate = new Date(ord.createdAt || Date.now()).toLocaleDateString('en-IN', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+      });
+
+      return `
+        <div class="order-card-box" onclick="openOrderModal('${ord.orderNumber}')">
+          <!-- Order Card Top Bar -->
+          <div class="order-card-topbar">
+            <div class="order-topbar-meta">
+              <div class="order-meta-col">
+                <span class="lbl">ORDER ID</span>
+                <strong class="val">#${ord.orderNumber}</strong>
+              </div>
+              <div class="order-meta-col">
+                <span class="lbl">ORDER DATE</span>
+                <strong class="val">${formattedDate}</strong>
+              </div>
+              <div class="order-meta-col">
+                <span class="lbl">TOTAL AMOUNT</span>
+                <strong class="val" style="color:var(--color-lavender-primary);">₹${ord.total}</strong>
+              </div>
+              <div class="order-meta-col">
+                <span class="lbl">PRODUCTS</span>
+                <strong class="val">${productCount} ${productCount === 1 ? 'Item' : 'Items'}</strong>
+              </div>
+            </div>
+
+            <div>
+              <span class="order-status-pill ${statusClass}">${statusLabel}</span>
+            </div>
+          </div>
+
+          <!-- Order Card Main Content -->
+          <div class="order-card-main">
+            <div class="order-products-preview">
+              <div class="order-thumb-gallery">
+                ${thumbsHtml}
+                ${items.length > 3 ? `<div class="order-product-thumb" style="font-size:0.75rem; font-weight:700; color:var(--color-text-muted);">+${items.length - 3}</div>` : ''}
+              </div>
+              <div class="order-product-names-lockup">
+                <h4>${productNamesSummary}</h4>
+                <p>${status === 'delivered' ? 'Handed over directly to recipient' : 'Estimated Delivery within 24-48 business hours via Express Courier'}</p>
+              </div>
+            </div>
+
+            <div class="order-card-actions" onclick="event.stopPropagation()">
+              <button type="button" class="btn-order-view" onclick="openOrderModal('${ord.orderNumber}')">
+                <span>View Order Details</span>
+                <span>→</span>
+              </button>
+              <button type="button" class="btn-order-invoice" onclick="downloadInvoiceForOrder('${ord.orderNumber}')">
+                <span>Invoice 📄</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderPagination(totalPages) {
+      const bar = document.getElementById('ordersPaginationBar');
+      if (totalPages <= 1) {
+        bar.style.display = 'none';
+        return;
+      }
+      bar.style.display = 'flex';
+      let html = '';
+      for (let i = 1; i <= totalPages; i++) {
+        html += `<button class="pagination-btn ${i === currentPage ? 'is-active' : ''}" onclick="goToOrdersPage(${i})">${i}</button>`;
+      }
+      bar.innerHTML = html;
+    }
+
+    function goToOrdersPage(p) {
+      currentPage = p;
+      renderOrdersList();
+      window.scrollTo({ top: 300, behavior: 'smooth' });
+    }
+
+    // Modal Details View
+    window.openOrderModal = function(orderNumber) {
+      const order = allCustomerOrders.find(o => o.orderNumber === orderNumber);
+      if (!order) return;
+      activeModalOrder = order;
+
+      const modal = document.getElementById('orderModalBackdrop');
+      document.getElementById('modalOrderTitle').textContent = `Order #${order.orderNumber}`;
+      
+      const itemCount = (order.items || []).reduce((s, i) => s + (i.qty || 1), 0);
+      document.getElementById('modalOrderDateSubtitle').textContent = `Placed on ${new Date(order.createdAt).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' })} • ${itemCount} ${itemCount === 1 ? 'Item' : 'Items'}`;
+
+      // Set 5-stage tracking timeline
+      updateModalTimeline(order.status);
+
+      // Render Item List
+      const itemsList = document.getElementById('modalItemsList');
+      itemsList.innerHTML = (order.items || []).map(it => `
+        <div class="modal-item-row">
+          <div class="modal-item-left">
+            <img src="${it.img || 'assets/hero-bottle-oil-transparent.png'}" class="modal-item-img" alt="${it.name}">
+            <div class="modal-item-info">
+              <h4>${it.name}</h4>
+              <p>${it.size || 'Apothecary Edition'} • Qty: <strong>${it.qty || 1}</strong></p>
+            </div>
+          </div>
+          <div class="modal-item-price">
+            ₹${(it.price * (it.qty || 1))}
+          </div>
+        </div>
+      `).join('');
+
+      // Shipping info
+      const cust = order.customer || activeCustomer;
+      document.getElementById('modalShipName').textContent = cust.name || activeCustomer.name;
+      document.getElementById('modalShipAddress').textContent = cust.address || '42, Besant Avenue, Adyar';
+      document.getElementById('modalShipCityState').textContent = `${cust.city || 'Chennai'}, ${cust.state || 'Tamil Nadu'} - ${cust.pincode || '600020'}`;
+      document.getElementById('modalShipPhone').textContent = cust.phone || activeCustomer.phone || '+91 98401 23456';
+
+      // Summary
+      document.getElementById('modalSubtotalVal').textContent = `₹${order.subtotal || order.total}`;
+      document.getElementById('modalDiscountVal').textContent = order.discount ? `- ₹${order.discount}` : '₹0.00';
+      document.getElementById('modalGrandTotalVal').textContent = `₹${order.total}`;
+      document.getElementById('modalPaymentMode').textContent = order.paymentMethod || 'UPI / Online';
+
+      modal.classList.add('is-open');
+      document.body.style.overflow = 'hidden';
+    };
+
+    window.closeOrderModal = function() {
+      const modal = document.getElementById('orderModalBackdrop');
+      if (modal) modal.classList.remove('is-open');
+      document.body.style.overflow = '';
+    };
+
+    function updateModalTimeline(rawStatus) {
+      const status = (rawStatus || 'placed').toLowerCase();
+      const fillLine = document.getElementById('modalTimelineFill');
+      const step1 = document.getElementById('tStep1');
+      const step2 = document.getElementById('tStep2');
+      const step3 = document.getElementById('tStep3');
+      const step4 = document.getElementById('tStep4');
+      const step5 = document.getElementById('tStep5');
+
+      const title = document.getElementById('modalTrackingStatusTitle');
+      const desc = document.getElementById('modalTrackingStatusDesc');
+
+      // Reset
+      [step1, step2, step3, step4, step5].forEach(s => s.className = 'timeline-step');
+
+      if (status === 'placed') {
+        fillLine.style.width = '10%';
+        step1.classList.add('is-active');
+        title.textContent = 'Order Confirmed & Payment Verified';
+        desc.textContent = 'Our master herbalists will begin cold-press infusion within 4 hours.';
+      } else if (status === 'processing' || status === 'packed') {
+        fillLine.style.width = '35%';
+        step1.classList.add('is-done');
+        step2.classList.add('is-active');
+        title.textContent = 'Apothecary Batch Prepared & Bottle Sealed';
+        desc.textContent = 'Quality tested and packed in eco-luxe tamper-evident shipping packaging.';
+      } else if (status === 'shipped' || status === 'in_transit') {
+        fillLine.style.width = '60%';
+        step1.classList.add('is-done');
+        step2.classList.add('is-done');
+        step3.classList.add('is-active');
+        title.textContent = 'In Transit via BlueDart Express Air (AWBNH94829103)';
+        desc.textContent = 'Dispatched from Madurai Heritage Depot. Estimated Arrival: Within 24-48 Hours.';
+      } else if (status === 'out_for_delivery') {
+        fillLine.style.width = '85%';
+        step1.classList.add('is-done');
+        step2.classList.add('is-done');
+        step3.classList.add('is-done');
+        step4.classList.add('is-active');
+        title.textContent = 'Out for Delivery Today!';
+        desc.textContent = 'Our delivery partner is en route to your doorstep.';
+      } else if (status === 'delivered') {
+        fillLine.style.width = '100%';
+        step1.classList.add('is-done');
+        step2.classList.add('is-done');
+        step3.classList.add('is-done');
+        step4.classList.add('is-done');
+        step5.classList.add('is-done');
+        title.textContent = 'Delivered Successfully to Your Doorstep';
+        desc.textContent = 'Package received in good condition. Thank you for revering your hair with Nachiyar.';
+      }
+    }
+
+    // Invoice Generator
+    window.downloadInvoiceForOrder = function(orderNumber) {
+      const order = allCustomerOrders.find(o => o.orderNumber === orderNumber);
+      if (order) {
+        activeModalOrder = order;
+        downloadInvoiceReceipt();
+      }
+    };
+
+    window.downloadInvoiceReceipt = function() {
+      if (!activeModalOrder) return;
+      const o = activeModalOrder;
+      const c = o.customer || activeCustomer;
+
+      const printWindow = window.open('', '_blank', 'width=800,height=900');
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Invoice - ${o.orderNumber} | Nachiyar Herbals</title>
+          <style>
+            body { font-family: 'Plus Jakarta Sans', Arial, sans-serif; padding: 40px; color: #191319; }
+            .inv-header { display: flex; justify-content: space-between; border-bottom: 2px solid #6B4E9B; padding-bottom: 20px; margin-bottom: 24px; }
+            .inv-title { font-family: Georgia, serif; font-size: 24px; font-weight: bold; color: #6B4E9B; }
+            .inv-meta { text-align: right; font-size: 13px; line-height: 1.5; }
+            .inv-grid { display: flex; justify-content: space-between; margin-bottom: 28px; }
+            .inv-box { font-size: 13px; line-height: 1.6; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+            th { background: #F8F5FC; text-align: left; padding: 10px; font-size: 12px; border-bottom: 1.5px solid #DDD; text-transform: uppercase; }
+            td { padding: 12px 10px; border-bottom: 1px solid #EEE; font-size: 13px; }
+            .total-row { display: flex; justify-content: flex-end; }
+            .total-table { width: 300px; }
+            .print-btn { display: block; margin: 30px auto; padding: 12px 28px; background: #6B4E9B; color: #FFF; border: none; border-radius: 999px; font-weight: bold; cursor: pointer; }
+            @media print { .print-btn { display: none; } }
+          </style>
+        </head>
+        <body>
+          <div class="inv-header">
+            <div>
+              <div class="inv-title">NACHIYAR HERBALS & COSMETICS</div>
+              <div style="font-size:12px; color:#666; margin-top:4px;">No. 18 Temple Ring Road, Madurai, Tamil Nadu - 625001<br>GSTIN: 33AAACN8492K1Z8 • care@nachiyarherbals.com</div>
+            </div>
+            <div class="inv-meta">
+              <strong>TAX INVOICE</strong><br>
+              Invoice No: <strong>INV-${o.orderNumber}</strong><br>
+              Order Date: ${new Date(o.createdAt).toLocaleDateString('en-IN')}<br>
+              Status: <strong>PAID</strong>
+            </div>
+          </div>
+
+          <div class="inv-grid">
+            <div class="inv-box">
+              <strong style="color:#6B4E9B;">BILLED & SHIPPED TO:</strong><br>
+              <strong>${c.name}</strong><br>
+              ${c.address || ''}<br>
+              ${c.city || ''}, ${c.state || ''} - ${c.pincode || ''}<br>
+              Phone: ${c.phone || ''}
+            </div>
+            <div class="inv-box" style="text-align:right;">
+              <strong style="color:#6B4E9B;">PAYMENT DETAILS:</strong><br>
+              Mode: ${o.paymentMethod || 'UPI / Online'}<br>
+              Channel: Online Storefront<br>
+              Courier: BlueDart Express Air
+            </div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Item Formulation</th>
+                <th>Qty</th>
+                <th>Rate</th>
+                <th style="text-align:right;">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${(o.items || []).map(i => `
+                <tr>
+                  <td><strong>${i.name}</strong><br><small style="color:#666;">${i.size || ''}</small></td>
+                  <td>${i.qty || 1}</td>
+                  <td>₹${i.price}</td>
+                  <td style="text-align:right;">₹${(i.price * (i.qty || 1))}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+
+          <div class="total-row">
+            <div class="total-table">
+              <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:13px;">
+                <span>Subtotal:</span>
+                <span>₹${o.subtotal || o.total}</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:13px; color:#15803D;">
+                <span>Discount / Promo:</span>
+                <span>- ₹${o.discount || 0}</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px;">
+                <span>Express Air Shipping:</span>
+                <span>₹0.00 (FREE)</span>
+              </div>
+              <div style="border-top:1.5px solid #191319; padding-top:8px; display:flex; justify-content:space-between; font-size:16px; font-weight:bold; color:#6B4E9B;">
+                <span>Total Paid:</span>
+                <span>₹${o.total}</span>
+              </div>
+            </div>
+          </div>
+
+          <button class="print-btn" onclick="window.print()">Print or Save as PDF</button>
+        </body>
+        </html>
+      `);
+      printWindow.document.close();
+    };
+
+    // Dashboard Tab Switcher
+    function switchDashboardTab(tab) {
+      document.getElementById('btnTabOrders').classList.remove('is-active');
+      document.getElementById('btnTabProfile').classList.remove('is-active');
+      document.getElementById('btnTabAddress').classList.remove('is-active');
+
+      document.getElementById('viewOrdersSection').style.display = 'none';
+      document.getElementById('viewProfileSection').style.display = 'none';
+      document.getElementById('viewAddressSection').style.display = 'none';
+
+      if (tab === 'orders') {
+        document.getElementById('btnTabOrders').classList.add('is-active');
+        document.getElementById('viewOrdersSection').style.display = 'block';
+      } else if (tab === 'profile') {
+        document.getElementById('btnTabProfile').classList.add('is-active');
+        document.getElementById('viewProfileSection').style.display = 'block';
+      } else if (tab === 'address') {
+        document.getElementById('btnTabAddress').classList.add('is-active');
+        document.getElementById('viewAddressSection').style.display = 'block';
+      }
+    }
+
+    async function handleSaveProfile(e) {
+      e.preventDefault();
+      const newName = document.getElementById('profNameInput').value.trim();
+      const newPhone = document.getElementById('profPhoneInput').value.trim();
+
+      activeCustomer.name = newName;
+      activeCustomer.phone = newPhone;
+      localStorage.setItem('nachiyar_customer', JSON.stringify(activeCustomer));
+
+      initCustomerUI();
+      alert('Profile details updated successfully!');
+    }
+
+    // Mobile Drawer Navigation Controller
+    const mobileNavToggle = document.getElementById('mobileNavToggle');
+    const mobileDrawer = document.getElementById('mobileDrawer');
+    const mobileDrawerClose = document.getElementById('mobileDrawerClose');
+
+    if (mobileNavToggle && mobileDrawer) {
+      mobileNavToggle.addEventListener('click', () => {
+        mobileDrawer.classList.add('is-open');
+        document.body.style.overflow = 'hidden';
+      });
+    }
+
+    if (mobileDrawerClose && mobileDrawer) {
+      mobileDrawerClose.addEventListener('click', () => {
+        mobileDrawer.classList.remove('is-open');
+        document.body.style.overflow = '';
+      });
+    }
+
+    if (mobileDrawer) {
+      mobileDrawer.addEventListener('click', (e) => {
+        if (e.target === mobileDrawer) {
+          mobileDrawer.classList.remove('is-open');
+          document.body.style.overflow = '';
+        }
+      });
+    }
+  </script>
+</body>
+</html>

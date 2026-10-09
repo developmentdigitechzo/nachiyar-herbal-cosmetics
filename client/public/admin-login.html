@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Account Access & Operations | Nachiyar Herbals</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --color-canvas: #F9F8F5;
+      --color-surface: #FFFFFF;
+      --color-text-main: #191319;
+      --color-text-muted: #6B626A;
+      --color-lavender-primary: #7C5AAB;
+      --color-lavender-dark: #583B82;
+      --color-lavender-light: #ECE5F8;
+      --color-gold: #D4AF37;
+      --color-gold-dark: #A37F14;
+      --color-border: rgba(25, 19, 25, 0.1);
+      --font-display: 'Cinzel', serif;
+      --font-body: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: var(--color-canvas);
+      color: var(--color-text-main);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 30px 20px;
+      background-image: radial-gradient(circle at 50% 20%, rgba(236, 229, 248, 0.7) 0%, rgba(249, 248, 245, 1) 75%);
+    }
+
+    .login-container {
+      width: 100%;
+      max-width: 480px;
+    }
+
+    .login-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: 24px;
+      padding: 40px 36px;
+      box-shadow: 0 16px 40px rgba(25, 19, 25, 0.08);
+      position: relative;
+    }
+
+    .brand-header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .brand-crest {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      margin: 0 auto 14px;
+      background: var(--color-lavender-primary);
+      border: 2px solid var(--color-gold);
+      box-shadow: 0 4px 16px rgba(124, 90, 171, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .brand-crest img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .portal-eyebrow {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--color-gold-dark);
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .portal-title {
+      font-family: var(--font-display);
+      font-size: 1.65rem;
+      font-weight: 700;
+      color: var(--color-text-main);
+      line-height: 1.25;
+      margin-bottom: 6px;
+    }
+
+    .portal-subtitle {
+      font-size: 0.85rem;
+      color: var(--color-text-muted);
+      line-height: 1.5;
+    }
+
+    /* Tab Switcher */
+    .auth-tab-bar {
+      display: flex;
+      background: #EFEBF4;
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 24px;
+    }
+
+    .auth-tab-btn {
+      flex: 1;
+      height: 40px;
+      border-radius: 9px;
+      background: transparent;
+      color: var(--color-text-muted);
+      font-family: inherit;
+      font-size: 0.875rem;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .auth-tab-btn.is-active {
+      background: #FFFFFF;
+      color: var(--color-text-main);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .form-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--color-text-main);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .form-label .req {
+      color: #872134;
+      font-weight: 800;
+    }
+
+    .form-input {
+      width: 100%;
+      height: 48px;
+      padding: 10px 16px;
+      border-radius: 12px;
+      border: 1.5px solid var(--color-border);
+      background-color: #FAFAF8;
+      font-family: inherit;
+      font-size: 0.9375rem;
+      color: var(--color-text-main);
+      outline: none;
+      transition: all 0.2s ease;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    .form-input:focus {
+      background-color: #FFFFFF;
+      border-color: var(--color-lavender-primary);
+      box-shadow: 0 0 0 4px rgba(124, 90, 171, 0.12);
+    }
+
+    .btn-submit {
+      width: 100%;
+      height: 52px;
+      border-radius: 9999px;
+      background: linear-gradient(135deg, #20142A 0%, #150F18 100%);
+      color: #FFFFFF;
+      font-family: inherit;
+      font-size: 0.9375rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(25, 19, 25, 0.16);
+      transition: all 0.25s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .btn-submit:hover {
+      background: var(--color-lavender-primary);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(124, 90, 171, 0.35);
+    }
+
+    .btn-submit:active {
+      transform: translateY(0);
+    }
+
+    .alert-banner {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 0.8125rem;
+      margin-bottom: 18px;
+    }
+
+    .alert-banner--error {
+      background-color: #FDF2F2;
+      border: 1px solid #E88B8B;
+      color: #991B1B;
+    }
+
+    .alert-banner--success {
+      background-color: #F0FDF4;
+      border: 1px solid #86EFAC;
+      color: #166534;
+    }
+
+    .toggle-link-row {
+      text-align: center;
+      margin-top: 18px;
+      font-size: 0.84375rem;
+      color: var(--color-text-muted);
+    }
+
+    .toggle-link-row a {
+      color: var(--color-lavender-dark);
+      font-weight: 700;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    .login-footer {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 0.78rem;
+      color: var(--color-text-muted);
+    }
+
+    .login-footer a {
+      color: var(--color-lavender-dark);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 20px 14px;
+        align-items: flex-start;
+      }
+
+      .login-card {
+        padding: 26px 18px;
+        border-radius: 18px;
+      }
+
+      .brand-crest {
+        width: 48px;
+        height: 48px;
+        margin-bottom: 10px;
+      }
+
+      .portal-title {
+        font-size: 1.35rem;
+      }
+
+      .portal-subtitle {
+        font-size: 0.78125rem;
+      }
+
+      .form-row-2 {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      .form-input {
+        height: 44px;
+        font-size: 0.875rem;
+        padding: 8px 14px;
+      }
+
+      .btn-submit {
+        height: 46px;
+        font-size: 0.875rem;
+      }
+
+      .auth-tab-btn {
+        height: 36px;
+        font-size: 0.8125rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-container">
+    <div class="login-card">
+      <div class="brand-header">
+        <div class="brand-crest">
+          <img src="assets/nachiyar-logo.png" alt="Nachiyar Logo">
+        </div>
+        <span class="portal-eyebrow" id="headerEyebrow">ROYAL ACCESS & OPERATIONS</span>
+        <h1 class="portal-title" id="headerTitle">Welcome to Nachiyar</h1>
+        <p class="portal-subtitle" id="headerSubtitle">Sign in or create an account to access order tracking and consultations.</p>
+      </div>
+
+      <!-- Segmented Tab Bar: Sign In vs Create Account -->
+      <div class="auth-tab-bar">
+        <button type="button" class="auth-tab-btn is-active" id="tabSignIn">Sign In</button>
+        <button type="button" class="auth-tab-btn" id="tabCreateAccount">Create Account</button>
+      </div>
+
+      <!-- Feedback Alert Banner -->
+      <div id="alertBanner" class="alert-banner alert-banner--error" role="alert">
+        <span id="alertIcon">⚠️</span>
+        <span id="alertMessage">Invalid credentials.</span>
+      </div>
+
+      <!-- ==================== TAB 1: SIGN IN ==================== -->
+      <form id="signInForm" onsubmit="handleSignInSubmit(event)">
+        <div class="form-group">
+          <label for="loginIdentifier" class="form-label">
+            <span>Username or Email</span>
+          </label>
+          <input 
+            type="text" 
+            id="loginIdentifier" 
+            class="form-input" 
+            placeholder="admin, inventory, or customer email" 
+            required 
+            autocomplete="username"
+            autofocus
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="loginPassword" class="form-label">
+            <span>Password</span>
+          </label>
+          <input 
+            type="password" 
+            id="loginPassword" 
+            class="form-input" 
+            placeholder="••••••••" 
+            required 
+            autocomplete="current-password"
+          >
+        </div>
+
+        <button type="submit" id="btnSignInSubmit" class="btn-submit">
+          <span>Sign In to Console</span>
+          <span>→</span>
+        </button>
+
+        <div class="toggle-link-row">
+          <span>New to Nachiyar? </span>
+          <a onclick="switchToTab('create')">Create an Account</a>
+        </div>
+      </form>
+
+      <!-- ==================== TAB 2: CREATE ACCOUNT ==================== -->
+      <form id="createAccountForm" style="display: none;" onsubmit="handleCreateAccountSubmit(event)">
+        <div class="form-group">
+          <label for="regFullName" class="form-label">
+            <span>Your Full Name <span class="req">*</span></span>
+          </label>
+          <input 
+            type="text" 
+            id="regFullName" 
+            class="form-input" 
+            placeholder="e.g. Meera Krishnan" 
+            required 
+            autocomplete="name"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="regEmailAddress" class="form-label">
+            <span>Email Address <span class="req">*</span></span>
+          </label>
+          <input 
+            type="email" 
+            id="regEmailAddress" 
+            class="form-input" 
+            placeholder="meera@example.com" 
+            required 
+            autocomplete="email"
+          >
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="regMobile" class="form-label">
+              <span>Mobile Number <span class="req">*</span></span>
+            </label>
+            <input 
+              type="tel" 
+              id="regMobile" 
+              class="form-input" 
+              placeholder="+91 98765 43210" 
+              required 
+              autocomplete="tel"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="regPasswordInput" class="form-label">
+              <span>Password <span class="req">*</span></span>
+            </label>
+            <input 
+              type="password" 
+              id="regPasswordInput" 
+              class="form-input" 
+              placeholder="••••••••" 
+              required 
+              autocomplete="new-password"
+            >
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="regStreetAddress" class="form-label">
+            <span>Delivery Address</span>
+          </label>
+          <input 
+            type="text" 
+            id="regStreetAddress" 
+            class="form-input" 
+            placeholder="Door / Flat, Street / Area" 
+            autocomplete="street-address"
+          >
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="regCityName" class="form-label">
+              <span>City</span>
+            </label>
+            <input 
+              type="text" 
+              id="regCityName" 
+              class="form-input" 
+              placeholder="e.g. Chennai / Madurai" 
+              autocomplete="address-level2"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="regPincodeVal" class="form-label">
+              <span>Pincode</span>
+            </label>
+            <input 
+              type="text" 
+              id="regPincodeVal" 
+              class="form-input" 
+              placeholder="e.g. 600020" 
+              autocomplete="postal-code"
+            >
+          </div>
+        </div>
+
+        <button type="submit" id="btnCreateSubmit" class="btn-submit">
+          <span>Create Account & Continue</span>
+          <span>→</span>
+        </button>
+
+        <div class="toggle-link-row">
+          <span>Already have an account? </span>
+          <a onclick="switchToTab('signin')">Sign In</a>
+        </div>
+      </form>
+
+    </div>
+
+    <div class="login-footer">
+      <p>© 2026 NACHIYAR HERBALS & COSMETICS</p>
+      <p style="margin-top: 4px;"><a href="/">Return to Storefront</a></p>
+    </div>
+  </div>
+
+  <script>
+    // Tab Switching Logic
+    const tabSignIn = document.getElementById('tabSignIn');
+    const tabCreateAccount = document.getElementById('tabCreateAccount');
+    const signInForm = document.getElementById('signInForm');
+    const createAccountForm = document.getElementById('createAccountForm');
+    const headerTitle = document.getElementById('headerTitle');
+    const headerSubtitle = document.getElementById('headerSubtitle');
+    const headerEyebrow = document.getElementById('headerEyebrow');
+    const alertBanner = document.getElementById('alertBanner');
+    const alertMessage = document.getElementById('alertMessage');
+    const alertIcon = document.getElementById('alertIcon');
+
+    function showAlert(msg, isSuccess = false) {
+      alertBanner.className = isSuccess ? 'alert-banner alert-banner--success' : 'alert-banner alert-banner--error';
+      alertIcon.textContent = isSuccess ? '✓' : '⚠️';
+      alertMessage.textContent = msg;
+      alertBanner.style.display = 'flex';
+    }
+
+    function hideAlert() {
+      alertBanner.style.display = 'none';
+    }
+
+    function switchToTab(tab) {
+      hideAlert();
+      if (tab === 'create') {
+        tabCreateAccount.classList.add('is-active');
+        tabSignIn.classList.remove('is-active');
+        signInForm.style.display = 'none';
+        createAccountForm.style.display = 'block';
+        headerEyebrow.textContent = 'JOIN THE ROYAL RITUAL';
+        headerTitle.textContent = 'Create Your Account';
+        headerSubtitle.textContent = 'Register to track orders live, save addresses, and enjoy bespoke Ayurvedic care.';
+      } else {
+        tabSignIn.classList.add('is-active');
+        tabCreateAccount.classList.remove('is-active');
+        createAccountForm.style.display = 'none';
+        signInForm.style.display = 'block';
+        headerEyebrow.textContent = 'ROYAL ACCESS & OPERATIONS';
+        headerTitle.textContent = 'Welcome Back';
+        headerSubtitle.textContent = 'Sign in to access your customer orders or operations console.';
+      }
+    }
+
+    tabSignIn.onclick = () => switchToTab('signin');
+    tabCreateAccount.onclick = () => switchToTab('create');
+
+    // 1. Handle Sign In
+    async function handleSignInSubmit(e) {
+      e.preventDefault();
+      hideAlert();
+
+      const identifier = document.getElementById('loginIdentifier').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      const btn = document.getElementById('btnSignInSubmit');
+
+      btn.disabled = true;
+      btn.innerHTML = '<span>Verifying...</span>';
+
+      try {
+        // First try staff login
+        const staffRes = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: identifier, password: password })
+        });
+        const staffData = await staffRes.json();
+
+        if (staffData.success && staffData.token) {
+          localStorage.setItem('nachiyar_admin_token', staffData.token);
+          localStorage.setItem('nachiyar_admin_user', JSON.stringify(staffData.user));
+          document.cookie = `nachiyar_admin_token=${staffData.token}; path=/; max-age=86400; SameSite=Lax`;
+          window.location.replace('/admin.html');
+          return;
+        }
+
+        // Otherwise try customer login
+        const custRes = await fetch('/api/customer/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: identifier, password: password })
+        });
+        const custData = await custRes.json();
+
+        if (custData.success && custData.customer) {
+          localStorage.setItem('nachiyar_customer', JSON.stringify(custData.customer));
+          showAlert('Welcome back! Redirecting to your dashboard...', true);
+          setTimeout(() => {
+            window.location.replace('/account.html');
+          }, 500);
+          return;
+        }
+
+        showAlert(custData.message || staffData.message || 'Invalid username or password.');
+      } catch (err) {
+        showAlert('Could not connect to server. Please try again.');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>Sign In to Console</span> <span>→</span>';
+      }
+    }
+
+    // 2. Handle Create Account
+    async function handleCreateAccountSubmit(e) {
+      e.preventDefault();
+      hideAlert();
+
+      const btn = document.getElementById('btnCreateSubmit');
+      const payload = {
+        name: document.getElementById('regFullName').value.trim(),
+        email: document.getElementById('regEmailAddress').value.trim(),
+        phone: document.getElementById('regMobile').value.trim(),
+        password: document.getElementById('regPasswordInput').value,
+        address: document.getElementById('regStreetAddress').value.trim(),
+        city: document.getElementById('regCityName').value.trim(),
+        pincode: document.getElementById('regPincodeVal').value.trim(),
+        state: 'Tamil Nadu'
+      };
+
+      btn.disabled = true;
+      btn.innerHTML = '<span>Creating Account...</span>';
+
+      try {
+        const res = await fetch('/api/customer/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+
+        if (data.success && data.customer) {
+          localStorage.setItem('nachiyar_customer', JSON.stringify(data.customer));
+          showAlert('Account created successfully! Redirecting to your personal dashboard...', true);
+          setTimeout(() => {
+            window.location.replace('/account.html');
+          }, 600);
+        } else {
+          showAlert(data.message || 'Registration failed. Please check your information.');
+          btn.disabled = false;
+          btn.innerHTML = '<span>Create Account & Continue</span> <span>→</span>';
+        }
+      } catch (err) {
+        showAlert('Network error. Could not create account.');
+        btn.disabled = false;
+        btn.innerHTML = '<span>Create Account & Continue</span> <span>→</span>';
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Our Story & Botanical Craft | Nachiyar Herbals & Cosmetics</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="customer-account.css">
+  <style>
+    .about-hero {
+      padding: 70px 24px 50px;
+      text-align: center;
+      background: radial-gradient(circle at 50% 20%, rgba(236, 229, 248, 0.6) 0%, rgba(249, 248, 245, 0) 70%);
+    }
+    .about-story-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 40px;
+      align-items: center;
+      padding-block: 60px;
+      border-bottom: 1px solid var(--color-border);
+    }
+    @media (min-width: 880px) {
+      .about-story-row {
+        grid-template-columns: 1fr 1fr;
+      }
+      .about-story-row.reverse {
+        direction: rtl;
+      }
+      .about-story-row.reverse > * {
+        direction: ltr;
+      }
+    }
+    .about-img-box {
+      border-radius: 24px;
+      overflow: hidden;
+      aspect-ratio: 4 / 3;
+      box-shadow: var(--shadow-md);
+    }
+    .about-img-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  </style>
+</head>
+<body class="page-body">
+
+  <header class="site-header">
+    <div class="header-container">
+      <!-- Mobile Menu Trigger -->
+      <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Toggle navigation menu">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+
+      <a href="/" class="brand-link">
+        <div class="brand-crest">
+          <img src="assets/nachiyar-logo.png" alt="Nachiyar Logo" class="brand-logo-img">
+        </div>
+        <div class="brand-text-lockup">
+          <span class="brand-name">NACHIYAR</span>
+          <span class="brand-sub">HERBALS & COSMETICS</span>
+        </div>
+      </a>
+
+      <nav class="desktop-nav">
+        <ul class="nav-links">
+          <li><a href="/" class="nav-link">Home</a></li>
+          <li><a href="shop.html" class="nav-link">Shop Formulations</a></li>
+          <li><a href="about.html" class="nav-link" style="color:var(--color-gold-dark);">About Us</a></li>
+          <li><a href="contact.html" class="nav-link">Contact</a></li>
+        </ul>
+      </nav>
+
+      <div class="header-actions">
+        <!-- Customer Account Trigger -->
+        <button class="account-trigger-btn" id="accountTriggerBtn" aria-label="Customer Account">
+          <svg class="user-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          <span class="user-label" id="navAccountLabel">Sign In</span>
+        </button>
+
+        <a href="checkout.html" class="cart-trigger-btn"><span>Bag</span></a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== MOBILE MENU DRAWER ==================== -->
+  <div class="mobile-drawer" id="mobileDrawer">
+    <div class="mobile-drawer-inner">
+      <div class="mobile-drawer-header">
+        <span class="drawer-title">Navigation</span>
+        <button class="drawer-close-btn" id="mobileDrawerClose" aria-label="Close menu">✕</button>
+      </div>
+      <ul class="mobile-nav-list">
+        <li><a href="/" class="mobile-link">Home</a></li>
+        <li><a href="shop.html" class="mobile-link" style="color:var(--color-lavender-primary); font-weight:800;">Shop Rituals (View & Buy) →</a></li>
+        <li><a href="about.html" class="mobile-link">About Us</a></li>
+        <li><a href="contact.html" class="mobile-link">Contact</a></li>
+        <li><a href="account.html" class="mobile-link">My Account & Orders</a></li>
+      </ul>
+      <div class="mobile-drawer-footer">
+        <p class="drawer-support">Customer Concierge: care@nachiyarherbals.com</p>
+      </div>
+    </div>
+  </div>
+
+  <main>
+    <section class="about-hero">
+      <div class="section-container">
+        <span class="section-eyebrow">THE ROYAL REVERENCE</span>
+        <h1 class="section-heading" style="font-size:clamp(2.25rem, 5vw, 3.75rem);">Rooted in Devotion to the Crown</h1>
+        <p class="section-subtext" style="margin-inline:auto;">
+          Nachiyar Herbals was born from a refusal to accept chemical-laden compromises. We return to sacred South Indian apothecary traditions to create royal personal care for the modern world.
+        </p>
+      </div>
+    </section>
+
+    <section class="section-container">
+      
+      <!-- Story 1 -->
+      <div class="about-story-row">
+        <div class="about-img-box">
+          <img src="assets/woman-oil-apply.jpg" alt="Traditional hair oil ritual">
+        </div>
+        <div>
+          <span class="section-eyebrow">OUR HERITAGE</span>
+          <h2 class="section-heading" style="font-size:2rem;">The Wisdom of Ancient Queens</h2>
+          <p class="product-card-desc">
+            In classical Tamil poetry and Ayurvedic texts, a woman's hair was revered as an extension of her vitality, spiritual dignity, and sovereignty. Formulas were not made overnight in plastic factories—they were slow-cooked in copper vessels, blessed, and steeped through full lunar cycles.
+          </p>
+          <p class="product-card-desc">
+            We preserve this craftsmanship. Every batch of our signature **Lavender Herbal Hair Oil** undergoes 21 days of solar steeping with 18 sacred botanicals.
+          </p>
+        </div>
+      </div>
+
+      <!-- Story 2 -->
+      <div class="about-story-row reverse">
+        <div class="about-img-box">
+          <img src="assets/woman-shampoo-lather.jpg" alt="Fresh petal hibiscus extraction">
+        </div>
+        <div>
+          <span class="section-eyebrow">ETHICAL BOTANICALS</span>
+          <h2 class="section-heading" style="font-size:2rem;">Handpicked Fresh Hibiscus Blooms</h2>
+          <p class="product-card-desc">
+            Unlike commercial brands that use powdered synthetic dyes and chemical fragrances, our **Hibiscus Flower Shampoo** uses fresh flowers harvested at dawn in rural Tamil Nadu gardens.
+          </p>
+          <p class="product-card-desc">
+            The rich mucilage naturally seals hair cuticles, balances the scalp's pH at an ideal 5.5, and imparts unmatched silkiness without a single drop of silicones.
+          </p>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-legal-bar">
+        <p>© 2026 NACHIYAR HERBALS & COSMETICS. ALL RIGHTS RESERVED.</p>
+        <p class="legal-links"><a href="/">Home</a> • <a href="shop.html">Shop</a> • <a href="contact.html">Contact</a></p>
+      </div>
+    </div>
+  </footer>
+  <script src="customer-account.js"></script>
+</body>
+</html>

@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Admin & POS Console | Nachiyar Herbals & Cosmetics</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin.css">
+  <script>
+    // Immediate client-side security auth gate
+    (function() {
+      const token = localStorage.getItem('nachiyar_admin_token');
+      if (!token) {
+        window.location.replace('/admin-login.html');
+      }
+    })();
+  </script>
+</head>
+<body class="admin-body">
+
+  <!-- ==================== TOP NAVIGATION / APP BAR ==================== -->
+  <header class="admin-topbar">
+    <div class="topbar-left">
+      <button class="admin-sidebar-toggle" id="adminSidebarToggle" aria-label="Toggle navigation menu">
+        <span class="admin-hamburger-line"></span>
+        <span class="admin-hamburger-line"></span>
+        <span class="admin-hamburger-line"></span>
+      </button>
+      <div class="admin-brand">
+        <img src="assets/nachiyar-logo.png" alt="Nachiyar Logo" class="admin-logo">
+        <div class="brand-info">
+          <span class="admin-title">NACHIYAR HERBALS</span>
+          <span class="admin-subtitle">BUSINESS OPERATIONS & POS CONSOLE</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Clean Admin Topbar Actions -->
+    <div class="topbar-right">
+      <a href="/" target="_blank" class="btn-view-store">
+        <span>View Storefront</span>
+        <span class="icon-external">↗</span>
+      </a>
+
+      <button id="adminLogoutBtn" class="btn-logout" title="Sign out of operations console">
+        <span>Sign Out</span>
+        <span>🔒</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ==================== MAIN DASHBOARD LAYOUT ==================== -->
+  <div class="admin-layout">
+
+    <!-- SIDEBAR NAVIGATION -->
+    <aside class="admin-sidebar" id="adminSidebar">
+      <div class="sidebar-header-mobile">
+        <span class="sidebar-mobile-title">Console Navigation</span>
+        <button class="admin-sidebar-close" id="adminSidebarClose" aria-label="Close menu">✕</button>
+      </div>
+      <nav class="sidebar-nav">
+        <button class="nav-tab active" data-tab="dashboard">
+          <span class="nav-icon">📊</span>
+          <span class="nav-text">Dashboard Overview</span>
+        </button>
+
+        <button class="nav-tab" data-tab="products" id="tabNavProducts">
+          <span class="nav-icon">🌿</span>
+          <span class="nav-text">Product Manager</span>
+          <span class="badge-count" id="badgeProductCount">3</span>
+        </button>
+
+        <button class="nav-tab" data-tab="inventory" id="tabNavInventory">
+          <span class="nav-icon">📦</span>
+          <span class="nav-text">Unified Stock Matrix</span>
+          <span class="badge-alert" id="badgeLowStock" style="display:none;">!</span>
+        </button>
+
+        <button class="nav-tab" data-tab="billing" id="tabNavBilling">
+          <span class="nav-icon">🧾</span>
+          <span class="nav-text">POS & Offline Billing</span>
+        </button>
+
+        <button class="nav-tab" data-tab="invoices" id="tabNavInvoices">
+          <span class="nav-icon">📁</span>
+          <span class="nav-text">Invoice History</span>
+        </button>
+
+        <button class="nav-tab" data-tab="orders" id="tabNavOrders">
+          <span class="nav-icon">🛍️</span>
+          <span class="nav-text">Online Orders</span>
+          <span class="badge-count" id="badgeOrderCount">2</span>
+        </button>
+
+        <button class="nav-tab" data-tab="reviews" id="tabNavReviews">
+          <span class="nav-icon">⭐</span>
+          <span class="nav-text">Customer Reviews</span>
+          <span class="badge-count" id="badgePendingReviews" style="display:none; background-color:#DC2626; color:#fff;">0</span>
+        </button>
+
+        <button class="nav-tab" data-tab="settings" id="tabNavSettings">
+          <span class="nav-icon">⚙️</span>
+          <span class="nav-text">Store Settings & SEO</span>
+        </button>
+      </nav>
+
+      <!-- Sync Status Widget -->
+      <div class="sync-status-widget">
+        <div class="sync-indicator">
+          <span class="sync-dot"></span>
+          <span>Online & Offline Inventory Synchronized</span>
+        </div>
+        <p class="sync-desc">Auto-deducts stock for both website orders & retail counter billing.</p>
+      </div>
+    </aside>
+
+    <!-- Mobile Sidebar Backdrop Overlay -->
+    <div class="admin-sidebar-backdrop" id="adminSidebarBackdrop"></div>
+
+    <!-- CONTENT WORKSPACE -->
+    <main class="admin-workspace">
+
+      <!-- ==================== TAB 1: DASHBOARD OVERVIEW ==================== -->
+      <section class="tab-pane active" id="pane-dashboard">
+        <div class="pane-header">
+          <div>
+            <h1 class="pane-title">Business Intelligence Dashboard</h1>
+            <p class="pane-desc">Live synchronization across online website orders and retail counter sales.</p>
+          </div>
+          <button class="btn-primary" id="btnQuickSaleHeader">+ New POS Counter Sale</button>
+        </div>
+
+        <!-- Primary KPI Cards Grid (Hover & Click Enabled) -->
+        <div class="kpi-grid">
+          <div class="kpi-card interactive-kpi" data-report="revenue" title="Click to view detailed Revenue & Sales report">
+            <div class="kpi-icon">💰</div>
+            <div class="kpi-data">
+              <div class="kpi-header-row">
+                <span class="kpi-label">Total Gross Sales</span>
+                <span class="kpi-badge-hint">Report ↗</span>
+              </div>
+              <h2 class="kpi-val" id="kpiTotalRevenue">₹0</h2>
+              <span class="kpi-split" id="kpiRevSplit">Online: ₹0 | Offline: ₹0</span>
+            </div>
+          </div>
+
+          <div class="kpi-card interactive-kpi" data-report="inventory" title="Click to view detailed Stock & Inventory matrix">
+            <div class="kpi-icon">📦</div>
+            <div class="kpi-data">
+              <div class="kpi-header-row">
+                <span class="kpi-label">Total Units in Stock</span>
+                <span class="kpi-badge-hint">Matrix ↗</span>
+              </div>
+              <h2 class="kpi-val" id="kpiTotalStock">0</h2>
+              <span class="kpi-sub positive" id="kpiStockStatus">All inventory live</span>
+            </div>
+          </div>
+
+          <div class="kpi-card interactive-kpi" data-report="offline" title="Click to view Retail POS Invoices report">
+            <div class="kpi-icon">🧾</div>
+            <div class="kpi-data">
+              <div class="kpi-header-row">
+                <span class="kpi-label">Offline Counter Invoices</span>
+                <span class="kpi-badge-hint">Invoices ↗</span>
+              </div>
+              <h2 class="kpi-val" id="kpiOfflineInvoices">0</h2>
+              <span class="kpi-sub" id="kpiOfflineRevSub">Billed at retail desk</span>
+            </div>
+          </div>
+
+          <div class="kpi-card interactive-kpi" data-report="online" title="Click to view Online Orders report">
+            <div class="kpi-icon">🛍️</div>
+            <div class="kpi-data">
+              <div class="kpi-header-row">
+                <span class="kpi-label">Online Website Orders</span>
+                <span class="kpi-badge-hint">Orders ↗</span>
+              </div>
+              <h2 class="kpi-val" id="kpiOnlineOrders">0</h2>
+              <span class="kpi-sub" id="kpiOnlineRevSub">Placed via storefront</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Secondary Performance Metrics Grid (Payments, Customers, Orders) -->
+        <div class="secondary-stats-grid">
+          <div class="stat-card interactive-kpi" data-report="customers" title="Click to view Customer Purchase Analytics">
+            <div class="stat-card-icon stat-icon--teal">👥</div>
+            <div class="stat-card-info">
+              <span class="stat-card-title">Total Customers</span>
+              <h3 class="stat-card-val" id="kpiTotalCustomers">0</h3>
+              <span class="stat-card-sub" id="kpiCustomersSub">Verified buyer accounts</span>
+            </div>
+          </div>
+
+          <div class="stat-card interactive-kpi" data-report="orders" title="Click to view Combined Orders">
+            <div class="stat-card-icon stat-icon--purple">📑</div>
+            <div class="stat-card-info">
+              <span class="stat-card-title">Total Orders</span>
+              <h3 class="stat-card-val" id="kpiTotalOrders">0</h3>
+              <span class="stat-card-sub" id="kpiTotalOrdersSub">Online + POS Transactions</span>
+            </div>
+          </div>
+
+          <div class="stat-card interactive-kpi" data-report="upi" title="Click to view UPI Payment Transactions">
+            <div class="stat-card-icon stat-icon--indigo">📱</div>
+            <div class="stat-card-info">
+              <span class="stat-card-title">UPI Transactions</span>
+              <h3 class="stat-card-val" id="kpiUpiRevenue">₹0</h3>
+              <span class="stat-card-sub" id="kpiUpiCount">0 Transactions</span>
+            </div>
+          </div>
+
+          <div class="stat-card interactive-kpi" data-report="card" title="Click to view Card Payment Transactions">
+            <div class="stat-card-icon stat-icon--blue">💳</div>
+            <div class="stat-card-info">
+              <span class="stat-card-title">Card Payments</span>
+              <h3 class="stat-card-val" id="kpiCardRevenue">₹0</h3>
+              <span class="stat-card-sub" id="kpiCardCount">0 Transactions</span>
+            </div>
+          </div>
+
+          <div class="stat-card interactive-kpi" data-report="cash" title="Click to view Cash Payment Transactions">
+            <div class="stat-card-icon stat-icon--green">💵</div>
+            <div class="stat-card-info">
+              <span class="stat-card-title">Cash & COD</span>
+              <h3 class="stat-card-val" id="kpiCashRevenue">₹0</h3>
+              <span class="stat-card-sub" id="kpiCashCount">0 Transactions</span>
+            </div>
+          </div>
+
+          <div class="stat-card interactive-kpi" data-report="netbanking" title="Click to view Net Banking Transactions">
+            <div class="stat-card-icon stat-icon--gold">🏦</div>
+            <div class="stat-card-info">
+              <span class="stat-card-title">Net Banking</span>
+              <h3 class="stat-card-val" id="kpiNetBankingRevenue">₹0</h3>
+              <span class="stat-card-sub" id="kpiNetBankingCount">0 Transactions</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Revenue by Payment Method & Sales Trends (Daily / Weekly / Monthly) -->
+        <div class="analytics-row-grid">
+          <!-- Revenue by Payment Method Breakdown -->
+          <div class="card-panel">
+            <div class="panel-header">
+              <div>
+                <h3>💳 Revenue by Payment Method</h3>
+                <p class="panel-subtitle">Live breakdown across UPI, Card, Cash, and Net Banking channels</p>
+              </div>
+              <span class="badge-tag active">Live Data</span>
+            </div>
+            <div class="payment-method-container" id="paymentMethodContainer">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+
+          <!-- Sales Trends: Daily / Weekly / Monthly -->
+          <div class="card-panel">
+            <div class="panel-header">
+              <div>
+                <h3>📈 Sales Trends & Velocity</h3>
+                <p class="panel-subtitle">Historical sales performance comparison</p>
+              </div>
+              <div class="period-toggle-group">
+                <button class="btn-period active" data-period="daily">Daily</button>
+                <button class="btn-period" data-period="weekly">Weekly</button>
+                <button class="btn-period" data-period="monthly">Monthly</button>
+              </div>
+            </div>
+            <div class="sales-trends-chart" id="salesTrendsChartContainer">
+              <!-- Interactive bars rendered dynamically -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Top Selling Products & Low Stock Products Alert -->
+        <div class="analytics-row-grid">
+          <!-- Top Selling Formulations -->
+          <div class="card-panel">
+            <div class="panel-header">
+              <div>
+                <h3>🏆 Top Selling Herbal Formulations</h3>
+                <p class="panel-subtitle">Ranked by actual cumulative sales across online & POS</p>
+              </div>
+              <button class="btn-link" onclick="openAnalyticsModal('top_selling')">Full List →</button>
+            </div>
+            <div class="table-responsive">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th>Online Sold</th>
+                    <th>Offline Sold</th>
+                    <th>Total Sold</th>
+                    <th>Revenue</th>
+                  </tr>
+                </thead>
+                <tbody id="topSellingTableBody">
+                  <!-- Rendered dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Low Stock Warning Alerts -->
+          <div class="card-panel">
+            <div class="panel-header">
+              <div>
+                <h3>⚠️ Low Stock Inventory Alerts</h3>
+                <p class="panel-subtitle">Products requiring manufacturing or stock replenishment (≤ 25 units)</p>
+              </div>
+              <button class="btn-link" onclick="openAnalyticsModal('low_stock')">Stock Logs →</button>
+            </div>
+            <div class="low-stock-list" id="lowStockListContainer">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Customer Purchase Analytics -->
+        <div class="card-panel" style="margin-bottom: 28px;">
+          <div class="panel-header">
+            <div>
+              <h3>👥 Customer Purchase Analytics</h3>
+              <p class="panel-subtitle">Customer lifetime spend, order frequency, and channel preferences</p>
+            </div>
+            <button class="btn-link" onclick="openAnalyticsModal('customers')">Export Customer List →</button>
+          </div>
+          <div class="table-responsive">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Customer Name</th>
+                  <th>Contact Info</th>
+                  <th>Location</th>
+                  <th>Total Orders</th>
+                  <th>Online Orders</th>
+                  <th>Counter POS</th>
+                  <th>Total Lifetime Spend</th>
+                  <th>Joined Date</th>
+                </tr>
+              </thead>
+              <tbody id="customerAnalyticsTableBody">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Stock Synchronization Visualizer Banner -->
+        <div class="sync-demo-banner">
+          <div class="sync-demo-left">
+            <h3>⚡ Live Stock Synchronization Engine</h3>
+            <p>
+              When a sale occurs online or at the offline retail counter, both sales deduct from the exact same central stock pool.
+              <strong>Formula: Remaining Stock = Total Stock - (Online Sales + Offline Invoices)</strong>
+            </p>
+          </div>
+          <div class="sync-demo-right">
+            <div class="sync-stat-box">
+              <span class="stat-number" id="syncOilStock">--</span>
+              <span class="stat-name">Lavender Hair Oil Stock</span>
+            </div>
+            <div class="sync-stat-box">
+              <span class="stat-number" id="syncShampooStock">--</span>
+              <span class="stat-name">Hibiscus Shampoo Stock</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Activity Split Grid -->
+        <div class="activity-grid">
+          <!-- Recent Offline Invoices -->
+          <div class="card-panel">
+            <div class="panel-header">
+              <h3>Recent Retail Counter Invoices</h3>
+              <button class="btn-link" id="btnSeeAllInvoices">View All →</button>
+            </div>
+            <div class="table-responsive">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Invoice #</th>
+                    <th>Customer</th>
+                    <th>Items</th>
+                    <th>Amount</th>
+                    <th>Mode</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="recentInvoicesTableBody">
+                  <!-- Populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Recent Online Orders -->
+          <div class="card-panel">
+            <div class="panel-header">
+              <h3>Recent Storefront Orders</h3>
+              <button class="btn-link" id="btnSeeAllOrders">View All →</button>
+            </div>
+            <div class="table-responsive">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Order #</th>
+                    <th>Customer</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody id="recentOrdersTableBody">
+                  <!-- Populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 2: PRODUCT MANAGEMENT ==================== -->
+      <section class="tab-pane" id="pane-products">
+        <div class="pane-header">
+          <div>
+            <h1 class="pane-title">Product Catalog Manager</h1>
+            <p class="pane-desc">Add unlimited products, update pricing, descriptions, images, variants, and SEO.</p>
+          </div>
+          <button class="btn-primary" id="btnOpenNewProductModal">+ Add New Product</button>
+        </div>
+
+        <!-- Products List Table -->
+        <div class="card-panel">
+          <div class="panel-filter-row">
+            <input type="text" class="input-search" id="productSearchInput" placeholder="Search by name, SKU, or category...">
+            <select class="select-filter" id="productCategoryFilter">
+              <option value="">All Categories</option>
+              <option value="Hair Care">Hair Care</option>
+              <option value="Scalp & Cleansing">Scalp & Cleansing</option>
+              <option value="Ritual Sets">Ritual Sets</option>
+            </select>
+          </div>
+
+          <div class="table-responsive">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>SKU</th>
+                  <th>Category</th>
+                  <th>Price / MRP</th>
+                  <th>Current Stock</th>
+                  <th>Status</th>
+                  <th>SEO Slug</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="productsTableBody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 3: UNIFIED INVENTORY MATRIX ==================== -->
+      <section class="tab-pane" id="pane-inventory">
+        <div class="pane-header">
+          <div>
+            <h1 class="pane-title">Unified Inventory & Stock Synchronization</h1>
+            <p class="pane-desc">Track real-time stock deductions across Online and Offline channels.</p>
+          </div>
+          <button class="btn-secondary" id="btnRestockModalTrigger">📦 Manual Restock / Adjustment</button>
+        </div>
+
+        <!-- Stock Health Matrix Cards -->
+        <div class="stock-cards-grid" id="stockCardsContainer">
+          <!-- Dynamically populated -->
+        </div>
+
+        <!-- Inventory Audit Logs Table -->
+        <div class="card-panel">
+          <div class="panel-header">
+            <h3>Real-Time Inventory Audit Trail</h3>
+            <span class="sub-caption">Logs every stock change from online checkouts, counter sales, and restocks</span>
+          </div>
+
+          <div class="table-responsive">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Product</th>
+                  <th>Channel</th>
+                  <th>Reference</th>
+                  <th>Stock Change</th>
+                  <th>Previous</th>
+                  <th>Current</th>
+                  <th>Reason</th>
+                </tr>
+              </thead>
+              <tbody id="inventoryLogsTableBody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 4: POS & OFFLINE BILLING (INVOICING) ==================== -->
+      <section class="tab-pane" id="pane-billing">
+        <div class="pane-header">
+          <div>
+            <h1 class="pane-title">Point-of-Sale (POS) & Counter Billing</h1>
+            <p class="pane-desc">Generate instant tax invoices for store walk-ins and offline retail orders.</p>
+          </div>
+          <span class="pos-badge">🟢 POS Terminal Active</span>
+        </div>
+
+        <div class="pos-billing-grid">
+          
+          <!-- POS Left Column: Item Selection -->
+          <div class="pos-items-card">
+            <h3 class="pos-section-title">1. Select Products</h3>
+            <div class="pos-product-picker" id="posProductPicker">
+              <!-- Dynamically populated clickable product cards -->
+            </div>
+
+            <h3 class="pos-section-title" style="margin-top: 24px;">2. Invoice Items</h3>
+            <div class="table-responsive">
+              <table class="admin-table pos-bill-table">
+                <thead>
+                  <tr>
+                    <th>Item</th>
+                    <th>Price</th>
+                    <th style="width: 110px;">Qty</th>
+                    <th>Subtotal</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="posBillTableBody">
+                  <tr class="empty-bill-row">
+                    <td colspan="5">Select products above to add to this invoice.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- POS Right Column: Customer & Payment Calculation -->
+          <div class="pos-calc-card">
+            <h3 class="pos-section-title">3. Customer Details</h3>
+            <div class="pos-form-group">
+              <label>Customer Full Name *</label>
+              <input type="text" id="posCustName" class="form-input" placeholder="e.g. Smt. Lakshmi Narayanan" required>
+            </div>
+            <div class="pos-form-row">
+              <div class="pos-form-group">
+                <label>Mobile Number *</label>
+                <input type="tel" id="posCustPhone" class="form-input" placeholder="+91 98765 43210" required>
+              </div>
+              <div class="pos-form-group">
+                <label>Email Address</label>
+                <input type="email" id="posCustEmail" class="form-input" placeholder="customer@example.com">
+              </div>
+            </div>
+            <div class="pos-form-group">
+              <label>Billing Address / Notes</label>
+              <textarea id="posCustAddress" class="form-input" rows="2" placeholder="Store Walk-in / Delivery address"></textarea>
+            </div>
+
+            <h3 class="pos-section-title" style="margin-top: 20px;">4. Totals & Payment</h3>
+            <div class="pos-totals-box">
+              <div class="pos-total-row">
+                <span>Items Subtotal</span>
+                <span id="posSubtotalVal">₹0</span>
+              </div>
+              <div class="pos-total-row">
+                <span>Discount (₹)</span>
+                <input type="number" id="posDiscountInput" class="form-input-sm" value="0" min="0">
+              </div>
+              <div class="pos-total-row">
+                <span>GST / Tax (5%)</span>
+                <span id="posTaxVal">₹0</span>
+              </div>
+              <div class="pos-total-row grand-total-row">
+                <strong>Grand Total</strong>
+                <strong id="posGrandTotalVal">₹0</strong>
+              </div>
+            </div>
+
+            <div class="pos-form-group" style="margin-top: 14px;">
+              <label>Payment Mode</label>
+              <select id="posPaymentMode" class="form-input">
+                <option value="UPI (Store QR)">UPI (Google Pay / PhonePe / Paytm)</option>
+                <option value="Cash">Cash at Counter</option>
+                <option value="Card / POS Terminal">Credit / Debit Card Terminal</option>
+                <option value="Bank Transfer">NEFT / Bank Transfer</option>
+              </select>
+            </div>
+
+            <div class="pos-actions-row">
+              <button class="btn-primary btn-block" id="btnGenerateInvoice">
+                <span>Generate Invoice & Deduct Stock</span>
+                <span class="icon-arrow">→</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ==================== TAB 5: INVOICE HISTORY ==================== -->
+      <section class="tab-pane" id="pane-invoices">
+        <div class="pane-header">
+          <div>
+            <h1 class="pane-title">Offline Invoice Records</h1>
+            <p class="pane-desc">Complete ledger of all generated counter bills and retail sales.</p>
+          </div>
+        </div>
+
+        <div class="card-panel">
+          <div class="panel-filter-row">
+            <input type="text" class="input-search" id="invoiceSearchInput" placeholder="Search by invoice number or customer name...">
+          </div>
+
+          <div class="table-responsive">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Invoice #</th>
+                  <th>Date</th>
+                  <th>Customer</th>
+                  <th>Items Billed</th>
+                  <th>Total</th>
+                  <th>Payment Mode</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="allInvoicesTableBody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 6: ONLINE ORDERS ==================== -->
+      <section class="tab-pane" id="pane-orders">
+        <div class="pane-header">
+          <div>
+            <h1 class="pane-title">Storefront Customer Orders</h1>
+            <p class="pane-desc">Orders placed directly by customers through the website checkout.</p>
+          </div>
+        </div>
+
+        <div class="card-panel">
+          <div class="table-responsive">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Order #</th>
+                  <th>Date</th>
+                  <th>Customer</th>
+                  <th>Products</th>
+                  <th>Total</th>
+                  <th>Payment</th>
+                  <th>Fulfillment Status</th>
+                  <th>Update</th>
+                </tr>
+              </thead>
+              <tbody id="allOrdersTableBody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 7: SETTINGS & SEO ==================== -->
+      <section class="tab-pane" id="pane-settings">
+        <div class="pane-header">
+          <div>
+            <h1 class="pane-title">Store Settings & Live Content Control</h1>
+            <p class="pane-desc">Update website announcements, discount coupons, and business info without a developer.</p>
+          </div>
+          <button class="btn-primary" id="btnSaveStoreSettings">Save All Settings</button>
+        </div>
+
+        <div class="settings-form-grid">
+          <div class="card-panel">
+            <h3>Announcement Banner & Promotional Offers</h3>
+            <div class="form-group">
+              <label>Header Ticker Text</label>
+              <textarea id="setAnnouncementText" class="form-input" rows="2"></textarea>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Free Shipping Threshold (₹)</label>
+                <input type="number" id="setFreeShipping" class="form-input" value="599">
+              </div>
+              <div class="form-group">
+                <label>Mystery Discount Voucher Code</label>
+                <input type="text" id="setMysteryCode" class="form-input" value="ROYAL15">
+              </div>
+            </div>
+          </div>
+
+          <div class="card-panel">
+            <h3>Business & Invoicing Information</h3>
+            <div class="form-group">
+              <label>Official Business / Brand Name</label>
+              <input type="text" id="setBrandName" class="form-input" value="Nachiyar Herbals & Cosmetics">
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>GSTIN / Tax Registration</label>
+                <input type="text" id="setGstin" class="form-input">
+              </div>
+              <div class="form-group">
+                <label>Support Phone</label>
+                <input type="tel" id="setSupportPhone" class="form-input">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Physical Boutique Address</label>
+              <textarea id="setStoreAddress" class="form-input" rows="2"></textarea>
+            </div>
+          </div>
+          <div class="card-panel">
+            <h3>💳 Payment Methods & Gateway Settings</h3>
+            <p style="font-size: 0.8125rem; color: var(--color-text-muted); margin-bottom: 16px;">
+              Enable or disable payment methods dynamically for customer checkout. Disabled methods will be automatically hidden from customers and rejected at checkout API.
+            </p>
+
+            <div class="payment-settings-list" style="display: flex; flex-direction: column; gap: 14px;">
+              <!-- 1. Cash on Delivery (COD) -->
+              <div class="payment-method-toggle-row" style="display: flex; align-items: center; justify-content: space-between; padding: 14px; background: var(--color-canvas); border: 1px solid var(--color-border); border-radius: 12px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <span style="font-size: 1.5rem;">💵</span>
+                  <div>
+                    <strong style="display: block; font-size: 0.9375rem;">Cash on Delivery (COD)</strong>
+                    <span style="font-size: 0.75rem; color: var(--color-text-muted);">Pay cash to courier executive upon delivery</span>
+                  </div>
+                </div>
+                <label class="switch-toggle" style="position: relative; display: inline-block; width: 48px; height: 26px;">
+                  <input type="checkbox" id="setPmCod" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+
+              <!-- 2. UPI Payments -->
+              <div class="payment-method-toggle-row" style="display: flex; flex-direction: column; gap: 10px; padding: 14px; background: var(--color-canvas); border: 1px solid var(--color-border); border-radius: 12px;">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                  <div style="display: flex; align-items: center; gap: 12px;">
+                    <span style="font-size: 1.5rem;">⚡</span>
+                    <div>
+                      <strong style="display: block; font-size: 0.9375rem;">Instant UPI Payments</strong>
+                      <span style="font-size: 0.75rem; color: var(--color-text-muted);">Google Pay, PhonePe, Paytm, BHIM with dynamic QR</span>
+                    </div>
+                  </div>
+                  <label class="switch-toggle" style="position: relative; display: inline-block; width: 48px; height: 26px;">
+                    <input type="checkbox" id="setPmUpi" checked>
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                <div class="form-row" style="margin-top: 6px;">
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label style="font-size: 0.75rem;">Store UPI ID / VPA</label>
+                    <input type="text" id="setPmUpiId" class="form-input" value="nachiyarherbals18@okaxis" placeholder="brand@okaxis">
+                  </div>
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label style="font-size: 0.75rem;">UPI Merchant Display Name</label>
+                    <input type="text" id="setPmUpiName" class="form-input" value="Nachiyar Herbals & Cosmetics" placeholder="Merchant Name">
+                  </div>
+                </div>
+              </div>
+
+              <!-- 3. Credit / Debit Cards -->
+              <div class="payment-method-toggle-row" style="display: flex; align-items: center; justify-content: space-between; padding: 14px; background: var(--color-canvas); border: 1px solid var(--color-border); border-radius: 12px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <span style="font-size: 1.5rem;">💳</span>
+                  <div>
+                    <strong style="display: block; font-size: 0.9375rem;">Credit & Debit Cards</strong>
+                    <span style="font-size: 0.75rem; color: var(--color-text-muted);">Visa, MasterCard, RuPay, Maestro secure checkout</span>
+                  </div>
+                </div>
+                <label class="switch-toggle" style="position: relative; display: inline-block; width: 48px; height: 26px;">
+                  <input type="checkbox" id="setPmCard" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+
+              <!-- 4. Net Banking -->
+              <div class="payment-method-toggle-row" style="display: flex; align-items: center; justify-content: space-between; padding: 14px; background: var(--color-canvas); border: 1px solid var(--color-border); border-radius: 12px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <span style="font-size: 1.5rem;">🏦</span>
+                  <div>
+                    <strong style="display: block; font-size: 0.9375rem;">Net Banking</strong>
+                    <span style="font-size: 0.75rem; color: var(--color-text-muted);">Direct instant transfer via 50+ Indian banks</span>
+                  </div>
+                </div>
+                <label class="switch-toggle" style="position: relative; display: inline-block; width: 48px; height: 26px;">
+                  <input type="checkbox" id="setPmNetbanking" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 7: CUSTOMER REVIEWS MODERATION ==================== -->
+      <section class="tab-pane" id="pane-reviews">
+        <div class="pane-header">
+          <div>
+            <h1 class="pane-title">Customer Reviews Moderation</h1>
+            <p class="pane-desc">Verify patron submissions, approve testimonials for the live storefront ticker, or reject spam.</p>
+          </div>
+          <div class="reviews-header-stats">
+            <span class="reviews-stat-pill" id="statReviewTotal">Total: 0</span>
+            <span class="reviews-stat-pill pending" id="statReviewPending">Pending: 0</span>
+            <span class="reviews-stat-pill approved" id="statReviewApproved">Approved: 0</span>
+            <span class="reviews-stat-pill rejected" id="statReviewRejected">Rejected: 0</span>
+          </div>
+        </div>
+
+        <!-- Filter Tabs & Search Bar -->
+        <div class="reviews-toolbar-card">
+          <div class="reviews-filter-tabs" id="reviewsFilterTabs">
+            <button type="button" class="review-filter-btn active" data-filter="all">
+              All Reviews (<span id="countFilterAll">0</span>)
+            </button>
+            <button type="button" class="review-filter-btn" data-filter="pending">
+              ⏳ Pending Approval (<span id="countFilterPending">0</span>)
+            </button>
+            <button type="button" class="review-filter-btn" data-filter="approved">
+              ✓ Approved &amp; Live (<span id="countFilterApproved">0</span>)
+            </button>
+            <button type="button" class="review-filter-btn" data-filter="rejected">
+              ✕ Rejected (<span id="countFilterRejected">0</span>)
+            </button>
+          </div>
+          <div class="search-input-wrap reviews-search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="reviewsSearchInput" class="form-input" placeholder="Search by customer name, product, or keyword...">
+          </div>
+        </div>
+
+        <!-- Reviews Moderation Table -->
+        <div class="admin-card">
+          <div class="table-responsive">
+            <table class="admin-table reviews-table">
+              <thead>
+                <tr>
+                  <th style="width: 130px;">Date &amp; Time</th>
+                  <th style="width: 170px;">Patron</th>
+                  <th style="width: 180px;">Rating &amp; Product</th>
+                  <th>Review Headline &amp; Message</th>
+                  <th style="width: 110px;">Status</th>
+                  <th style="width: 180px; text-align: right;">Moderation</th>
+                </tr>
+              </thead>
+              <tbody id="adminReviewsTableBody">
+                <!-- Dynamically loaded from /api/reviews/admin/all -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ==================== MODAL 1: ADD / EDIT PRODUCT ==================== -->
+  <div class="modal-overlay" id="productModalOverlay">
+    <div class="modal-box modal-box--large">
+      <div class="modal-header">
+        <h2 id="modalProductTitle">Add New Formulation</h2>
+        <button class="modal-close-btn" id="modalProductClose">✕</button>
+      </div>
+      <form id="productForm" class="modal-form">
+        <input type="hidden" id="formProductId">
+
+        <div class="modal-body-scroll">
+          
+          <h4 class="form-section-title">1. Basic Information</h4>
+          <div class="form-row">
+            <div class="form-group flex-2">
+              <label>Product Name *</label>
+              <input type="text" id="formProdName" class="form-input" placeholder="e.g. Royal Jasmine Hair Mask" required>
+            </div>
+            <div class="form-group">
+              <label>Category *</label>
+              <select id="formProdCategory" class="form-input" required>
+                <option value="Hair Care">Hair Care</option>
+                <option value="Scalp & Cleansing">Scalp & Cleansing</option>
+                <option value="Ritual Sets">Ritual Sets</option>
+                <option value="Royal Gifting">Royal Gifting</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Subtitle / Packaging Details</label>
+            <input type="text" id="formProdSubtitle" class="form-input" placeholder="e.g. 200ml Glass Jar • Cold-Pressed">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Selling Price (₹) *</label>
+              <input type="number" id="formProdPrice" class="form-input" placeholder="599" required>
+            </div>
+            <div class="form-group">
+              <label>Original MRP (₹)</label>
+              <input type="number" id="formProdMrp" class="form-input" placeholder="699">
+            </div>
+            <div class="form-group">
+              <label>Current Stock Inventory *</label>
+              <input type="number" id="formProdStock" class="form-input" placeholder="100" required>
+            </div>
+            <div class="form-group">
+              <label>SKU Code</label>
+              <input type="text" id="formProdSku" class="form-input" placeholder="NH-PROD-01">
+            </div>
+          </div>
+
+          <h4 class="form-section-title">2. Imagery & Theming</h4>
+          <div class="form-row">
+            <div class="form-group flex-2">
+              <label>Primary Image URL or Asset Path</label>
+              <input type="text" id="formProdImage" class="form-input" value="assets/herbal-hair-oil.jpg">
+            </div>
+            <div class="form-group">
+              <label>Brand Theme Color</label>
+              <input type="color" id="formProdColor" class="form-input-color" value="#6B4E9B">
+            </div>
+          </div>
+
+          <h4 class="form-section-title">3. Content & Descriptions</h4>
+          <div class="form-group">
+            <label>Short Tagline (e.g. Cold-Pressed • 18 Rare Herbs)</label>
+            <input type="text" id="formProdTagline" class="form-input">
+          </div>
+          <div class="form-group">
+            <label>Full Product Description</label>
+            <textarea id="formProdDesc" class="form-input" rows="3"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Ingredients List</label>
+            <textarea id="formProdIngredients" class="form-input" rows="2"></textarea>
+          </div>
+
+          <h4 class="form-section-title">4. SEO & Search Engine Information</h4>
+          <div class="form-group">
+            <label>SEO URL Slug (e.g. herbal-hair-oil)</label>
+            <input type="text" id="formProdSlug" class="form-input" placeholder="leave blank to auto-generate">
+          </div>
+          <div class="form-group">
+            <label>Meta Page Title (Search Engine Display)</label>
+            <input type="text" id="formProdMetaTitle" class="form-input">
+          </div>
+          <div class="form-group">
+            <label>Meta Description</label>
+            <textarea id="formProdMetaDesc" class="form-input" rows="2"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Target Keywords (comma-separated)</label>
+            <input type="text" id="formProdKeywords" class="form-input" placeholder="hair oil, ayurveda, nachiyar">
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" id="btnCancelProductModal">Cancel</button>
+          <button type="submit" class="btn-primary">Save Product</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL 2: PRINTABLE INVOICE RECEIPT ==================== -->
+  <div class="modal-overlay" id="invoiceModalOverlay">
+    <div class="modal-box modal-box--receipt">
+      <div class="modal-header no-print">
+        <h2>Tax Invoice</h2>
+        <div class="receipt-header-actions">
+          <button class="btn-primary btn-sm" onclick="window.print()">🖨️ Print Receipt</button>
+          <button class="modal-close-btn" id="invoiceModalClose">✕</button>
+        </div>
+      </div>
+
+      <div class="receipt-printable-area" id="receiptPrintableArea">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL 3: INTERACTIVE ANALYTICS & DRILL-DOWN REPORT ==================== -->
+  <div class="modal-overlay" id="analyticsModalOverlay">
+    <div class="modal-box modal-box--analytics">
+      <div class="modal-header">
+        <div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="report-badge-pill" id="analyticsReportTag">FINANCIAL REPORT</span>
+            <h2 id="analyticsModalTitle" style="margin: 0; font-family: var(--font-heading); font-size: 1.25rem;">Analytics Drill-Down</h2>
+          </div>
+          <p class="modal-subtitle" id="analyticsModalSubtitle" style="margin-top: 4px; color: var(--admin-text-muted); font-size: 0.8125rem;">Real-time database records and channel statistics</p>
+        </div>
+        <div class="analytics-header-actions">
+          <button class="btn-secondary btn-sm" id="btnExportAnalyticsCsv">📥 Export CSV</button>
+          <button class="modal-close-btn" id="analyticsModalClose">✕</button>
+        </div>
+      </div>
+
+      <!-- Quick KPI Summary Strip inside Modal -->
+      <div class="analytics-modal-summary-strip" id="analyticsModalSummary">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Search & Filters Inside Report -->
+      <div class="analytics-modal-toolbar">
+        <div class="search-input-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="analyticsModalSearch" class="form-input" placeholder="Search by customer, reference #, item, or status...">
+        </div>
+        <div class="toolbar-info" id="analyticsRecordCount">
+          Showing 0 records
+        </div>
+      </div>
+
+      <!-- Detailed Table -->
+      <div class="table-responsive modal-table-scroll">
+        <table class="admin-table" id="analyticsDetailTable">
+          <thead id="analyticsDetailThead">
+            <!-- Headers dynamically injected -->
+          </thead>
+          <tbody id="analyticsDetailTbody">
+            <!-- Rows dynamically injected -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 0.75rem; color: var(--admin-text-muted);">
+          🔒 Verified live database metrics (PostgreSQL)
+        </span>
+        <button type="button" class="btn-secondary" id="btnCloseAnalyticsModal">Close Report</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Alert -->
+  <div class="admin-toast" id="adminToast"></div>
+
+  <script src="admin.js"></script>
+</body>
+</html>

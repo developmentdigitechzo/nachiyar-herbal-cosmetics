@@ -1,0 +1,614 @@
+/* ==========================================================================
+   CUSTOMER ACCOUNT & LIVE ORDER TRACKING (AMAZON / FLIPKART STYLE)
+   ========================================================================== */
+
+/* Navbar Account Trigger Button */
+.account-trigger-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: var(--border-radius-pill, 9999px);
+  background-color: rgba(124, 90, 171, 0.08);
+  border: 1px solid rgba(124, 90, 171, 0.25);
+  color: var(--color-text-main, #191319);
+  font-family: var(--font-body, inherit);
+  font-size: 0.84375rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.account-trigger-btn:hover {
+  background-color: var(--color-lavender-primary, #7C5AAB);
+  color: #FFFFFF;
+  border-color: var(--color-lavender-primary, #7C5AAB);
+  transform: translateY(-1px);
+}
+
+.account-trigger-btn .user-icon {
+  stroke: currentColor;
+  width: 18px;
+  height: 18px;
+}
+
+.account-trigger-btn .user-label {
+  letter-spacing: 0.02em;
+}
+
+/* Account Drawer Overlay & Container */
+.account-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(25, 19, 25, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.account-drawer-overlay.is-open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.account-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  max-width: 480px;
+  background-color: var(--color-surface, #FFFFFF);
+  box-shadow: -8px 0 32px rgba(25, 19, 25, 0.2);
+  z-index: 10000;
+  transform: translateX(100%);
+  transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.account-drawer-overlay.is-open .account-drawer {
+  transform: translateX(0);
+}
+
+/* Drawer Header */
+.account-drawer-header {
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #271434 0%, #150F18 100%);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.drawer-header-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.drawer-header-avatar {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #D4AF37 0%, #A37F14 100%);
+  color: #FFFFFF;
+  font-weight: 800;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+}
+
+.drawer-header-info h3 {
+  font-family: var(--font-display, 'Cinzel', serif);
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0;
+  color: #FFFFFF;
+}
+
+.drawer-header-info p {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.75);
+  margin: 2px 0 0 0;
+}
+
+.drawer-close-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  color: #FFFFFF;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.drawer-close-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* Drawer Content Scrollable Area */
+.account-drawer-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  background-color: #FAF9F6;
+}
+
+/* Profile Card */
+.account-profile-card {
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid rgba(25, 19, 25, 0.08);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.profile-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.profile-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #A37F14;
+  background: #FBF4DE;
+  padding: 4px 10px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.profile-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  font-size: 0.8125rem;
+}
+
+.profile-detail-item strong {
+  display: block;
+  font-size: 0.72rem;
+  color: #6B626A;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 2px;
+}
+
+.profile-detail-item span {
+  font-weight: 600;
+  color: #191319;
+}
+
+/* Section Title inside Drawer */
+.drawer-section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-display, 'Cinzel', serif);
+  font-size: 1rem;
+  font-weight: 700;
+  color: #191319;
+  margin-bottom: 14px;
+}
+
+.drawer-section-title span.count-pill {
+  font-family: var(--font-body, sans-serif);
+  font-size: 0.75rem;
+  background: #ECE5F8;
+  color: #7C5AAB;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+/* Flipkart / Amazon Style Order Tracking Card */
+.tracking-order-card {
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid rgba(25, 19, 25, 0.08);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  margin-bottom: 16px;
+}
+
+.order-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(25, 19, 25, 0.06);
+  margin-bottom: 14px;
+}
+
+.order-id-num {
+  font-weight: 800;
+  font-size: 0.9375rem;
+  color: #191319;
+  display: block;
+}
+
+.order-date-text {
+  font-size: 0.75rem;
+  color: #6B626A;
+}
+
+.order-total-badge {
+  font-size: 0.9375rem;
+  font-weight: 800;
+  color: #7C5AAB;
+}
+
+/* Amazon / Flipkart Style Stepper Progress */
+.tracking-stepper-wrap {
+  margin-block: 16px 20px;
+}
+
+.stepper-progress-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.stepper-track-line {
+  position: absolute;
+  top: 14px;
+  left: 20px;
+  right: 20px;
+  height: 3px;
+  background-color: #E2DFE5;
+  z-index: 1;
+}
+
+.stepper-track-fill {
+  position: absolute;
+  top: 14px;
+  left: 20px;
+  height: 3px;
+  background: linear-gradient(90deg, #10B981 0%, #7C5AAB 100%);
+  z-index: 2;
+  transition: width 0.5s ease;
+}
+
+.stepper-node {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.stepper-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: #FFFFFF;
+  border: 2px solid #D1D5DB;
+  color: #9CA3AF;
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.stepper-node.is-done .stepper-circle {
+  background-color: #10B981;
+  border-color: #10B981;
+  color: #FFFFFF;
+}
+
+.stepper-node.is-active .stepper-circle {
+  background-color: #7C5AAB;
+  border-color: #7C5AAB;
+  color: #FFFFFF;
+  box-shadow: 0 0 0 4px rgba(124, 90, 171, 0.2);
+  animation: pulseNode 1.8s infinite;
+}
+
+@keyframes pulseNode {
+  0% { box-shadow: 0 0 0 0 rgba(124, 90, 171, 0.4); }
+  70% { box-shadow: 0 0 0 8px rgba(124, 90, 171, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(124, 90, 171, 0); }
+}
+
+.stepper-label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: #6B626A;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.stepper-node.is-active .stepper-label {
+  color: #7C5AAB;
+  font-weight: 800;
+}
+
+.stepper-node.is-done .stepper-label {
+  color: #10B981;
+}
+
+/* Live Status Notice Box */
+.tracking-status-notice {
+  background: #F4F0FB;
+  border-left: 3px solid #7C5AAB;
+  border-radius: 0 8px 8px 0;
+  padding: 10px 14px;
+  font-size: 0.8125rem;
+  color: #382548;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.tracking-status-notice strong {
+  font-weight: 700;
+}
+
+/* Order Items Preview in Drawer */
+.order-items-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.order-mini-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.8125rem;
+}
+
+.order-mini-img {
+  width: 36px;
+  height: 48px;
+  border-radius: 6px;
+  object-fit: contain;
+  object-position: center;
+  border: 1px solid rgba(0,0,0,0.06);
+  background-color: #FAF9F5;
+  padding: 2px;
+}
+
+.order-mini-name {
+  flex: 1;
+  font-weight: 600;
+  color: #191319;
+}
+
+.order-mini-qty {
+  color: #6B626A;
+  font-size: 0.75rem;
+}
+
+/* Saved Address Card */
+.saved-address-card {
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 18px 20px;
+  border: 1px solid rgba(25, 19, 25, 0.08);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  font-size: 0.84375rem;
+  color: #382548;
+  line-height: 1.5;
+}
+
+.saved-address-card strong {
+  display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #6B626A;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+
+/* Account Drawer Footer Actions */
+.account-drawer-footer {
+  padding: 18px 24px;
+  background: #FFFFFF;
+  border-top: 1px solid rgba(25, 19, 25, 0.08);
+  display: flex;
+  gap: 12px;
+}
+
+.btn-drawer-action {
+  flex: 1;
+  height: 46px;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.84375rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  border: none;
+}
+
+.btn-drawer-action--logout {
+  background-color: #FEE2E2;
+  color: #991B1B;
+  border: 1px solid #FCA5A5;
+}
+
+.btn-drawer-action--logout:hover {
+  background-color: #DC2626;
+  color: #FFFFFF;
+}
+
+.btn-drawer-action--shop {
+  background: #191319;
+  color: #FFFFFF;
+}
+
+.btn-drawer-action--shop:hover {
+  background: #7C5AAB;
+}
+
+/* Embedded Sign In / Register Tabs inside Drawer */
+.drawer-auth-tabs {
+  display: flex;
+  background: #EDE8F2;
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 20px;
+}
+
+.drawer-auth-tab {
+  flex: 1;
+  height: 38px;
+  border-radius: 8px;
+  background: transparent;
+  color: #6B626A;
+  font-size: 0.84375rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.drawer-auth-tab.is-active {
+  background: #FFFFFF;
+  color: #191319;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.drawer-auth-input {
+  width: 100%;
+  height: 48px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(25, 19, 25, 0.12);
+  background: #FFFFFF;
+  font-size: 0.875rem;
+  outline: none;
+  margin-bottom: 14px;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.drawer-auth-input:focus {
+  border-color: #7C5AAB;
+  box-shadow: 0 0 0 3px rgba(124, 90, 171, 0.15);
+}
+
+.drawer-auth-submit-btn {
+  width: 100%;
+  height: 48px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #271434 0%, #150F18 100%);
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 0.875rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  transition: all 0.2s ease;
+}
+
+.drawer-auth-submit-btn:hover {
+  background: #7C5AAB;
+  transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   RESPONSIVE ADJUSTMENTS FOR CUSTOMER ACCOUNT & DRAWER
+   ========================================================================== */
+
+@media (max-width: 640px) {
+  .account-drawer {
+    width: 100%;
+    max-width: 100vw;
+  }
+
+  .account-drawer-header {
+    padding: 16px 18px;
+  }
+
+  .drawer-header-avatar {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    font-size: 1rem;
+  }
+
+  .account-drawer-body {
+    padding: 18px 16px;
+    gap: 18px;
+  }
+
+  .profile-details-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .account-drawer-footer {
+    padding: 14px 16px;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .btn-drawer-action {
+    width: 100%;
+    height: 44px;
+  }
+
+  .saved-address-card {
+    padding: 14px 16px;
+  }
+
+  .drawer-auth-input {
+    height: 44px;
+    font-size: 0.875rem;
+  }
+
+  .drawer-auth-submit-btn {
+    height: 44px;
+  }
+}
+
+@media (max-width: 480px) {
+  .account-trigger-btn {
+    padding: 7px 10px;
+    font-size: 0.78rem;
+    gap: 4px;
+  }
+
+  .account-trigger-btn .user-label {
+    display: none;
+  }
+
+  .tracking-status-notice {
+    font-size: 0.75rem;
+    padding: 8px 10px;
+  }
+}
+

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shop All Formulations | Nachiyar Herbals & Cosmetics</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="customer-account.css">
+  <style>
+    .page-hero {
+      padding: 60px 24px 40px;
+      text-align: center;
+      background: radial-gradient(circle at 50% 20%, rgba(236, 229, 248, 0.6) 0%, rgba(249, 248, 245, 0) 70%);
+    }
+    .catalog-filters {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 48px;
+    }
+    .filter-btn {
+      padding: 10px 24px;
+      border-radius: 999px;
+      border: 1px solid var(--color-border);
+      background-color: var(--color-surface);
+      font-weight: 700;
+      font-size: 0.875rem;
+      color: var(--color-text-main);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .filter-btn:hover, .filter-btn.active {
+      background-color: var(--color-text-main);
+      color: #FFFFFF;
+      border-color: var(--color-text-main);
+    }
+  </style>
+</head>
+<body class="page-body">
+
+  <aside class="announcement-bar">
+    <div class="announcement-ticker">
+      <div class="ticker-track">
+        <span>ROYAL BOTANICAL CARE ✦ FREE PAN-INDIA SHIPPING OVER ₹599</span>
+        <span>•</span>
+        <span>COLD-PRESSED IN SMALL BATCHES ✦ 100% PURE ACTIVE HERBS</span>
+      </div>
+    </div>
+  </aside>
+
+  <header class="site-header">
+    <div class="header-container">
+      <!-- Mobile Menu Trigger -->
+      <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Toggle navigation menu">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+
+      <a href="/" class="brand-link">
+        <div class="brand-crest">
+          <img src="assets/nachiyar-logo.png" alt="Nachiyar Logo" class="brand-logo-img">
+        </div>
+        <div class="brand-text-lockup">
+          <span class="brand-name">NACHIYAR</span>
+          <span class="brand-sub">HERBALS & COSMETICS</span>
+        </div>
+      </a>
+
+      <nav class="desktop-nav">
+        <ul class="nav-links">
+          <li><a href="/" class="nav-link">Home</a></li>
+          <li><a href="shop.html" class="nav-link" style="color:var(--color-gold-dark);">Shop Rituals</a></li>
+          <li><a href="about.html" class="nav-link">About Us</a></li>
+          <li><a href="contact.html" class="nav-link">Contact</a></li>
+        </ul>
+      </nav>
+
+      <div class="header-actions">
+        <!-- Customer Account Trigger -->
+        <button class="account-trigger-btn" id="accountTriggerBtn" aria-label="Customer Account">
+          <svg class="user-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          <span class="user-label" id="navAccountLabel">Sign In</span>
+        </button>
+
+        <a href="checkout.html" class="cart-trigger-btn">
+          <span>Bag</span>
+          <span class="cart-count-badge" id="shopCartCount">0</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== MOBILE MENU DRAWER ==================== -->
+  <div class="mobile-drawer" id="mobileDrawer">
+    <div class="mobile-drawer-inner">
+      <div class="mobile-drawer-header">
+        <span class="drawer-title">Navigation</span>
+        <button class="drawer-close-btn" id="mobileDrawerClose" aria-label="Close menu">✕</button>
+      </div>
+      <ul class="mobile-nav-list">
+        <li><a href="/" class="mobile-link">Home</a></li>
+        <li><a href="shop.html" class="mobile-link" style="color:var(--color-lavender-primary); font-weight:800;">Shop Rituals (View & Buy) →</a></li>
+        <li><a href="about.html" class="mobile-link">About Us</a></li>
+        <li><a href="contact.html" class="mobile-link">Contact</a></li>
+        <li><a href="account.html" class="mobile-link">My Account & Orders</a></li>
+      </ul>
+      <div class="mobile-drawer-footer">
+        <p class="drawer-support">Customer Concierge: care@nachiyarherbals.com</p>
+      </div>
+    </div>
+  </div>
+
+  <main>
+    <section class="page-hero">
+      <div class="section-container">
+        <span class="section-eyebrow">THE COMPLETE APOTHECARY</span>
+        <h1 class="section-heading">Sacred Hair Care Formulations</h1>
+        <p class="section-subtext" style="margin-inline:auto;">
+          Handcrafted in small batches without mineral oil, sulfates, silicones, or synthetic fragrances.
+        </p>
+      </div>
+    </section>
+
+    <section style="padding-bottom: 90px;">
+      <div class="section-container">
+        
+        <!-- Filter Tabs -->
+        <div class="catalog-filters">
+          <button class="filter-btn active" data-cat="all">All Formulations</button>
+          <button class="filter-btn" data-cat="Hair Care">Hair Care</button>
+          <button class="filter-btn" data-cat="Scalp & Cleansing">Scalp & Cleansing</button>
+          <button class="filter-btn" data-cat="Ritual Sets">Ritual Sets & Combos</button>
+        </div>
+
+        <!-- Products Grid Loaded from API -->
+        <div class="products-grid" id="catalogGrid">
+          <!-- Dynamically populated via /api/products -->
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-legal-bar">
+        <p>© 2026 NACHIYAR HERBALS & COSMETICS. ALL RIGHTS RESERVED.</p>
+        <p class="legal-links"><a href="/">Home</a> • <a href="shop.html">Shop</a> • <a href="contact.html">Contact</a></p>
+      </div>
+    </div>
+  </footer>
+
+  <div class="cart-toast" id="cartToast"></div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      let allProducts = [];
+      const catalogGrid = document.getElementById('catalogGrid');
+      const cartCountBadge = document.getElementById('shopCartCount');
+
+      // Update badge
+      try {
+        const cart = JSON.parse(localStorage.getItem('nachiyar_cart') || '[]');
+        cartCountBadge.textContent = cart.reduce((s, i) => s + i.qty, 0);
+      } catch (e) {}
+
+      // Fetch products from live backend API
+      try {
+        const res = await fetch('/api/products').then(r => r.json());
+        if (res.success) {
+          allProducts = res.data;
+          renderCatalog('all');
+        }
+      } catch (e) {
+        console.error(e);
+      }
+
+      function renderCatalog(filter) {
+        catalogGrid.innerHTML = '';
+        const list = filter === 'all' ? allProducts : allProducts.filter(p => p.category === filter);
+
+        list.forEach(p => {
+          const card = document.createElement('article');
+          card.className = 'product-card';
+          card.style.setProperty('--card-bg', p.themeColor || '#6B4E9B');
+          card.style.setProperty('--card-color', '#FFFFFF');
+
+          card.innerHTML = `
+            <div class="card-inner">
+              <div class="card-top-bar">
+                <span class="pill-tag">${p.tagline || '100% Pure Botanical'}</span>
+                <div class="circle-badge">
+                  <span class="badge-number">${p.metricBadge || 'PURE'}</span>
+                </div>
+              </div>
+              <div class="card-image-wrap">
+                <img src="${p.images[0]}" alt="${p.name}" class="card-product-img">
+                <a href="product.html?slug=${p.slug}" class="quick-view-badge">View Formulation ↗</a>
+              </div>
+              <div class="card-details">
+                <div class="card-meta-row">
+                  <span class="product-category">${p.category}</span>
+                  <div class="rating-stars">★★★★★ <span class="rating-score">4.9</span></div>
+                </div>
+                <h3 class="product-card-title">${p.name}</h3>
+                <p class="product-card-subtitle">${p.subtitle || ''}</p>
+                <p class="product-card-desc">${p.shortDescription || p.description.slice(0, 140) + '...'}</p>
+                <div class="card-action-bar">
+                  <div class="card-pricing">
+                    <span class="price-current">₹${p.price}</span>
+                    <span class="price-mrp">₹${p.mrp}</span>
+                  </div>
+                  <a href="product.html?slug=${p.slug}" class="btn-quick-add" style="text-decoration:none;">
+                    <span>View & Buy</span>
+                    <span>→</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          `;
+          catalogGrid.appendChild(card);
+        });
+      }
+
+      // Filter tabs
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.onclick = () => {
+          document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          renderCatalog(btn.dataset.cat);
+        };
+      });
+    });
+  </script>
+  <script src="customer-account.js"></script>
+</body>
+</html>

@@ -1,0 +1,569 @@
+/* ==========================================================================
+   ENHANCED HERO FLANKING & EMOTIONAL LIFESTYLE STORYTELLING STYLES
+   ========================================================================== */
+
+/* Admin Portal Direct Header Link */
+.admin-portal-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--border-radius-pill);
+  background-color: rgba(212, 175, 55, 0.12);
+  border: 1px solid var(--color-gold);
+  color: var(--color-text-main);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all var(--duration-fast) ease;
+}
+
+.admin-portal-link:hover {
+  background-color: var(--color-gold);
+  color: #1A1121;
+}
+
+/* ==================== FLANKING DUAL-PRODUCT HERO ==================== */
+.hero-section--flanking {
+  padding-block: 40px 60px;
+  overflow: hidden;
+  position: relative;
+  background: radial-gradient(circle at 50% 30%, rgba(236, 229, 248, 0.7) 0%, rgba(249, 248, 245, 0) 75%);
+}
+
+.hero-flanking-wrapper {
+  max-width: 1440px;
+  margin-inline: auto;
+  padding-inline: 20px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+  align-items: center;
+}
+
+@media (min-width: 1080px) {
+  .hero-flanking-wrapper {
+    grid-template-columns: 310px 1fr 310px;
+    gap: 36px;
+    align-items: center;
+  }
+}
+
+.hero-center-content {
+  text-align: center;
+  max-width: 680px;
+  margin-inline: auto;
+  order: -1;
+}
+
+@media (min-width: 1080px) {
+  .hero-center-content {
+    order: 0;
+  }
+}
+
+/* Left & Right Product Flanks - Completely Transparent Floating Presentation */
+.hero-product-flank {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.hero-flank-card {
+  width: 100%;
+  max-width: 330px;
+  background-color: transparent !important;
+  color: var(--color-text-main);
+  border-radius: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Badges Top */
+.flank-badge-top {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-inline: 6px;
+}
+
+.flank-tag {
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 4px 12px;
+  border-radius: var(--border-radius-pill);
+  border: 1.5px solid var(--flank-theme);
+  background-color: rgba(255, 255, 255, 0.9);
+  color: var(--flank-theme);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+}
+
+.flank-stat {
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  font-weight: 800;
+  color: var(--flank-theme);
+  letter-spacing: 0.04em;
+}
+
+/* Bottle Image Stage: Large, uncropped, fully visible */
+.flank-img-box {
+  width: 100%;
+  height: 380px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  overflow: visible;
+}
+
+@media (min-width: 1280px) {
+  .flank-img-box {
+    height: 420px;
+  }
+}
+
+/* Luxury floating shadow beneath the bottle base */
+.flank-img-box::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 130px;
+  height: 20px;
+  background: radial-gradient(ellipse at center, rgba(39, 20, 52, 0.28) 0%, rgba(39, 20, 52, 0.06) 50%, transparent 75%);
+  border-radius: 50%;
+  pointer-events: none;
+  transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.65s ease;
+  z-index: 0;
+}
+
+/* The Bottle: 100% visible, transparent background, natural proportion */
+.flank-img {
+  max-height: 100%;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 14px 24px rgba(39, 20, 52, 0.2)) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.08));
+  transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), filter 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, filter;
+  transform-origin: center bottom;
+}
+
+/* Scroll-like light sheen overlay container on the image box */
+.flank-img-box::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.45) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: translateY(-120%);
+  transition: transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+  opacity: 0;
+  z-index: 2;
+  mask-image: radial-gradient(ellipse at center, black 50%, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse at center, black 50%, transparent 80%);
+}
+
+/* ==================== PREMIUM HOVER ANIMATION ==================== */
+/* 1. Bottle smoothly zooms in
+   2. Subtle upward movement / parallax floating effect
+   3. Internal scroll-like light reveal sweep */
+.hero-flank-card:hover .flank-img {
+  transform: translateY(-14px) scale(1.09);
+  filter: drop-shadow(0 26px 36px rgba(39, 20, 52, 0.3)) drop-shadow(0 8px 16px rgba(0, 0, 0, 0.12));
+}
+
+.hero-flank-card:hover .flank-img-box::before {
+  transform: translateX(-50%) scale(1.15);
+  opacity: 0.65;
+}
+
+.hero-flank-card:hover .flank-img-box::after {
+  opacity: 0.75;
+  transform: translateY(120%);
+}
+
+/* Details */
+.flank-details {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.flank-name {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text-main);
+  margin-bottom: 4px;
+}
+
+.flank-sub {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+
+.flank-price-row {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(107, 78, 155, 0.15);
+}
+
+.flank-price {
+  font-family: var(--font-display);
+  font-size: 1.375rem;
+  font-weight: 800;
+  color: var(--flank-theme);
+}
+
+.btn-flank-add {
+  padding: 9px 22px;
+  border-radius: var(--border-radius-pill);
+  background-color: var(--flank-theme);
+  color: #FFFFFF;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  border: 1px solid var(--flank-theme);
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  transition: all var(--duration-fast) ease;
+}
+
+.btn-flank-add:hover {
+  background-color: #1A1121;
+  border-color: #1A1121;
+  color: var(--color-gold-light);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.16);
+}
+
+/* Responsive across Tablet and Mobile */
+@media (max-width: 1079px) {
+  .hero-flanking-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  .hero-product-flank {
+    width: 100%;
+  }
+
+  .hero-flank-card {
+    max-width: 440px;
+  }
+
+  .flank-img-box {
+    height: 320px;
+  }
+}
+
+@media (max-width: 580px) {
+  .hero-flanking-wrapper {
+    gap: 28px;
+    padding-inline: 14px;
+  }
+
+  .flank-img-box {
+    height: 240px;
+  }
+
+  .hero-flank-card {
+    max-width: 100%;
+  }
+
+  .flank-img {
+    max-height: 230px;
+  }
+
+  .flank-name {
+    font-size: 1.125rem;
+  }
+
+  .flank-price-row {
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .btn-flank-add {
+    padding: 8px 18px;
+    font-size: 0.78125rem;
+  }
+}
+
+/* ==================== NATURAL EMOTIONAL LIFESTYLE SECTION ==================== */
+.lifestyle-narrative-section {
+  padding-block: 90px;
+  background-color: #FAF9F5;
+  border-top: 1px solid var(--color-border);
+}
+
+.lifestyle-mosaic-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+  margin-bottom: 50px;
+}
+
+@media (min-width: 880px) {
+  .lifestyle-mosaic-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.lifestyle-story-card {
+  background-color: var(--color-surface);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  transition: transform var(--duration-normal) var(--ease-smooth);
+}
+
+.lifestyle-story-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-md);
+}
+
+.story-img-wrap {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  position: relative;
+  overflow: hidden;
+}
+
+.story-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--duration-slow) ease;
+}
+
+.lifestyle-story-card:hover .story-img {
+  transform: scale(1.06);
+}
+
+.story-step-pill {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  background-color: rgba(26, 17, 33, 0.85);
+  backdrop-filter: blur(4px);
+  color: var(--color-gold-light);
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  padding: 6px 12px;
+  border-radius: var(--border-radius-pill);
+}
+
+.story-text-content {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.story-title {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: var(--color-text-main);
+}
+
+.story-desc {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+  margin-bottom: 16px;
+  flex: 1;
+}
+
+.story-quote {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 0.875rem;
+  color: var(--color-lavender-primary);
+  border-left: 2px solid var(--color-gold);
+  padding-left: 10px;
+}
+
+/* Texture & Transformation Strip */
+.texture-transformation-strip {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  border-radius: var(--border-radius-card);
+  overflow: hidden;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+}
+
+@media (min-width: 880px) {
+  .texture-transformation-strip {
+    grid-template-columns: 1fr 1.3fr;
+  }
+}
+
+.texture-col {
+  position: relative;
+  min-height: 320px;
+}
+
+.texture-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.texture-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(22, 13, 29, 0.85) 0%, transparent 60%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 28px;
+  color: #FFFFFF;
+}
+
+.texture-tag {
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: var(--color-gold);
+  margin-bottom: 6px;
+}
+
+.texture-overlay h4 {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  margin-bottom: 6px;
+}
+
+.texture-overlay p {
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.transformation-col {
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.trans-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 2.5vw, 2rem);
+  font-weight: 700;
+  margin-bottom: 24px;
+  line-height: 1.2;
+}
+
+.trans-metrics-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+@media (min-width: 600px) {
+  .trans-metrics-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.trans-metric {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  background-color: var(--color-canvas);
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+}
+
+.metric-big {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--color-lavender-primary);
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.metric-label {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+
+@media (max-width: 640px) {
+  .lifestyle-narrative-section {
+    padding-block: 50px;
+  }
+
+  .transformation-col {
+    padding: 24px 18px;
+  }
+
+  .trans-title {
+    font-size: 1.35rem;
+    margin-bottom: 16px;
+  }
+
+  .texture-col {
+    min-height: 240px;
+  }
+
+  .texture-overlay {
+    padding: 18px;
+  }
+}
+
+@media (max-width: 420px) {
+  .trans-metrics-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .metric-big {
+    font-size: 1.6rem;
+  }
+}

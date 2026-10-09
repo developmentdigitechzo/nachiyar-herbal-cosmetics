@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Confirmation | Nachiyar Herbals & Cosmetics</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .order-status-card {
+      max-width: 680px;
+      margin: 60px auto 100px;
+      background-color: var(--color-surface);
+      border-radius: 24px;
+      padding: 48px;
+      text-align: center;
+      border: 1px solid var(--color-border);
+      box-shadow: var(--shadow-md);
+    }
+    .success-icon {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: var(--gold-gradient);
+      color: #1A1121;
+      font-size: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      box-shadow: var(--gold-glow);
+    }
+    .order-meta-box {
+      background-color: var(--color-canvas);
+      border-radius: 14px;
+      padding: 20px;
+      margin-block: 24px;
+      text-align: left;
+    }
+    @media (max-width: 640px) {
+      .order-status-card {
+        padding: 28px 18px;
+        margin: 30px auto 60px;
+        border-radius: 18px;
+      }
+      .section-heading {
+        font-size: 1.5rem !important;
+      }
+      .order-status-btn-group {
+        flex-direction: column !important;
+        gap: 10px !important;
+      }
+      .order-status-btn-group a {
+        width: 100% !important;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body class="page-body">
+
+  <header class="site-header">
+    <div class="header-container">
+      <a href="/" class="brand-link">
+        <div class="brand-crest">
+          <img src="assets/nachiyar-logo.png" alt="Nachiyar Logo" class="brand-logo-img">
+        </div>
+        <div class="brand-text-lockup">
+          <span class="brand-name">NACHIYAR</span>
+          <span class="brand-sub">HERBALS & COSMETICS</span>
+        </div>
+      </a>
+      <a href="shop.html" class="nav-link">Shop More</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="section-container">
+      <div class="order-status-card">
+        <div class="success-icon">✓</div>
+        <span class="section-eyebrow">ORDER CONFIRMED</span>
+        <h1 class="section-heading" style="font-size:2.25rem;">Thank You For Choosing Royal Botanical Care</h1>
+        <p class="section-subtext" style="margin-inline:auto;">
+          Your order has been placed successfully and synchronized with our central inventory. Our master herbalists are preparing your fresh batch.
+        </p>
+
+        <div class="order-meta-box" id="orderMetaBox">
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--color-border); padding-bottom:12px; margin-bottom:14px; flex-wrap:wrap; gap:8px;">
+            <div>
+              <span style="font-size:0.75rem; color:var(--color-text-muted); text-transform:uppercase; letter-spacing:0.05em;">Order Reference</span>
+              <p style="font-size:1.15rem; font-weight:800; font-family:var(--font-display); margin:0;" id="dispOrderNumber">Loading...</p>
+            </div>
+            <div id="dispPaymentBadge">
+              <span style="background:#EBF8F2; color:#0D7A46; font-size:0.75rem; font-weight:700; padding:6px 12px; border-radius:20px; border:1px solid #B8EAD1;">
+                ✓ Order Confirmed
+              </span>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:14px;" id="orderSummaryGrid">
+            <div>
+              <span style="font-size:0.75rem; color:var(--color-text-muted);">Payment Mode</span>
+              <p style="font-weight:700; margin:2px 0 0;" id="dispPaymentMethod">Cash on Delivery (COD)</p>
+            </div>
+            <div>
+              <span style="font-size:0.75rem; color:var(--color-text-muted);">Payment Status</span>
+              <p style="font-weight:700; margin:2px 0 0;" id="dispPaymentStatus">Pending on Delivery</p>
+            </div>
+            <div>
+              <span style="font-size:0.75rem; color:var(--color-text-muted);">Delivery Recipient</span>
+              <p style="font-weight:600; margin:2px 0 0;" id="dispCustomerName">-</p>
+            </div>
+            <div>
+              <span style="font-size:0.75rem; color:var(--color-text-muted);">Total Payable</span>
+              <p style="font-weight:800; color:var(--color-lavender-primary); font-size:1.15rem; margin:2px 0 0;" id="dispTotalAmount">-</p>
+            </div>
+          </div>
+
+          <div id="codNoticeBox" style="display:none; background:#FFFBEB; border:1px solid #FDE68A; border-radius:8px; padding:12px 14px; margin-top:10px; font-size:0.8125rem; color:#92400E;">
+            <strong>💵 Cash on Delivery Note:</strong> Please keep exact cash ready upon delivery. Our express courier executive will collect payment at your doorstep.
+          </div>
+
+          <div style="margin-top:14px; padding-top:12px; border-top:1px dashed var(--color-border); font-size:0.8125rem; color:var(--color-text-muted);">
+            <p style="margin:2px 0;">📦 Estimated Dispatch: <strong>Within 24 Hours via Express Air Courier</strong></p>
+            <p style="margin:2px 0;">📱 Live Updates: Tracking notification sent to your mobile &amp; email</p>
+          </div>
+        </div>
+
+        <div class="order-status-btn-group" style="display:flex; justify-content:center; gap:16px; flex-wrap:wrap;">
+          <a href="/" class="btn btn--primary">Return to Homepage</a>
+          <a href="shop.html" class="btn btn--secondary">Explore More Formulations</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const ordId = params.get('orderId');
+    const ordNum = params.get('orderNumber');
+
+    if (ordNum) {
+      document.getElementById('dispOrderNumber').textContent = ordNum;
+    }
+
+    async function loadOrderDetails() {
+      const queryKey = ordId || ordNum;
+      if (!queryKey) return;
+      try {
+        const res = await fetch(`/api/orders/${encodeURIComponent(queryKey)}`).then(r => r.json());
+        if (res.success && res.data) {
+          const o = res.data;
+          document.getElementById('dispOrderNumber').textContent = o.orderNumber || o.id;
+          document.getElementById('dispPaymentMethod').textContent = o.paymentMethod || 'Online Payment';
+          
+          const isCod = /cod|cash on delivery/i.test(o.paymentMethod || '');
+          const statusText = isCod ? 'Pending (Pay cash on delivery)' : (o.paymentStatus === 'paid' ? 'Paid & Verified' : o.paymentStatus);
+          document.getElementById('dispPaymentStatus').textContent = statusText;
+
+          if (isCod) {
+            document.getElementById('codNoticeBox').style.display = 'block';
+            document.getElementById('dispPaymentBadge').innerHTML = `
+              <span style="background:#FEF3C7; color:#92400E; font-size:0.75rem; font-weight:700; padding:6px 12px; border-radius:20px; border:1px solid #FCD34D;">
+                💵 Cash on Delivery
+              </span>
+            `;
+          } else {
+            document.getElementById('dispPaymentBadge').innerHTML = `
+              <span style="background:#EBF8F2; color:#0D7A46; font-size:0.75rem; font-weight:700; padding:6px 12px; border-radius:20px; border:1px solid #B8EAD1;">
+                ✓ Payment Verified &amp; Paid
+              </span>
+            `;
+          }
+
+          if (o.customer) {
+            const cName = o.customer.fullName || o.customer.name || 'Valued Customer';
+            const cContact = o.customer.phone || o.customer.email || '';
+            document.getElementById('dispCustomerName').textContent = cContact ? `${cName} (${cContact})` : cName;
+          }
+          if (o.total !== undefined) {
+            document.getElementById('dispTotalAmount').textContent = `₹${Number(o.total).toLocaleString('en-IN')}`;
+          }
+        }
+      } catch (e) {
+        console.error('Failed to load order details:', e);
+      }
+    }
+    loadOrderDetails();
+  </script>
+</body>
+</html>

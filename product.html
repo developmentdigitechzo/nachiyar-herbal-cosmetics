@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Details | Nachiyar Herbals & Cosmetics</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="customer-account.css">
+  <style>
+    .pdp-page-container {
+      padding-block: 50px 90px;
+    }
+    .pdp-accordion-group {
+      margin-top: 32px;
+      border-top: 1px solid var(--color-border);
+    }
+    .accordion-item {
+      border-bottom: 1px solid var(--color-border);
+    }
+    .accordion-trigger {
+      width: 100%;
+      text-align: left;
+      padding-block: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--color-text-main);
+      cursor: pointer;
+    }
+    .accordion-content {
+      padding-bottom: 16px;
+      font-size: 0.9375rem;
+      color: var(--color-text-muted);
+      line-height: 1.6;
+      display: none;
+    }
+    .accordion-item.active .accordion-content {
+      display: block;
+    }
+    .variant-pills-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .size-pill {
+      padding: 8px 18px;
+      border-radius: 999px;
+      border: 1.5px solid var(--color-border);
+      background-color: var(--color-surface);
+      font-size: 0.8125rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .size-pill.active {
+      border-color: var(--color-text-main);
+      background-color: var(--color-text-main);
+      color: #FFFFFF;
+    }
+  </style>
+</head>
+<body class="page-body">
+
+  <aside class="announcement-bar">
+    <div class="announcement-ticker">
+      <div class="ticker-track">
+        <span>ROYAL BOTANICAL CARE ✦ FREE PAN-INDIA SHIPPING OVER ₹599</span>
+        <span>•</span>
+        <span>COLD-PRESSED IN SMALL BATCHES ✦ 100% PURE ACTIVE HERBS</span>
+      </div>
+    </div>
+  </aside>
+
+  <header class="site-header">
+    <div class="header-container">
+      <!-- Mobile Menu Trigger -->
+      <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Toggle navigation menu">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+
+      <a href="/" class="brand-link">
+        <div class="brand-crest">
+          <img src="assets/nachiyar-logo.png" alt="Nachiyar Logo" class="brand-logo-img">
+        </div>
+        <div class="brand-text-lockup">
+          <span class="brand-name">NACHIYAR</span>
+          <span class="brand-sub">HERBALS & COSMETICS</span>
+        </div>
+      </a>
+
+      <nav class="desktop-nav">
+        <ul class="nav-links">
+          <li><a href="/" class="nav-link">Home</a></li>
+          <li><a href="shop.html" class="nav-link">Shop All</a></li>
+          <li><a href="about.html" class="nav-link">About Us</a></li>
+          <li><a href="contact.html" class="nav-link">Contact</a></li>
+        </ul>
+      </nav>
+
+      <div class="header-actions">
+        <!-- Customer Account Trigger -->
+        <button class="account-trigger-btn" id="accountTriggerBtn" aria-label="Customer Account">
+          <svg class="user-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          <span class="user-label" id="navAccountLabel">Sign In</span>
+        </button>
+
+        <a href="checkout.html" class="cart-trigger-btn">
+          <span>Bag</span>
+          <span class="cart-count-badge" id="pdpCartBadge">0</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== MOBILE MENU DRAWER ==================== -->
+  <div class="mobile-drawer" id="mobileDrawer">
+    <div class="mobile-drawer-inner">
+      <div class="mobile-drawer-header">
+        <span class="drawer-title">Navigation</span>
+        <button class="drawer-close-btn" id="mobileDrawerClose" aria-label="Close menu">✕</button>
+      </div>
+      <ul class="mobile-nav-list">
+        <li><a href="/" class="mobile-link">Home</a></li>
+        <li><a href="shop.html" class="mobile-link" style="color:var(--color-lavender-primary); font-weight:800;">Shop Rituals (View & Buy) →</a></li>
+        <li><a href="about.html" class="mobile-link">About Us</a></li>
+        <li><a href="contact.html" class="mobile-link">Contact</a></li>
+        <li><a href="account.html" class="mobile-link">My Account & Orders</a></li>
+      </ul>
+      <div class="mobile-drawer-footer">
+        <p class="drawer-support">Customer Concierge: care@nachiyarherbals.com</p>
+      </div>
+    </div>
+  </div>
+
+  <main class="pdp-page-container">
+    <div class="section-container">
+      
+      <div class="pdp-view-header">
+        <span class="pdp-nav-breadcrumb">
+          <a href="/">Home</a> / <a href="shop.html">Formulations</a> / <span id="dynBreadcrumb">Product</span>
+        </span>
+        <span class="pdp-view-badge" id="dynBadge">👑 Royal Botanical Formulated</span>
+      </div>
+
+      <div class="pdp-grid">
+        
+        <!-- Media Gallery -->
+        <div class="pdp-media-card" id="dynMediaCard" style="--pdp-theme-bg: #6B4E9B;">
+          <div class="pdp-card-header-tag">
+            <span id="dynTaglinePill">100% Cold-Pressed</span>
+            <span class="pdp-circle-stat" id="dynMetricBadge">100%<small>PURE</small></span>
+          </div>
+
+          <div class="pdp-main-image-wrap">
+            <img src="assets/new-oil-bottle-card.jpg" alt="Product Packshot" class="pdp-main-image" id="dynMainImg">
+          </div>
+
+          <div class="pdp-gallery-dots" id="dynThumbRow">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+
+        <!-- Details & Purchasing -->
+        <div class="pdp-content-panel">
+          
+          <div class="pdp-review-row">
+            <span class="pdp-stars">★★★★★</span>
+            <span class="pdp-rating-text">(4.9 stars) · 420+ Verified Reviews</span>
+          </div>
+
+          <h1 class="pdp-product-title" id="dynTitle">Loading Product...</h1>
+          <p class="pdp-pack-subtitle" id="dynSubtitle">Authentic Botanical Care</p>
+
+          <div class="pdp-tag-pills" id="dynPills">
+            <!-- Formulation tags -->
+          </div>
+
+          <!-- Size & Variant Selection -->
+          <div class="variant-header-row" style="margin-top:14px; margin-bottom:8px;">
+            <span class="variant-label">Select Volume / Variant:</span>
+            <span class="stock-pulse" id="dynStockStatus">● In Stock — Dispatches in 24h</span>
+          </div>
+          <div class="variant-pills-row" id="dynVariantPills">
+            <!-- Dynamic Variant buttons -->
+          </div>
+
+          <!-- Description -->
+          <p class="pdp-description-copy" id="dynDesc">...</p>
+
+          <!-- Pricing & Checkout -->
+          <div class="pdp-purchase-card">
+            <div class="purchase-option active">
+              <span class="option-text">
+                <strong>Standard Purchase</strong>
+                <span class="option-sub">Free Pan-India Express Delivery over ₹599</span>
+              </span>
+              <span class="option-price" id="dynPrice">₹599</span>
+            </div>
+          </div>
+
+          <!-- Ingredients Quick Verification Strip Before Purchase -->
+          <div class="pdp-ingredients-quick-strip">
+            <div class="quick-strip-left">
+              <div class="quick-strip-avatars" title="17 Sacred Herbal Ingredients">
+                <img src="assets/ingredients/coconut-oil.jpg" alt="Coconut Oil" class="quick-strip-thumb">
+                <img src="assets/ingredients/hibiscus-flower.jpg" alt="Hibiscus Flower" class="quick-strip-thumb">
+                <img src="assets/ingredients/fenugreek.jpg" alt="Fenugreek" class="quick-strip-thumb">
+                <img src="assets/ingredients/aloe-vera.jpg" alt="Aloe Vera" class="quick-strip-thumb">
+                <img src="assets/ingredients/neem-leaves.jpg" alt="Neem Leaves" class="quick-strip-thumb">
+              </div>
+              <span class="quick-strip-text">🌿 18 Pure Active Botanicals</span>
+            </div>
+            <a href="#pdpIngredientsSection" class="quick-strip-btn">View All 18 Ingredients ↓</a>
+          </div>
+
+          <div class="pdp-actions-row">
+            <div class="quantity-stepper">
+              <button class="qty-btn" id="qtyMinusBtn">−</button>
+              <input type="number" id="qtyField" value="1" min="1" max="10" readonly>
+              <button class="qty-btn" id="qtyPlusBtn">+</button>
+            </div>
+
+            <button class="btn-pdp-add-to-cart" id="dynAddToCartBtn">
+              <span class="btn-text" id="dynBtnLabel">Add To Bag</span>
+            </button>
+          </div>
+
+          <div class="pdp-guarantee-row">
+            <span>🛡️ 30-Day Royal Quality Guarantee</span>
+            <span>•</span>
+            <span>🔒 100% Encrypted Checkout</span>
+          </div>
+
+          <!-- Accordion Details -->
+          <div class="pdp-accordion-group">
+            <div class="accordion-item active">
+              <button class="accordion-trigger">Sacred Botanical Ingredients (18 Active Herbs) <span>▾</span></button>
+              <div class="accordion-content" id="dynIngredients">
+                <p id="dynCustomIngredientsSummary" style="margin-bottom: 12px; font-weight: 600; color: #271434;">100% Full Disclosure Formulation — 21-Day Solar Steeping with 18 Botanicals:</p>
+                <div style="font-size: 0.8125rem; line-height: 1.7; color: #4A3E50;">
+                  • <strong>Cold-Pressed Oils &amp; Base:</strong> Coconut Oil (Pure Virgin Cold-Pressed)<br>
+                  • <strong>Sacred Floral Nectars:</strong> Hibiscus Flower (Fresh Crimson Petals), Damask Rose Flower (Toning Floral Essence), Rose Root (Adaptogenic Flavonoids)<br>
+                  • <strong>Active Therapeutic Foliage:</strong> Neem Leaves (Antiseptic Bioactives), Curry Leaves (Melanin Pigmentation), Hibiscus Leaf (Natural Plant Saponins), Aavarai Leaf (Golden Luster Extract), Datura Leaf (Follicular Retention), Marikozhundhu (Sacred Davana Essence), Moringa Leaf (Phytonutrient Superleaf)<br>
+                  • <strong>Herbal Seeds &amp; Roots:</strong> Fenugreek Seeds (Natural Lecithin), Neem Seed (Cold-Pressed Azadirachtin), Vetiver Root (Cooling Khus Fibers), Tulsi Seed (Eugenol Microcirculation), Bhringraj (King of Hair Herbs)<br>
+                  • <strong>Cellular Botanical Hydrators:</strong> Aloe Vera (Pure Succulent Gel), Banana Stem (Cellular Potassium &amp; Electrolytes)
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <button class="accordion-trigger">How To Apply & Ritual Steps <span>▾</span></button>
+              <div class="accordion-content" id="dynHowToUse">
+                Dispense onto scalp partings and massage gently for 5 minutes.
+              </div>
+            </div>
+            <div class="accordion-item">
+              <button class="accordion-trigger">Clinical Efficacy & Clean Standards <span>▾</span></button>
+              <div class="accordion-content">
+                100% active botanicals. Zero mineral oils, liquid paraffin, synthetic silicones, sulfates, parabens, or artificial colors. Dermatologically tested.
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ==================== DEDICATED FULL INGREDIENTS SECTION (BEFORE PURCHASE VERIFICATION) ==================== -->
+      <section class="pdp-full-ingredients-section" id="pdpIngredientsSection">
+        <div class="section-header text-center">
+          <span class="section-eyebrow">100% INGREDIENT TRANSPARENCY</span>
+          <h2 class="section-heading">Formulated with 18 Sacred Earth-Born Botanicals</h2>
+          <p class="section-subtext">
+            We reveal every single herb, flower, seed, and root inside our apothecary bottles. Zero hidden fillers, zero chemical additives.
+          </p>
+        </div>
+
+        <div class="pdp-ingredients-grid">
+          
+          <!-- 1. Coconut Oil -->
+          <div class="pdp-ingredient-tile">
+            <div class="pdp-ing-avatar-wrap">
+              <img src="assets/ingredients/coconut-oil.jpg" alt="Coconut Oil" loading="lazy">
+            </div>
+            <div class="pdp-ing-content">
+              <h4 class="pdp-ing-name">Coconut Oil</h4>
+              <span class="pdp-ing-benefit" style="font-weight:700; color:#7C4D9F; display:block; margin-bottom:4px;">Cold-Pressed Virgin Base</span>
+              <p class="pdp-ing-benefit">Pure cold-pressed virgin oil penetrates the hair shaft to prevent protein loss and deep-condition scalp tissue.</p>
+            </div>
+          </div>
+
+          <!-- 2. Hibiscus Flower -->
+          <div class="pdp-ingredient-tile">
+            <div class="pdp-ing-avatar-wrap">
+              <img src="assets/ingredients/hibiscus-flower.jpg" alt="Hibiscus Flower" loading="lazy">
+            </div>
+            <div class="pdp-ing-content">
+              <h4 class="pdp-ing-name">Hibiscus Flower</h4>
+              <span class="pdp-ing-benefit" style="font-weight:700; color:#7C4D9F; display:block; margin-bottom:4px;">Fresh Petal Bloom</span>
+              <p class="pdp-ing-benefit">Rich in natural amino acids and vitamin C to awaken dormant hair follicles and stimulate healthy new growth.</p>
+            </div>
+          </div>
+
+          <!-- 3. Fenugreek -->
+          <div class="pdp-ingredient-tile">
+            <div class="pdp-ing-avatar-wrap">
+              <img src="assets/ingredients/fenugreek.jpg" alt="Fenugreek" loading="lazy">
+            </div>
+            <div class="pdp-ing-content">
+              <h4 class="pdp-ing-name">Fenugreek</h4>
+              <span class="pdp-ing-benefit" style="font-weight:700; color:#7C4D9F; display:block; margin-bottom:4px;">Golden Methi Seeds</span>
+              <p class="pdp-ing-benefit">High in natural lecithin, which hydrates strands, conditions roots, and imparts supreme silkiness.</p>
+            </div>
+          </div>
+
+          <!-- 4. Aloe Vera -->
+          <div class="pdp-ingredient-tile">
+            <div class="pdp-ing-avatar-wrap">
+              <img src="assets/ingredients/aloe-vera.jpg" alt="Aloe Vera" loading="lazy">
+            </div>
+            <div class="pdp-ing-content">
+              <h4 class="pdp-ing-name">Aloe Vera</h4>
+              <span class="pdp-ing-benefit" style="font-weight:700; color:#7C4D9F; display:block; margin-bottom:4px;">Succulent Leaf Gel</span>
+              <p class="pdp-ing-benefit">Proteolytic enzymes repair dead skin cells on the scalp, restoring balanced moisture without greasiness.</p>
+            </div>
+          </div>
+
+          <!-- 5. Neem Leaves -->
+          <div class="pdp-ingredient-tile">
+            <div class="pdp-ing-avatar-wrap">
+              <img src="assets/ingredients/neem-leaves.jpg" alt="Neem Leaves" loading="lazy">
+            </div>
+            <div class="pdp-ing-content">
+              <h4 class="pdp-ing-name">Neem Leaves</h4>
+              <span class="pdp-ing-benefit" style="font-weight:700; color:#7C4D9F; display:block; margin-bottom:4px;">Medicinal Green Foliage</span>
+              <p class="pdp-ing-benefit">Potent antimicrobial bioactives eradicate dandruff-causing microbes and calm itchy, irritated scalps.</p>
+            </div>
+          </div>
+
+          <!-- 6. Rose Flower -->
+          <div class="pdp-ingredient-tile">
+            <div class="pdp-ing-avatar-wrap">
+              <img src="assets/ingredients/rose-flower.jpg" alt="Rose Flower" loading="lazy">
+            </div>
+            <div class="pdp-ing-content">
+              <h4 class="pdp-ing-name">Rose Flower</h4>
+              <span class="pdp-ing-benefit" style="font-weight:700; color:#7C4D9F; display:block; margin-bottom:4px;">Damask Rose Petals</span>
+              <p class="pdp-ing-benefit">Natural astringent and toning essence balances scalp sebum and infuses an authentic royal fragrance.</p>
+            </div>
+          </div>
+
+          <!-- 7. Curry Leaves -->
+          <div class="pdp-ingredient-tile">
+            <div class="pdp-ing-avatar-wrap">
+              <img src="assets/ingredients/curry-leaves.jpg" alt="Curry Leaves" loading="lazy">
+            </div>
+            <div class="pdp-ing-content">
+              <h4 class="pdp-ing-name">Curry Leaves</h4>
+              <span class="pdp-ing-benefit" style="font-weight:700; color:#7C4D9F; display:block; margin-bottom:4px;">Melanin Bioactives</span>
+              <p class="pdp-ing-benefit">Rich in beta-carotene and antioxidants that nourish roots and preserve natural dark pigmentation.</p>
+            </div>
+          </div>
+
+          <!-- 8. Neem Seed -->
+          <div class="pdp-ingredient-tile">
+            <div class="pdp-ing-avatar-wrap">
+              <img src="assets/ingredients/neem-seed.jpg" alt="Neem Seed" loading="lazy">
+            </div>
+            <div class="pdp-ing-content">
+              <h4 class="pdp-ing-name">Neem Seed</h4>
+              <span class="pdp-ing-benefit" style="font-weight:700; color:#7C4D9F; display:block; margin-bottom:4px;">Cold-Pressed Kernels</span>
+              <p class="pdp-ing-benefit">Concentrated azadirachtin strengthens fragile hair roots and guards against environmental pollutants.</p>
+            </div>
+          </div>
+
+          <!-- 9. Hibiscus Leaf -->
+          <div class="pdp-ingredient-tile">
+            <div class="pdp-ing-avatar-wrap">
+              <img src="assets/ingredients/hibiscus-leaf.jpg" alt="Hibiscus Leaf" loading="lazy">
+            </div>
+            <div class="pdp-ing-content">
+              <h4 class="pdp-ing-name">Hibiscus Leaf</h4>
+              <span class="pdp-ing-benefit" style="font-weight:700; color:#7C4D9F; display:block; margin-bottom:4px;">Natural Plant Saponins</span>
+              <p class="pdp-ing-benefit">Plant mucilage and mild saponins soften hair cuticles and seal in moisture from root to tip.</p>
+            </div>
+          </div>
+
+          <!-- 10. Vetiver -->
+          <div class="pdp-ingredient-tile">
+            <div class="pdp-ing-avatar-wrap">
+              <img src="assets/ingredients/vetiver.jpg" alt="Vetiver" loading="lazy">
+            </div>
+            <div class="pdp-ing-content">
+              <h4 class="pdp-ing-name">Vetiver</h4>
+              <span class="pdp-ing-benefit" style="font-weight:700; color:#7C4D9F; display:block; margin-bottom:4px;">Fragrant Khus Roots</span>
+              <p class="pdp-ing-benefit">Revered cooling root that alleviates scalp heat, reduces inflammation, and prevents stress hair fall.</p>
+            </div>
+          </div>
+
+          <!-- 11. Tulsi Seed -->
+          <div class="pdp-ingredient-tile">
+            <div class="pdp-ing-avatar-wrap">
+              <img src="assets/ingredients/tulsi-seed.jpg" alt="Tulsi Seed" loading="lazy">
+            </div>
+            <div class="pdp-ing-content">
+              <h4 class="pdp-ing-name">Tulsi Seed</h4>
+              <span class="pdp-ing-benefit" style="font-weight:700; color:#7C4D9F; display:block; margin-bottom:4px;">Sacred Basil Seeds</span>
+              <p class="pdp-ing-benefit">Antimicrobial eugenol enhances microcirculation in dermal capillaries, delivering oxygen to follicles.</p>
+            </div>
+          </div>
+
+          <!-- 12. Aavarai Leaf -->
+          <div class="pdp-ingredient-tile">
+            <div class="pdp-ing-avatar-wrap">
+              <img src="assets/ingredients/aavarai-leaf.jpg" alt="Aavarai Leaf" loading="lazy">
+            </div>
+            <div class="pdp-ing-content">
+              <h4 class="pdp-ing-name">Aavarai Leaf</h4>
+              <span class="pdp-ing-benefit" style="font-weight:700; color:#7C4D9F; display:block; margin-bottom:4px;">Golden Botanical Foliage</span>
+              <p class="pdp-ing-benefit">Classical herbal remedy revered for imparting natural golden gloss and repairing dryness.</p>
+            </div>
+          </div>
+
+          <!-- 13. Datura Leaf -->
+          <div class="pdp-ingredient-tile">
+            <div class="pdp-ing-avatar-wrap">
+              <img src="assets/ingredients/datura-leaf.jpg" alt="Datura Leaf" loading="lazy">
+            </div>
+            <div class="pdp-ing-content">
+              <h4 class="pdp-ing-name">Datura Leaf</h4>
+              <span class="pdp-ing-benefit" style="font-weight:700; color:#7C4D9F; display:block; margin-bottom:4px;">Classical Root Tonic</span>
+              <p class="pdp-ing-benefit">Traditional solar-steeped leaf extract known to calm scalp tension and reinforce root retention.</p>
+            </div>
+          </div>
+
+          <!-- 14. Marikozhundhu -->
+          <div class="pdp-ingredient-tile">
+            <div class="pdp-ing-avatar-wrap">
+              <img src="assets/ingredients/marikozhundhu.jpg" alt="Marikozhundhu" loading="lazy">
+            </div>
+            <div class="pdp-ing-content">
+              <h4 class="pdp-ing-name">Marikozhundhu</h4>
+              <span class="pdp-ing-benefit" style="font-weight:700; color:#7C4D9F; display:block; margin-bottom:4px;">Sacred Davana Essence</span>
+              <p class="pdp-ing-benefit">Prized aromatic herb with natural antimicrobial bio-compounds that leave an enduring divine aroma.</p>
+            </div>
+          </div>
+
+          <!-- 15. Rose Root -->
+          <div class="pdp-ingredient-tile">
+            <div class="pdp-ing-avatar-wrap">
+              <img src="assets/ingredients/rose-root.jpg" alt="Rose Root" loading="lazy">
+            </div>
+            <div class="pdp-ing-content">
+              <h4 class="pdp-ing-name">Rose Root</h4>
+              <span class="pdp-ing-benefit" style="font-weight:700; color:#7C4D9F; display:block; margin-bottom:4px;">Adaptogenic Tonic</span>
+              <p class="pdp-ing-benefit">Adaptogenic flavonoids protect hair shafts against physical weathering, brushing friction, and heat.</p>
+            </div>
+          </div>
+
+          <!-- 16. Banana Stem -->
+          <div class="pdp-ingredient-tile">
+            <div class="pdp-ing-avatar-wrap">
+              <img src="assets/ingredients/banana-stem.jpg" alt="Banana Stem" loading="lazy">
+            </div>
+            <div class="pdp-ing-content">
+              <h4 class="pdp-ing-name">Banana Stem</h4>
+              <span class="pdp-ing-benefit" style="font-weight:700; color:#7C4D9F; display:block; margin-bottom:4px;">Cellular Plant Electrolytes</span>
+              <p class="pdp-ing-benefit">Rich in cellular potassium and natural plant electrolytes that deeply hydrate dehydrated, brittle hair shafts.</p>
+            </div>
+          </div>
+
+          <!-- 17. Moringa Leaf -->
+          <div class="pdp-ingredient-tile">
+            <div class="pdp-ing-avatar-wrap">
+              <img src="assets/ingredients/moringa-leaf.jpg" alt="Moringa Leaf" loading="lazy">
+            </div>
+            <div class="pdp-ing-content">
+              <h4 class="pdp-ing-name">Moringa Leaf</h4>
+              <span class="pdp-ing-benefit" style="font-weight:700; color:#7C4D9F; display:block; margin-bottom:4px;">Phytonutrient Superleaf</span>
+              <p class="pdp-ing-benefit">Powerhouse of iron, zinc, amino acids, and vitamin A that fortifies keratin structure and revitalizes weak strands.</p>
+            </div>
+          </div>
+
+          <!-- 18. Bhringraj -->
+          <div class="pdp-ingredient-tile">
+            <div class="pdp-ing-avatar-wrap">
+              <img src="assets/ingredients/bhringraj.jpg" alt="Bhringraj" loading="lazy">
+            </div>
+            <div class="pdp-ing-content">
+              <h4 class="pdp-ing-name">Bhringraj</h4>
+              <span class="pdp-ing-benefit" style="font-weight:700; color:#7C4D9F; display:block; margin-bottom:4px;">King of Hair Herbs</span>
+              <p class="pdp-ing-benefit">The revered king of Ayurvedic hair care, famed for activating cellular renewal, slowing thinning, and boosting density.</p>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-legal-bar">
+        <p>© 2026 NACHIYAR HERBALS & COSMETICS. ALL RIGHTS RESERVED.</p>
+        <p class="legal-links"><a href="/">Home</a> • <a href="shop.html">Shop</a> • <a href="contact.html">Contact</a></p>
+      </div>
+    </div>
+  </footer>
+
+  <div class="cart-toast" id="cartToast"></div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const slug = urlParams.get('slug') || 'herbal-hair-oil';
+      const cartBadge = document.getElementById('pdpCartBadge');
+
+      let currentProduct = null;
+      let selectedVariant = null;
+      let qty = 1;
+
+      // Update badge
+      try {
+        const cart = JSON.parse(localStorage.getItem('nachiyar_cart') || '[]');
+        cartBadge.textContent = cart.reduce((s, i) => s + i.qty, 0);
+      } catch (e) {}
+
+      // Fetch product data from API
+      try {
+        const res = await fetch(`/api/products/${slug}`).then(r => r.json());
+        if (res.success) {
+          currentProduct = res.data;
+          renderProductPage(currentProduct);
+        } else {
+          document.getElementById('dynTitle').textContent = 'Product Not Found';
+        }
+      } catch (e) {
+        console.error(e);
+      }
+
+      function renderProductPage(p) {
+        document.title = `${p.name} | Nachiyar Herbals & Cosmetics`;
+        document.getElementById('dynBreadcrumb').textContent = p.name;
+        document.getElementById('dynBadge').textContent = `👑 ${p.badge || 'Royal Formulation'}`;
+        document.getElementById('dynMediaCard').style.setProperty('--pdp-theme-bg', p.themeColor || '#6B4E9B');
+        document.getElementById('dynTaglinePill').textContent = p.tagline || '100% Pure Botanical';
+        document.getElementById('dynMetricBadge').innerHTML = `${p.metricBadge || '100%'}`;
+        document.getElementById('dynMainImg').src = p.images[0];
+        document.getElementById('dynTitle').textContent = p.name;
+        document.getElementById('dynSubtitle').textContent = p.subtitle || '';
+        document.getElementById('dynDesc').textContent = p.description;
+        document.getElementById('dynPrice').textContent = `₹${p.price}`;
+        document.getElementById('dynBtnLabel').textContent = `Add To Bag • ₹${p.price}`;
+        if (p.ingredients && p.ingredients !== 'Cold-pressed oils, fresh botanical extracts.') {
+          const sumEl = document.getElementById('dynCustomIngredientsSummary');
+          if (sumEl) sumEl.textContent = `${p.name}: ${p.ingredients} — 21-Day Solar Steeping with 17 Sacred Earth-Born Botanicals:`;
+        }
+        document.getElementById('dynHowToUse').textContent = p.howToUse || 'Apply gently onto scalp.';
+
+        // Stock status
+        const stockEl = document.getElementById('dynStockStatus');
+        if (p.stock <= 0) {
+          stockEl.innerHTML = '<span style="color:#DC2626;">✕ Currently Out of Stock</span>';
+          document.getElementById('dynAddToCartBtn').disabled = true;
+          document.getElementById('dynAddToCartBtn').style.opacity = '0.5';
+        } else if (p.stock < 15) {
+          stockEl.innerHTML = `<span style="color:#D97706;">⚠️ Low Stock: Only ${p.stock} units remaining!</span>`;
+        } else {
+          stockEl.innerHTML = `<span>● In Stock (${p.stock} units ready) — Dispatches in 24h</span>`;
+        }
+
+        // Tag pills
+        const pillsContainer = document.getElementById('dynPills');
+        pillsContainer.innerHTML = '';
+        (p.benefits || ['100% Pure', 'Cold-Pressed']).forEach(b => {
+          const span = document.createElement('span');
+          span.className = 'tag-pill';
+          span.textContent = b;
+          pillsContainer.appendChild(span);
+        });
+
+        // Variants
+        const variantContainer = document.getElementById('dynVariantPills');
+        variantContainer.innerHTML = '';
+        if (p.variants && p.variants.length) {
+          selectedVariant = p.variants[0];
+          p.variants.forEach((v, idx) => {
+            const btn = document.createElement('button');
+            btn.className = `size-pill ${idx === 0 ? 'active' : ''}`;
+            btn.textContent = `${v.name} (₹${v.price})`;
+            btn.onclick = () => {
+              document.querySelectorAll('.size-pill').forEach(b => b.classList.remove('active'));
+              btn.classList.add('active');
+              selectedVariant = v;
+              document.getElementById('dynPrice').textContent = `₹${v.price}`;
+              document.getElementById('dynBtnLabel').textContent = `Add To Bag • ₹${v.price * qty}`;
+            };
+            variantContainer.appendChild(btn);
+          });
+        }
+
+        // Thumbnails
+        const thumbRow = document.getElementById('dynThumbRow');
+        thumbRow.innerHTML = '';
+        (p.images || []).forEach((imgSrc, i) => {
+          const dot = document.createElement('button');
+          dot.className = `gallery-dot ${i === 0 ? 'active' : ''}`;
+          dot.onclick = () => {
+            document.querySelectorAll('.gallery-dot').forEach(d => d.classList.remove('active'));
+            dot.classList.add('active');
+            document.getElementById('dynMainImg').src = imgSrc;
+          };
+          thumbRow.appendChild(dot);
+        });
+      }
+
+      // Quantity controls
+      document.getElementById('qtyMinusBtn').onclick = () => {
+        if (qty > 1) {
+          qty--;
+          document.getElementById('qtyField').value = qty;
+          updatePriceBtn();
+        }
+      };
+
+      document.getElementById('qtyPlusBtn').onclick = () => {
+        if (qty < 10) {
+          qty++;
+          document.getElementById('qtyField').value = qty;
+          updatePriceBtn();
+        }
+      };
+
+      function updatePriceBtn() {
+        const unit = selectedVariant ? selectedVariant.price : (currentProduct ? currentProduct.price : 599);
+        document.getElementById('dynBtnLabel').textContent = `Add To Bag • ₹${unit * qty}`;
+      }
+
+      // Accordion toggle
+      document.querySelectorAll('.accordion-trigger').forEach(trigger => {
+        trigger.onclick = () => {
+          trigger.parentElement.classList.toggle('active');
+        };
+      });
+
+      // Add To Bag Action
+      document.getElementById('dynAddToCartBtn').onclick = () => {
+        if (!currentProduct) return;
+        const cart = JSON.parse(localStorage.getItem('nachiyar_cart') || '[]');
+        const unitPrice = selectedVariant ? selectedVariant.price : currentProduct.price;
+        const variantName = selectedVariant ? selectedVariant.name : (currentProduct.subtitle || 'Standard Edition');
+
+        const existing = cart.find(i => i.id === currentProduct.id && i.size === variantName);
+        if (existing) {
+          existing.qty += qty;
+        } else {
+          cart.push({
+            id: currentProduct.id,
+            productId: currentProduct.id,
+            name: currentProduct.name,
+            price: unitPrice,
+            img: currentProduct.images[0],
+            size: variantName,
+            qty: qty
+          });
+        }
+
+        localStorage.setItem('nachiyar_cart', JSON.stringify(cart));
+        cartBadge.textContent = cart.reduce((s, i) => s + i.qty, 0);
+
+        const toast = document.getElementById('cartToast');
+        toast.textContent = `Added ${currentProduct.name} (x${qty}) to your Bag!`;
+        toast.classList.add('is-visible');
+        setTimeout(() => toast.classList.remove('is-visible'), 2800);
+      };
+    });
+  </script>
+  <script src="customer-account.js"></script>
+</body>
+</html>
