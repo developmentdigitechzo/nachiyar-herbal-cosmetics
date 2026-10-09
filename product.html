@@ -537,17 +537,123 @@
         cartBadge.textContent = cart.reduce((s, i) => s + i.qty, 0);
       } catch (e) {}
 
-      // Fetch product data from API
+      const DEFAULT_PRODUCTS_MAP = {
+        'herbal-hair-oil': {
+          id: 'prod_oil_01',
+          slug: 'herbal-hair-oil',
+          name: 'Herbal Hair Oil',
+          subtitle: 'Lavender Glass Dropper Bottle • 100% Cold-Pressed',
+          category: 'Hair Care',
+          price: 599,
+          mrp: 699,
+          stock: 80,
+          badge: 'Bestseller',
+          themeColor: '#6B4E9B',
+          tagline: 'Cold-Pressed • 18 Rare Herbs • Root Activating',
+          metricBadge: '100% PURE',
+          images: [
+            'assets/new-oil-bottle-card.jpg',
+            'assets/clinical-oil-pour-hand.jpg',
+            'assets/lifestyle-oil-massage.jpg'
+          ],
+          description: 'Crafted in small batches according to classical Ayurvedic texts. Nachiyar Herbal Hair Oil features deep-steeped cold-pressed oils enriched with Bhringraj, Amla, Brahmi, and delicate lavender blossom essence. Calms scalp inflammation, repairs dry split ends, and delivers noticeable root strength within two weeks of regular application.',
+          benefits: [
+            'Clinically proven hair fall reduction in 14 days',
+            'Soothes irritated, dry scalp with calming lavender aromatherapy',
+            'Deeply bioavailable: absorbs without heavy mineral grease',
+            'Encourages dense follicle growth and strand thickness'
+          ],
+          ingredients: 'Cold-Pressed Black Sesame Oil, Virgin Coconut Oil, Pure French Lavender Oil, Bhringraj, Amla, Brahmi, Hibiscus Blossom, Fenugreek, Rosemary, Jatamansi.',
+          howToUse: 'Dispense 1-2 droppers directly across scalp partings. Gently massage using circular fingertip motions for 5-10 minutes. Leave on for a minimum of 1 hour or overnight before cleansing.',
+          variants: [
+            { id: 'v_oil_100', name: '100ml Travel Edition', price: 349 },
+            { id: 'v_oil_200', name: '200ml Glass Dropper Bottle', price: 599 },
+            { id: 'v_oil_500', name: '500ml Luxury Value Refill', price: 1199 }
+          ]
+        },
+        'hibiscus-flower-shampoo': {
+          id: 'prod_shampoo_02',
+          slug: 'hibiscus-flower-shampoo',
+          name: 'Hibiscus Flower Shampoo',
+          subtitle: 'Crimson Botanical Pump Bottle • Sulfate-Free pH 5.5',
+          category: 'Scalp & Cleansing',
+          price: 549,
+          mrp: 649,
+          stock: 68,
+          badge: 'Customer Favorite',
+          themeColor: '#822234',
+          tagline: 'Sulfate-Free • Fresh Petal Infusion • pH 5.5',
+          metricBadge: 'pH 5.5 BALANCED',
+          images: [
+            'assets/new-shampoo-bottle-card.jpg',
+            'assets/lifestyle-shampoo-lather.jpg',
+            'assets/lifestyle-flowing-hair.jpg'
+          ],
+          description: "Formulated with handpicked South Indian hibiscus blossoms and gentle plant-derived saponins. Gently cleanses without stripping natural oils, enhancing softness, promoting follicle vitality, and restoring hair's natural radiant shine.",
+          benefits: [
+            '0% Sulfates, Silicones, Parabens, or Synthetic Dyes',
+            'pH 5.5 balanced to protect the delicate scalp acid mantle',
+            'Natural hibiscus mucilage locks in moisture and mirrors conditioning shine',
+            'Safe for color-treated, chemically straightened, or sensitive hair'
+          ],
+          ingredients: 'Fresh Hibiscus Petal Extract, Hibiscus Leaf Mucilage, Shikakai Extract, Reetha Infusion, Aloe Vera Gel, Coconut-derived Glucosides, Rosemary Hydrosol.',
+          howToUse: 'Apply 2-3 pumps onto wet scalp and hair. Gently massage lather into roots for 2 minutes. Rinse thoroughly with cool water.',
+          variants: [
+            { id: 'v_shamp_250', name: '250ml Botanical Pump Bottle', price: 549 },
+            { id: 'v_shamp_500', name: '500ml Value Pump', price: 949 }
+          ]
+        },
+        'royal-hair-ritual-duo': {
+          id: 'prod_duo_03',
+          slug: 'royal-hair-ritual-duo',
+          name: 'The Royal Hair Ritual (Duo Set)',
+          subtitle: 'Complete 2-Step Routine | Oil 200ml + Shampoo 250ml',
+          category: 'Ritual Sets',
+          price: 999,
+          mrp: 1148,
+          stock: 50,
+          badge: 'Best Value Set',
+          themeColor: '#271434',
+          tagline: 'Complete 2-Step Routine • Save 15%',
+          metricBadge: '15% OFF',
+          images: [
+            'assets/duo-ritual-new.jpg',
+            'assets/new-oil-bottle-card.jpg',
+            'assets/new-shampoo-bottle-card.jpg'
+          ],
+          description: 'The complete Ayurvedic scalp rejuvenation experience. Step 1: Pre-wash deep follicular nourishment with the Lavender Herbal Hair Oil. Step 2: Gentle balancing wash with the Hibiscus Flower Shampoo.',
+          benefits: [
+            'Comprehensive 2-step synergistic care system',
+            'Save ₹149 instantly over buying individually',
+            'Includes complimentary gold-embroidered silk travel pouch',
+            'Guaranteed complimentary express Pan-India shipping'
+          ],
+          ingredients: 'Includes both 100% active formulations: Lavender Herbal Hair Oil (200ml) & Hibiscus Flower Shampoo (250ml).',
+          howToUse: 'Pre-wash scalp massage with Lavender Oil. Leave on for 1 hour or overnight. Wash thoroughly with Hibiscus Flower Shampoo.',
+          variants: [
+            { id: 'v_duo_standard', name: 'Standard Duo (Oil 200ml + Shampoo 250ml)', price: 999 },
+            { id: 'v_duo_luxury', name: 'Deluxe Duo (Oil 500ml + Shampoo 500ml)', price: 1999 }
+          ]
+        }
+      };
+
+      // Fetch product data from API or use default product map
       try {
         const res = await fetch(`/api/products/${slug}`).then(r => r.json());
-        if (res.success) {
+        if (res && res.success && res.data) {
           currentProduct = res.data;
-          renderProductPage(currentProduct);
         } else {
-          document.getElementById('dynTitle').textContent = 'Product Not Found';
+          currentProduct = DEFAULT_PRODUCTS_MAP[slug] || DEFAULT_PRODUCTS_MAP['herbal-hair-oil'];
         }
       } catch (e) {
-        console.error(e);
+        console.warn('API unavailable, rendering product from default map:', e);
+        currentProduct = DEFAULT_PRODUCTS_MAP[slug] || DEFAULT_PRODUCTS_MAP['herbal-hair-oil'];
+      }
+
+      if (currentProduct) {
+        renderProductPage(currentProduct);
+      } else {
+        document.getElementById('dynTitle').textContent = 'Product Not Found';
       }
 
       function renderProductPage(p) {

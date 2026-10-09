@@ -172,16 +172,80 @@
         cartCountBadge.textContent = cart.reduce((s, i) => s + i.qty, 0);
       } catch (e) {}
 
-      // Fetch products from live backend API
+      const DEFAULT_PRODUCTS = [
+        {
+          id: 'prod_oil_01',
+          slug: 'herbal-hair-oil',
+          name: 'Herbal Hair Oil',
+          subtitle: 'Lavender Glass Dropper Bottle • 100% Cold-Pressed',
+          category: 'Hair Care',
+          price: 599,
+          mrp: 699,
+          images: [
+            'assets/new-oil-bottle-card.jpg',
+            'assets/clinical-oil-pour-hand.jpg',
+            'assets/lifestyle-oil-massage.jpg'
+          ],
+          themeColor: '#6B4E9B',
+          tagline: 'Cold-Pressed • 18 Rare Herbs • Root Activating',
+          metricBadge: '100% PURE',
+          shortDescription: 'Traditional 21-day solar-infused oil in pure lavender essence to stimulate roots and banish hair fall.',
+          description: 'Crafted in small batches according to classical Ayurvedic texts. Enriched with Bhringraj, Amla, Brahmi, and lavender blossom essence.'
+        },
+        {
+          id: 'prod_shampoo_02',
+          slug: 'hibiscus-flower-shampoo',
+          name: 'Hibiscus Flower Shampoo',
+          subtitle: 'Crimson Botanical Pump Bottle • Sulfate-Free pH 5.5',
+          category: 'Scalp & Cleansing',
+          price: 549,
+          mrp: 649,
+          images: [
+            'assets/new-shampoo-bottle-card.jpg',
+            'assets/lifestyle-shampoo-lather.jpg',
+            'assets/lifestyle-flowing-hair.jpg'
+          ],
+          themeColor: '#822234',
+          tagline: 'Sulfate-Free • Fresh Petal Infusion • pH 5.5',
+          metricBadge: 'pH 5.5 BALANCED',
+          shortDescription: 'Petal-rich lather that cleanses without stripping natural moisture, restoring scalp microbiome balance.',
+          description: 'Formulated with handpicked South Indian hibiscus blossoms and gentle plant-derived saponins.'
+        },
+        {
+          id: 'prod_duo_03',
+          slug: 'royal-hair-ritual-duo',
+          name: 'The Royal Hair Ritual (Duo Set)',
+          subtitle: 'Complete 2-Step Routine | Oil 200ml + Shampoo 250ml',
+          category: 'Ritual Sets',
+          price: 999,
+          mrp: 1148,
+          images: [
+            'assets/duo-ritual-new.jpg',
+            'assets/hero-bottle-oil.png',
+            'assets/hero-bottle-shampoo.png'
+          ],
+          themeColor: '#271434',
+          tagline: 'Complete 2-Step Routine • Save 15%',
+          metricBadge: '15% OFF',
+          shortDescription: 'The ultimate Ayurvedic duo: Pre-wash deep oil nourishment + restorative gentle petal cleansing.',
+          description: 'The complete Ayurvedic scalp rejuvenation experience. Step 1: Pre-wash deep follicular nourishment with Lavender Herbal Hair Oil. Step 2: Gentle balancing wash with Hibiscus Flower Shampoo.'
+        }
+      ];
+
+      // Fetch products from live backend API or use default products
       try {
         const res = await fetch('/api/products').then(r => r.json());
-        if (res.success) {
+        if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
           allProducts = res.data;
-          renderCatalog('all');
+        } else {
+          allProducts = DEFAULT_PRODUCTS;
         }
       } catch (e) {
-        console.error(e);
+        console.warn('API unavailable, rendering catalog from default catalog:', e);
+        allProducts = DEFAULT_PRODUCTS;
       }
+
+      renderCatalog('all');
 
       function renderCatalog(filter) {
         catalogGrid.innerHTML = '';
