@@ -1119,8 +1119,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // ==========================================
   function initMobileHeroScroll() {
     const showcase = document.getElementById('mobileHeroShowcase');
-    const track = document.getElementById('mHeroScrollTrack');
-    if (!showcase || !track) return null;
+    if (!showcase) return null;
 
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       return null;
@@ -1136,97 +1135,35 @@ document.addEventListener('DOMContentLoaded', async () => {
     const stageDesc = showcase.querySelector('.m-hero-stage--desc');
     const stageCta = showcase.querySelector('.m-hero-stage--cta');
 
-    // Stage 1: Heading entrance on load / hero enter
-    const headingTimer = setTimeout(() => {
-      if (stageHeading) stageHeading.classList.add('is-revealed');
-    }, 120);
+    // Smooth, fast cascading entrance (no 2-second lag)
+    const timers = [];
+    timers.push(setTimeout(() => { if (stageHeading) stageHeading.classList.add('is-revealed'); }, 40));
+    timers.push(setTimeout(() => { if (stageOil) stageOil.classList.add('is-revealed'); }, 140));
+    timers.push(setTimeout(() => { if (stageShampoo) stageShampoo.classList.add('is-revealed'); }, 240));
+    timers.push(setTimeout(() => {
+      if (stageBuyOil) stageBuyOil.classList.add('is-revealed');
+      if (stageBuyShampoo) stageBuyShampoo.classList.add('is-revealed');
+    }, 340));
+    timers.push(setTimeout(() => { if (stageDesc) stageDesc.classList.add('is-revealed'); }, 440));
+    timers.push(setTimeout(() => { if (stageCta) stageCta.classList.add('is-revealed'); }, 540));
 
-    // Initial 2-second delay for Stage 2 (Oil) if user does not scroll immediately
-    let initialAutoRevealed = false;
-    const initialRevealTimer = setTimeout(() => {
-      if (stageOil && !stageOil.classList.contains('is-revealed')) {
-        stageOil.classList.add('is-revealed');
-        initialAutoRevealed = true;
+    // Instant reveal on scroll touch
+    function onFastScroll() {
+      const scrollY = window.scrollY || window.pageYOffset;
+      if (scrollY > 10) {
+        if (stageHeading) stageHeading.classList.add('is-revealed');
+        if (stageOil) stageOil.classList.add('is-revealed');
+        if (stageShampoo) stageShampoo.classList.add('is-revealed');
+        if (stageBuyOil) stageBuyOil.classList.add('is-revealed');
+        if (stageBuyShampoo) stageBuyShampoo.classList.add('is-revealed');
       }
-    }, 2000);
-
-    let ticking = false;
-
-    function evaluateScrollProgress() {
-      const rect = track.getBoundingClientRect();
-      const totalScroll = rect.height - window.innerHeight;
-      if (totalScroll <= 0) return;
-
-      const currentScroll = -rect.top;
-      const progress = Math.min(1, Math.max(0, currentScroll / totalScroll));
-
-      // Stage 1: Heading
-      if (stageHeading) {
-        if (progress >= 0) stageHeading.classList.add('is-revealed');
-      }
-
-      // Stage 2: Herbal Hair Oil (Progress >= 0.12 or auto-timer)
-      if (stageOil) {
-        if (progress >= 0.12) {
-          stageOil.classList.add('is-revealed');
-        } else if (progress < 0.08 && !initialAutoRevealed) {
-          stageOil.classList.remove('is-revealed');
-        }
-      }
-
-      // Stage 3: Hibiscus Shampoo (Progress >= 0.28)
-      if (stageShampoo) {
-        if (progress >= 0.28) {
-          stageShampoo.classList.add('is-revealed');
-        } else if (progress < 0.22) {
-          stageShampoo.classList.remove('is-revealed');
-        }
-      }
-
-      // Stage 4: Buy Now Buttons below bottles (Progress >= 0.44)
-      if (stageBuyOil && stageBuyShampoo) {
-        if (progress >= 0.44) {
-          stageBuyOil.classList.add('is-revealed');
-          stageBuyShampoo.classList.add('is-revealed');
-        } else if (progress < 0.38) {
-          stageBuyOil.classList.remove('is-revealed');
-          stageBuyShampoo.classList.remove('is-revealed');
-        }
-      }
-
-      // Stage 5: Description Paragraph (Progress >= 0.60)
-      if (stageDesc) {
-        if (progress >= 0.60) {
-          stageDesc.classList.add('is-revealed');
-        } else if (progress < 0.54) {
-          stageDesc.classList.remove('is-revealed');
-        }
-      }
-
-      // Stage 6: CTA Buttons (Progress >= 0.76)
-      if (stageCta) {
-        if (progress >= 0.76) {
-          stageCta.classList.add('is-revealed');
-        } else if (progress < 0.70) {
-          stageCta.classList.remove('is-revealed');
-        }
-      }
-
-      // Stage 7: Hero Completion (Progress >= 0.90 reaches final resting position,
-      // and natural unpin transitions smoothly into next section)
-
-      ticking = false;
-    }
-
-    function onScrollProgress() {
-      if (!ticking) {
-        requestAnimationFrame(evaluateScrollProgress);
-        ticking = true;
+      if (scrollY > 45) {
+        if (stageDesc) stageDesc.classList.add('is-revealed');
+        if (stageCta) stageCta.classList.add('is-revealed');
       }
     }
 
-    window.addEventListener('scroll', onScrollProgress, { passive: true });
-    evaluateScrollProgress();
+    window.addEventListener('scroll', onFastScroll, { passive: true });
 
     // Direct event binding for mobile Buy Now buttons to guarantee instant checkout integration
     const btnBuyOil = showcase.querySelector('.m-hero-stage--buy-oil .btn-quick-add');
@@ -1263,9 +1200,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Cleanup function when resizing to desktop
     return function cleanup() {
-      clearTimeout(headingTimer);
-      clearTimeout(initialRevealTimer);
-      window.removeEventListener('scroll', onScrollProgress);
+      timers.forEach(t => clearTimeout(t));
+      window.removeEventListener('scroll', onFastScroll);
       showcase.classList.remove('m-hero-animated');
       showcase.querySelectorAll('.m-hero-stage').forEach(stage => {
         stage.classList.remove('is-revealed');
