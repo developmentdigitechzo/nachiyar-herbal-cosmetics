@@ -5282,23 +5282,175 @@ textarea.form-input {
     gap: 8px;
   }
 
-  /* Footer Responsiveness */
-  .footer-grid {
-    grid-template-columns: 1fr !important;
-    gap: 32px !important;
-    text-align: center;
+  /* Comprehensive Footer Mobile Responsiveness */
+  .site-footer {
+    padding-top: 50px;
+    padding-bottom: 30px;
+    overflow-x: hidden;
   }
 
-  .footer-brand {
-    align-items: center;
+  .footer-container {
+    padding-inline: 16px;
+    max-width: 100vw;
+    box-sizing: border-box;
+  }
+
+  .footer-newsletter-row {
+    gap: 20px;
+    padding-bottom: 36px;
+    margin-bottom: 36px;
+  }
+
+  .footer-newsletter-heading {
+    font-size: 1.35rem;
+    line-height: 1.25;
+  }
+
+  .footer-newsletter-sub {
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  .form-input-group {
+    flex-direction: column;
+    border-radius: 14px;
+    background-color: rgba(255, 255, 255, 0.06);
+    padding: 6px;
+    gap: 8px;
+  }
+
+  .form-input-group input {
+    width: 100%;
+    padding: 12px 14px;
+    font-size: 0.9375rem;
+    box-sizing: border-box;
+  }
+
+  .newsletter-submit-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 0.875rem;
+  }
+
+  .form-fineprint {
     text-align: center;
+    padding-left: 0;
+  }
+
+  .footer-nav-grid {
+    grid-template-columns: 1fr !important;
+    gap: 32px !important;
+    margin-bottom: 36px;
+  }
+
+  .footer-col {
+    width: 100%;
+    box-sizing: border-box;
+    text-align: left;
+  }
+
+  .footer-col-title {
+    font-size: 0.9375rem;
+    margin-bottom: 14px;
+  }
+
+  .footer-col-links {
+    gap: 10px;
+  }
+
+  .footer-col-links a {
+    font-size: 0.875rem;
+    display: inline-block;
+    padding-block: 4px;
+  }
+
+  .footer-col--contact {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 24px;
+  }
+
+  .footer-contact-list {
+    gap: 12px;
+  }
+
+  .footer-contact-list li {
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  .footer-contact-list a {
+    word-break: break-word;
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+  }
+
+  .footer-address-item address {
+    word-break: break-word;
+    line-height: 1.5;
+  }
+
+  .footer-social-block {
+    margin-top: 18px;
+    padding-top: 14px;
+  }
+
+  .footer-social-icons {
+    gap: 10px;
+  }
+
+  .footer-social-link {
+    padding: 9px 18px;
+    font-size: 0.8125rem;
+  }
+
+  .brand-col {
+    grid-column: span 1 !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .footer-crest-wrap {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 12px;
+  }
+
+  .footer-brand-bio {
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    margin-bottom: 0;
+  }
+
+  .footer-watermark-row {
+    padding-block: 10px;
+    overflow: hidden;
+  }
+
+  .footer-watermark-text {
+    font-size: clamp(2.5rem, 16vw, 4.5rem);
+    line-height: 1;
+    letter-spacing: 0.06em;
   }
 
   .footer-legal-bar {
     flex-direction: column;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     text-align: center;
+    padding-top: 20px;
+  }
+
+  .legal-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
   }
 }
 
