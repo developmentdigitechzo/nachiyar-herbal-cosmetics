@@ -553,8 +553,18 @@
         </div>
       </div>
 
-      <!-- Continuous Right-to-Left Scrolling Track -->
+      <!-- Continuous Right-to-Left Scrolling Track with Overlay Arrow Controls -->
       <div class="reviews-scroller-viewport" id="reviewsScrollerViewport">
+        <button class="reviews-edge-nav reviews-edge-prev" id="btnPrevReviews" aria-label="Previous Review" title="Previous Review">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+        <button class="reviews-edge-nav reviews-edge-next" id="btnNextReviews" aria-label="Next Review" title="Next Review">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
         <div class="reviews-scroller-track" id="reviewsScrollerTrack">
           <!-- Dynamically populated from /api/reviews -->
         </div>
@@ -1098,12 +1108,42 @@
           </ul>
         </div>
 
+        <!-- Contact & Connect Column (Next to Customer Care) -->
+        <div class="footer-col footer-col--contact">
+          <h4 class="footer-col-title">CONTACT US</h4>
+          <ul class="footer-contact-list">
+            <li>
+              <span class="footer-contact-icon">&#128222;</span>
+              <a href="tel:+919092855565">+91 90928 55565</a>
+            </li>
+            <li>
+              <span class="footer-contact-icon">&#9993;&#65039;</span>
+              <a href="mailto:nachiyarherbals18@gmail.com">nachiyarherbals18@gmail.com</a>
+            </li>
+            <li class="footer-address-item">
+              <span class="footer-contact-icon">&#128205;</span>
+              <address>Plot No-51, Thiyagi Kandhan Servai Nagar, 10th Street, Madakkulam Main Road, Palanganatham, Madurai, Tamil Nadu &ndash; 625003.</address>
+            </li>
+          </ul>
+
+          <div class="footer-social-block">
+            <h4 class="footer-col-title footer-col-title--sm">CONNECT WITH US</h4>
+            <div class="footer-social-icons">
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="footer-social-link footer-social-link--instagram" aria-label="Follow Nachiyar Herbals on Instagram">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                <span>Instagram</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Brand Information Column -->
         <div class="footer-col brand-col">
           <div class="footer-crest-wrap">
             <img src="assets/nachiyar-logo.png" alt="Nachiyar Logo" class="footer-crest-img">
           </div>
           <p class="footer-brand-bio">
-            Nachiyar Herbals & Cosmetics celebrates the timeless grace of royal personal care. Formulated without synthetic shortcuts. Handcrafted in India.
+            Nachiyar Herbals &amp; Cosmetics celebrates the timeless grace of royal personal care. Formulated without synthetic shortcuts. Handcrafted in India.
           </p>
         </div>
       </div>
