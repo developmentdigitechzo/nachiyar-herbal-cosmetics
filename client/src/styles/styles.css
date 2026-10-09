@@ -2215,9 +2215,16 @@ button {
   margin-bottom: 80px;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 768px) and (max-width: 1024px) {
   .footer-nav-grid {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1025px) {
+  .footer-nav-grid {
+    grid-template-columns: 1.1fr 1.1fr 1.1fr 1.35fr 1.35fr;
+    gap: 36px 28px;
   }
 }
 
@@ -2250,8 +2257,14 @@ button {
   grid-column: span 2;
 }
 
-@media (min-width: 768px) {
-  brand-col {
+@media (min-width: 768px) and (max-width: 1024px) {
+  .brand-col {
+    grid-column: span 3;
+  }
+}
+
+@media (min-width: 1025px) {
+  .brand-col {
     grid-column: span 1;
   }
 }
@@ -2275,7 +2288,107 @@ button {
   font-size: 0.8125rem;
   line-height: 1.6;
   color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 20px;
 }
+
+.footer-col-title--sm {
+  font-size: 0.8125rem;
+  letter-spacing: 0.1em;
+  margin-bottom: 12px;
+}
+
+.footer-contact-block {
+  margin-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 16px;
+}
+
+.footer-contact-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-contact-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.5;
+}
+
+.footer-contact-list a {
+  color: rgba(255, 255, 255, 0.85);
+  transition: color 0.2s ease;
+  word-break: break-all;
+}
+
+.footer-contact-list a:hover {
+  color: var(--color-gold);
+}
+
+.footer-contact-icon {
+  font-size: 0.95rem;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.footer-address-item address {
+  font-style: normal;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.footer-social-block {
+  margin-top: 22px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 16px;
+}
+
+.footer-social-icons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.footer-social-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  transition: all 0.25s ease;
+  text-decoration: none;
+}
+
+.footer-social-link svg {
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.footer-social-link:hover {
+  background: rgba(197, 160, 89, 0.15);
+  border-color: var(--color-gold);
+  color: var(--color-gold);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(197, 160, 89, 0.2);
+}
+
+.footer-social-link:hover svg {
+  transform: scale(1.1);
+}
+
 
 /* Giant Watermark Signature */
 .footer-watermark-row {
@@ -3680,6 +3793,13 @@ button {
   color: var(--color-text-muted);
 }
 
+.reviews-header-action {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
 .btn-comment-review {
   display: inline-flex;
   align-items: center;
@@ -3711,28 +3831,62 @@ button {
   padding-block: 10px 24px;
   mask-image: linear-gradient(to right, transparent 0%, black 4%, black 96%, transparent 100%);
   -webkit-mask-image: linear-gradient(to right, transparent 0%, black 4%, black 96%, transparent 100%);
+  cursor: grab;
+}
+
+/* Small, subtle, minimal arrow buttons positioned directly over the review cards */
+.reviews-edge-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--color-text-main);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0.82;
+  transition: all 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow: 0 3px 12px rgba(26, 17, 33, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
+  pointer-events: auto;
+  user-select: none;
+}
+
+.reviews-edge-nav:hover {
+  opacity: 1;
+  background: #FFFFFF;
+  border-color: var(--color-gold);
+  color: var(--color-lavender-primary);
+  transform: translateY(-50%) scale(1.08);
+  box-shadow: 0 6px 18px rgba(107, 78, 155, 0.2), 0 0 0 2px rgba(212, 175, 55, 0.25);
+}
+
+.reviews-edge-nav:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.reviews-edge-prev {
+  left: 18px;
+}
+
+.reviews-edge-next {
+  right: 18px;
 }
 
 .reviews-scroller-track {
   display: flex;
   gap: 24px;
   width: max-content;
-  animation: scrollReviewsRTL 50s linear infinite;
   will-change: transform;
 }
 
-.reviews-scroller-viewport:hover .reviews-scroller-track {
-  animation-play-state: paused;
-}
-
-@keyframes scrollReviewsRTL {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
-}
 
 /* Review Card Design */
 .review-card {
@@ -3769,20 +3923,51 @@ button {
   gap: 12px;
 }
 
-.review-author-avatar {
-  width: 40px;
-  height: 40px;
+/* ── Review Avatar — Base (initials fallback) */
+.review-avatar {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #7C5AAB 0%, #D4AF37 100%);
-  color: #FFFFFF;
+  /* background/color set per-reviewer via JS inline style */
   font-weight: 800;
   font-size: 0.9375rem;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 2px 6px rgba(124, 90, 171, 0.25);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18), 0 0 0 2px rgba(212, 175, 55, 0.25);
+  user-select: none;
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
 }
+
+.review-card:hover .review-avatar {
+  transform: scale(1.08);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22), 0 0 0 2.5px rgba(212, 175, 55, 0.55);
+}
+
+/* ── Review Avatar — Photo variant */
+.review-avatar--photo {
+  background: #EEE;
+  overflow: hidden;
+  padding: 0;
+}
+
+.review-avatar--photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+}
+
+/* Drag cursor states */
+.reviews-scroller-viewport.is-dragging {
+  cursor: grabbing;
+  user-select: none;
+}
+
+
 
 .review-author-name {
   font-family: var(--font-body);
@@ -4092,6 +4277,22 @@ textarea.form-input {
   .reviews-section-header {
     flex-direction: column;
     align-items: flex-start;
+    gap: 20px;
+  }
+  .reviews-header-action {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  .reviews-edge-nav {
+    width: 34px;
+    height: 34px;
+    opacity: 0.9;
+  }
+  .reviews-edge-prev {
+    left: 8px;
+  }
+  .reviews-edge-next {
+    right: 8px;
   }
   .review-card {
     width: 320px;
@@ -4948,8 +5149,17 @@ textarea.form-input {
     gap: 8px;
   }
 
+  .account-trigger-btn .user-label,
+  .cart-trigger-btn .cart-label {
+    display: none;
+  }
+
+  .account-trigger-btn {
+    padding: 8px 10px;
+  }
+
   .cart-trigger-btn {
-    padding: 7px 12px;
+    padding: 8px 12px;
     font-size: 0.8125rem;
   }
 
@@ -5073,6 +5283,28 @@ textarea.form-input {
     align-items: center;
     gap: 8px;
     text-align: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .herbal-ingredients-section {
+    padding-block: 60px 48px;
+    overflow-x: hidden;
+  }
+  .orbit-stage-wrapper {
+    touch-action: pan-y;
+    overflow: hidden;
+    max-width: 100vw;
+  }
+  .orbit-track {
+    touch-action: pan-y;
+  }
+  .reviews-scroller-viewport {
+    touch-action: pan-y;
+  }
+  .review-card {
+    width: min(340px, calc(100vw - 32px)) !important;
+    min-width: min(300px, calc(100vw - 32px)) !important;
   }
 }
 

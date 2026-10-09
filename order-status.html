@@ -148,43 +148,58 @@
     async function loadOrderDetails() {
       const queryKey = ordId || ordNum;
       if (!queryKey) return;
+      let o = null;
+
       try {
-        const res = await fetch(`/api/orders/${encodeURIComponent(queryKey)}`).then(r => r.json());
-        if (res.success && res.data) {
-          const o = res.data;
-          document.getElementById('dispOrderNumber').textContent = o.orderNumber || o.id;
-          document.getElementById('dispPaymentMethod').textContent = o.paymentMethod || 'Online Payment';
-          
-          const isCod = /cod|cash on delivery/i.test(o.paymentMethod || '');
-          const statusText = isCod ? 'Pending (Pay cash on delivery)' : (o.paymentStatus === 'paid' ? 'Paid & Verified' : o.paymentStatus);
-          document.getElementById('dispPaymentStatus').textContent = statusText;
-
-          if (isCod) {
-            document.getElementById('codNoticeBox').style.display = 'block';
-            document.getElementById('dispPaymentBadge').innerHTML = `
-              <span style="background:#FEF3C7; color:#92400E; font-size:0.75rem; font-weight:700; padding:6px 12px; border-radius:20px; border:1px solid #FCD34D;">
-                💵 Cash on Delivery
-              </span>
-            `;
-          } else {
-            document.getElementById('dispPaymentBadge').innerHTML = `
-              <span style="background:#EBF8F2; color:#0D7A46; font-size:0.75rem; font-weight:700; padding:6px 12px; border-radius:20px; border:1px solid #B8EAD1;">
-                ✓ Payment Verified &amp; Paid
-              </span>
-            `;
-          }
-
-          if (o.customer) {
-            const cName = o.customer.fullName || o.customer.name || 'Valued Customer';
-            const cContact = o.customer.phone || o.customer.email || '';
-            document.getElementById('dispCustomerName').textContent = cContact ? `${cName} (${cContact})` : cName;
-          }
-          if (o.total !== undefined) {
-            document.getElementById('dispTotalAmount').textContent = `₹${Number(o.total).toLocaleString('en-IN')}`;
-          }
+        const res = await fetch(`/api/orders/${encodeURIComponent(queryKey)}`);
+        if (res.ok && res.headers.get('content-type')?.includes('application/json')) {
+          const data = await res.json();
+          if (data.success && data.data) o = data.data;
         }
       } catch (e) {
-        console.error('Failed to load order details:', e);
+        console.warn('API lookup failed, checking local orders cache:', e);
+      }
+
+      // If backend was offline, check localStorage cache
+      if (!o) {
+        try {
+          const storedOrders = JSON.parse(localStorage.getItem('nachiyar_customer_orders') || '[]');
+          o = storedOrders.find(item => item.id === queryKey || item.orderNumber === queryKey) || storedOrders[0];
+        } catch (e) {}
+      }
+
+      if (o) {
+        document.getElementById('dispOrderNumber').textContent = o.orderNumber || o.id;
+        document.getElementById('dispPaymentMethod').textContent = o.paymentMethod || 'Online Payment';
+        
+        const isCod = /cod|cash on delivery/i.test(o.paymentMethod || '');
+        const statusText = isCod ? 'Pending (Pay cash on delivery)' : (o.paymentStatus === 'paid' ? 'Paid & Verified' : (o.paymentStatus || 'Confirmed'));
+        document.getElementById('dispPaymentStatus').textContent = statusText;
+
+        if (isCod) {
+          document.getElementById('codNoticeBox').style.display = 'block';
+          document.getElementById('dispPaymentBadge').innerHTML = `
+            <span style="background:#FEF3C7; color:#92400E; font-size:0.75rem; font-weight:700; padding:6px 12px; border-radius:20px; border:1px solid #FCD34D;">
+              💵 Cash on Delivery
+            </span>
+          `;
+        } else {
+          document.getElementById('dispPaymentBadge').innerHTML = `
+            <span style="background:#EBF8F2; color:#0D7A46; font-size:0.75rem; font-weight:700; padding:6px 12px; border-radius:20px; border:1px solid #B8EAD1;">
+              ✓ Payment Verified &amp; Confirmed
+            </span>
+          `;
+        }
+
+        if (o.customer) {
+          const cName = o.customer.fullName || o.customer.name || 'Valued Customer';
+          const cContact = o.customer.phone || o.customer.email || '';
+          document.getElementById('dispCustomerName').textContent = cContact ? `${cName} (${cContact})` : cName;
+        }
+        const finalAmt = o.total !== undefined ? o.total : (o.pricing?.total || 0);
+        if (finalAmt) {
+          document.getElementById('dispTotalAmount').textContent = `₹${Number(finalAmt).toLocaleString('en-IN')}`;
+        }
       }
     }
     loadOrderDetails();

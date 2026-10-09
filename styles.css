@@ -5149,8 +5149,17 @@ textarea.form-input {
     gap: 8px;
   }
 
+  .account-trigger-btn .user-label,
+  .cart-trigger-btn .cart-label {
+    display: none;
+  }
+
+  .account-trigger-btn {
+    padding: 8px 10px;
+  }
+
   .cart-trigger-btn {
-    padding: 7px 12px;
+    padding: 8px 12px;
     font-size: 0.8125rem;
   }
 
@@ -5274,6 +5283,28 @@ textarea.form-input {
     align-items: center;
     gap: 8px;
     text-align: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .herbal-ingredients-section {
+    padding-block: 60px 48px;
+    overflow-x: hidden;
+  }
+  .orbit-stage-wrapper {
+    touch-action: pan-y;
+    overflow: hidden;
+    max-width: 100vw;
+  }
+  .orbit-track {
+    touch-action: pan-y;
+  }
+  .reviews-scroller-viewport {
+    touch-action: pan-y;
+  }
+  .review-card {
+    width: min(340px, calc(100vw - 32px)) !important;
+    min-width: min(300px, calc(100vw - 32px)) !important;
   }
 }
 
