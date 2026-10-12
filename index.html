@@ -57,6 +57,9 @@
       <!-- Desktop Navigation Menu -->
       <nav class="desktop-nav" aria-label="Main Navigation">
         <ul class="nav-links">
+          <li class="nav-item">
+            <a href="/" class="nav-link" style="color:var(--color-gold-dark); font-weight:700;">Home</a>
+          </li>
           <li class="nav-item has-dropdown nav-item--has-dropdown">
             <a href="shop.html" class="nav-link">Shop Rituals <span class="caret">▾</span></a>
             <!-- Mega-menu Preview -->
@@ -158,6 +161,37 @@
   </div>
 
   <main id="mainContent">
+
+    <!-- ==================== 2.5. FLIPKART/AMAZON STYLE PROMO HERO BANNER ==================== -->
+    <section class="promo-hero-banner" id="promoHeroBanner" style="display: none;">
+      <div class="promo-banner-container">
+        <div class="promo-banner-card">
+          <div class="promo-banner-left">
+            <div class="promo-banner-pill">
+              <span class="promo-sparkle">✨</span>
+              <span id="promoBannerBadge">LIMITED TIME SPECIAL PRIVILEGE</span>
+            </div>
+            <h2 class="promo-banner-title" id="promoBannerTitle">
+              Flat <span class="promo-highlight-pct" id="promoBannerDiscount">15%</span> OFF On Pure Ayurvedic Care
+            </h2>
+            <p class="promo-banner-sub" id="promoBannerSub">
+              Use code <strong class="promo-code-box" id="promoBannerCode">FESTIVE15</strong> at checkout. <span id="promoBannerExpiryText">Valid for a limited period.</span>
+            </p>
+          </div>
+          <div class="promo-banner-right">
+            <div class="promo-coupon-action-box">
+              <span class="promo-code-display" id="promoBannerCodePill">FESTIVE15</span>
+              <button type="button" class="btn-promo-copy" id="btnCopyPromoCoupon" title="Click to copy coupon code">
+                <span id="copyPromoBtnText">📋 Copy Code</span>
+              </button>
+            </div>
+            <a href="shop.html" class="btn-promo-shop">
+              <span>Claim Discount Now →</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
 
     <!-- ==================== 3. HERO SHOWCASE (REDESIGNED: DUAL-FLANKING PRODUCTS) ==================== -->
     <section class="hero-section hero-section--flanking" id="home">
@@ -474,305 +508,6 @@
           </div>
         </div>
 
-      </div>
-    </section>
-
-    <!-- ==================== 6. FEATURED COLLECTION SECTION (Live API Connected) ==================== -->
-    <section class="collection-section" id="collection">
-      <div class="section-container">
-        <div class="section-header">
-          <span class="section-eyebrow">THE FLAGSHIP DUO</span>
-          <h2 class="section-heading">Two Formulations. Zero Compromise.</h2>
-          <p class="section-subtext">Designed to work synergistically as a complete restorative hair care ritual.</p>
-        </div>
-
-        <!-- Product Cards Grid (Modeled after Years Beer's Cards) -->
-        <div class="products-grid" id="dynamicProductsGrid">
-
-          <!-- PRODUCT CARD 1: HERBAL HAIR OIL (Lavender) -->
-          <article class="product-card product-card--oil" id="card-oil" style="--card-bg: #6B4E9B; --card-color: #FAF8FD; --accent-hover: #543980;">
-            <div class="card-inner">
-              <div class="card-top-bar">
-                <span class="pill-tag">Cold-Pressed • 18 Rare Herbs</span>
-                <div class="circle-badge" title="100% Pure Active Plant Infusion">
-                  <span class="badge-number">100%</span>
-                  <span class="badge-unit">PURE</span>
-                </div>
-              </div>
-
-              <div class="card-image-wrap">
-                <img src="assets/new-oil-bottle-card.jpg" alt="Nachiyar Herbal Hair Oil Lavender Dropper Bottle" class="card-product-img" loading="lazy">
-                <a href="product.html?slug=herbal-hair-oil" class="quick-view-badge">View Formulation ↗</a>
-              </div>
-
-              <div class="card-details">
-                <div class="card-meta-row">
-                  <span class="product-category">Ayurvedic Hair & Scalp Vitalizer</span>
-                  <div class="rating-stars">★★★★★ <span class="rating-score">4.9</span></div>
-                </div>
-
-                <h3 class="product-card-title">Herbal Hair Oil</h3>
-                <p class="product-card-subtitle">Lavender Glass Bottle with Precision Dropper • 200ml</p>
-
-                <p class="product-card-desc">
-                  Slow-infused with 18 sacred Ayurvedic herbs including Bhringraj, Amla, Brahmi, and rare lavender flower extracts to deeply nourish roots and stimulate dormant follicles.
-                </p>
-
-                <div class="card-action-bar">
-                  <div class="card-pricing">
-                    <span class="price-current">₹599</span>
-                    <span class="price-mrp">₹699</span>
-                  </div>
-
-                  <button class="btn-quick-add" data-id="prod_oil_01" data-name="Herbal Hair Oil" data-price="599" data-img="assets/new-oil-bottle-card.jpg" data-size="200ml">
-                    <span class="btn-text">Add To Bag</span>
-                    <span class="btn-icon">+</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </article>
-
-          <!-- PRODUCT CARD 2: HIBISCUS FLOWER SHAMPOO (Crimson) -->
-          <article class="product-card product-card--shampoo" id="card-shampoo" style="--card-bg: #822234; --card-color: #FCF4F6; --accent-hover: #691726;">
-            <div class="card-inner">
-              <div class="card-top-bar">
-                <span class="pill-tag">Sulfate-Free • Fresh Petals</span>
-                <div class="circle-badge" title="pH 5.5 Balanced Scalp Care">
-                  <span class="badge-number">pH 5.5</span>
-                  <span class="badge-unit">BALANCED</span>
-                </div>
-              </div>
-
-              <div class="card-image-wrap">
-                <img src="assets/new-shampoo-bottle-card.jpg" alt="Nachiyar Hibiscus Flower Shampoo Crimson Bottle" class="card-product-img" loading="lazy">
-                <a href="product.html?slug=hibiscus-flower-shampoo" class="quick-view-badge">View Formulation ↗</a>
-              </div>
-
-              <div class="card-details">
-                <div class="card-meta-row">
-                  <span class="product-category">Gentle Scalp Cleanser & Shine Wash</span>
-                  <div class="rating-stars">★★★★★ <span class="rating-score">4.8</span></div>
-                </div>
-
-                <h3 class="product-card-title">Hibiscus Flower Shampoo</h3>
-                <p class="product-card-subtitle">Crimson Botanical Pump Bottle • 250ml</p>
-
-                <p class="product-card-desc">
-                  Enriched with freshly picked South Indian hibiscus petals and gentle natural saponins. Cleanses without stripping natural oils, enhancing natural luster and strand resilience.
-                </p>
-
-                <div class="card-action-bar">
-                  <div class="card-pricing">
-                    <span class="price-current">₹549</span>
-                    <span class="price-mrp">₹649</span>
-                  </div>
-
-                  <button class="btn-quick-add" data-id="prod_shampoo_02" data-name="Hibiscus Flower Shampoo" data-price="549" data-img="assets/new-shampoo-bottle-card.jpg" data-size="250ml">
-                    <span class="btn-text">Add To Bag</span>
-                    <span class="btn-icon">+</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </article>
-
-        </div>
-
-        <!-- THE COMPLETE ROYAL HAIR RITUAL BUNDLE (Conversion Booster) -->
-        <div class="bundle-banner" style="--card-bg: #271434; --card-color: #F8F4FA;">
-          <div class="bundle-grid">
-            <div class="bundle-visual">
-              <img src="assets/duo-ritual-new.jpg" alt="The Royal Hair Ritual Duo" class="bundle-img">
-              <span class="bundle-badge">★ BEST VALUE: SAVE ₹149</span>
-            </div>
-            <div class="bundle-content">
-              <span class="bundle-eyebrow">THE SIGNATURE 2-STEP ROUTINE</span>
-              <h3 class="bundle-title">The Royal Hair Ritual (Duo Set)</h3>
-              <p class="bundle-description">
-                Experience full follicular revitalisation. Step 1: Pre-wash deep scalp nourishment with the Lavender Herbal Hair Oil. Step 2: Gentle balancing wash with the Hibiscus Flower Shampoo. Includes custom gold travel pouch.
-              </p>
-              <div class="bundle-features">
-                <span>✔ 1x Lavender Hair Oil (200ml)</span>
-                <span>✔ 1x Hibiscus Shampoo (250ml)</span>
-                <span>✔ Free Pan-India Express Delivery</span>
-              </div>
-              <div class="bundle-cta-row">
-                <div class="bundle-pricing">
-                  <span class="bundle-price-now">₹999</span>
-                  <span class="bundle-price-was">₹1,148</span>
-                  <span class="discount-pill">15% OFF</span>
-                </div>
-                <button class="btn-bundle-add" data-id="prod_duo_03" data-name="The Royal Hair Ritual (Duo Set)" data-price="999" data-img="assets/duo-ritual-new.jpg" data-size="Oil 200ml + Shampoo 250ml">
-                  Add The Ritual to Bag
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- ==================== 6.5 VERIFIED CUSTOMER REVIEWS CONTINUOUS SCROLLING SECTION ==================== -->
-    <section class="reviews-ticker-section" id="customer-reviews-section">
-      <div class="section-container">
-        <div class="reviews-section-header">
-          <div class="reviews-header-info">
-            <span class="section-eyebrow">VERIFIED PATRON EXPERIENCES</span>
-            <h2 class="section-heading">Loved by Royal Patrons</h2>
-            <div class="reviews-aggregate-summary">
-              <div class="stars-gold">★★★★★</div>
-              <span class="aggregate-score" id="reviewsAvgScore">4.9 / 5.0</span>
-              <span class="aggregate-divider">•</span>
-              <span class="aggregate-count" id="reviewsCountText">Based on Verified Customer Reviews</span>
-            </div>
-          </div>
-          <div class="reviews-header-action">
-            <button class="btn btn-comment-review" id="btnOpenReviewModal">
-              <span class="btn-review-icon">✍️</span>
-              <span>Comment Your Review</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Continuous Right-to-Left Scrolling Track with Overlay Arrow Controls -->
-      <div class="reviews-scroller-viewport" id="reviewsScrollerViewport">
-        <button class="reviews-edge-nav reviews-edge-prev" id="btnPrevReviews" aria-label="Previous Review" title="Previous Review">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="15 18 9 12 15 6"></polyline>
-          </svg>
-        </button>
-        <button class="reviews-edge-nav reviews-edge-next" id="btnNextReviews" aria-label="Next Review" title="Next Review">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="9 18 15 12 9 6"></polyline>
-          </svg>
-        </button>
-        <div class="reviews-scroller-track" id="reviewsScrollerTrack">
-          <!-- Dynamically populated from /api/reviews -->
-        </div>
-      </div>
-    </section>
-
-    <!-- ==================== 7. THE SCIENCE & INGREDIENT TRIAD (Years Beer Mirror) ==================== -->
-    <section class="science-section" id="the-science">
-      <div class="section-container">
-        <div class="section-header text-center">
-          <span class="section-eyebrow">OUR BOTANICAL CRAFTSMANSHIP</span>
-          <h2 class="section-heading">Formulated with Reverence</h2>
-          <p class="section-subtext">Every drop respects the sacred balance between traditional Indian apothecary and biological efficacy.</p>
-        </div>
-
-        <div class="triad-grid">
-          
-          <div class="triad-card">
-            <div class="triad-icon-wrap">
-              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                <circle cx="12" cy="12" r="5"></circle>
-                <line x1="12" y1="1" x2="12" y2="3"></line>
-                <line x1="12" y1="21" x2="12" y2="23"></line>
-                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                <line x1="1" y1="12" x2="3" y2="12"></line>
-                <line x1="21" y1="12" x2="23" y2="12"></line>
-                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-              </svg>
-            </div>
-            <h3 class="triad-title">21-Day Solar Steeping</h3>
-            <p class="triad-text">
-              We never apply artificial high-temperature boiling. Our 18 rare herbs undergo slow solar infusion in copper vats over 21 days, safeguarding sensitive therapeutic enzymes and phytonutrients.
-            </p>
-          </div>
-
-          <div class="triad-card">
-            <div class="triad-icon-wrap">
-              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                <path d="M12 2a9 9 0 0 1 9 9c0 4.97-4.03 9-9 9A9 9 0 0 1 3 11a9 9 0 0 1 9-9z"></path>
-                <path d="M12 7v5l3 3"></path>
-              </svg>
-            </div>
-            <h3 class="triad-title">Fresh Petal Extraction</h3>
-            <p class="triad-text">
-              We harvest blooming hibiscus flowers before morning dew dissipates. The petals are crushed fresh rather than dried, yielding rich mucilage, natural alpha-hydroxy acids, and amino acids.
-            </p>
-          </div>
-
-          <div class="triad-card">
-            <div class="triad-icon-wrap">
-              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-              </svg>
-            </div>
-            <h3 class="triad-title">Microbiome-Safe pH 5.5</h3>
-            <p class="triad-text">
-              Harsh commercial shampoos strip the scalp's protective lipid barrier, prompting excess sebum. Our pH 5.5 balanced formula respects follicular microbiota for lifelong calm.
-            </p>
-          </div>
-
-        </div>
-      </div>
-    </section>
-
-    <!-- ==================== 8. EDITORIAL QUOTE / EXPERT BANNER ==================== -->
-    <section class="quote-split-section" id="story">
-      <div class="quote-split-grid">
-        <div class="quote-image-col">
-          <img src="assets/woman-flowing-hair.jpg" alt="Botanical hair wellness" class="quote-bg-img">
-          <div class="quote-img-overlay">
-            <div class="quote-badge">
-              <span>TRADITIONAL APOTHECARY</span>
-            </div>
-          </div>
-        </div>
-        <div class="quote-text-col">
-          <div class="quote-inner">
-            <span class="quote-mark">“</span>
-            <blockquote class="quote-text">
-              Most modern hair products use cheap liquid paraffin mineral oil and synthetic sulfates. Nachiyar’s cold-pressed lavender infusion is purely bioavailable: it absorbs within seconds without stickiness, nourishing follicles at their deepest root level.
-            </blockquote>
-            <div class="quote-author">
-              <strong class="author-name">Dr. Gayatri S. Raman</strong>
-              <span class="author-title">Ayurvedic Trichologist & Hair Wellness Researcher</span>
-            </div>
-            <a href="shop.html" class="btn btn--primary quote-cta">
-              Explore The Apothecary →
-            </a>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ==================== 9. COMMUNITY UGC GALLERY ==================== -->
-    <section class="community-section">
-      <div class="section-container">
-        <div class="community-header">
-          <div class="community-left">
-            <span class="section-eyebrow">OUR BOTANICAL CIRCLE</span>
-            <h3 class="community-handle">@nachiyarherbals</h3>
-          </div>
-          <a href="https://instagram.com" target="_blank" rel="noopener" class="community-follow-btn">Follow On Instagram ↗</a>
-        </div>
-
-        <div class="ugc-tiles-grid">
-          <div class="ugc-tile">
-            <img src="assets/lifestyle-oil-massage.jpg" alt="Woman applying hair oil">
-            <div class="ugc-overlay"><span>View Ritual</span></div>
-          </div>
-          <div class="ugc-tile">
-            <img src="assets/lifestyle-shampoo-lather.jpg" alt="Shampoo lathering moment">
-            <div class="ugc-overlay"><span>View Ritual</span></div>
-          </div>
-          <div class="ugc-tile">
-            <img src="assets/lifestyle-flowing-hair.jpg" alt="Healthy glossy hair in wind">
-            <div class="ugc-overlay"><span>View Results</span></div>
-          </div>
-          <div class="ugc-tile">
-            <img src="assets/lifestyle-botanical-herbs.jpg" alt="Pure golden oil texture">
-            <div class="ugc-overlay"><span>Pure Extract</span></div>
-          </div>
-        </div>
       </div>
     </section>
 
@@ -1133,7 +868,306 @@
       </div> <!-- end .orbit-stage-wrapper -->
     </section>
 
-  </main>
+    <!-- ==================== 6. FEATURED COLLECTION SECTION (Live API Connected) ==================== -->
+    <section class="collection-section" id="collection">
+      <div class="section-container">
+        <div class="section-header">
+          <span class="section-eyebrow">THE FLAGSHIP DUO</span>
+          <h2 class="section-heading">Two Formulations. Zero Compromise.</h2>
+          <p class="section-subtext">Designed to work synergistically as a complete restorative hair care ritual.</p>
+        </div>
+
+        <!-- Product Cards Grid (Modeled after Years Beer's Cards) -->
+        <div class="products-grid" id="dynamicProductsGrid">
+
+          <!-- PRODUCT CARD 1: HERBAL HAIR OIL (Lavender) -->
+          <article class="product-card product-card--oil" id="card-oil" style="--card-bg: #6B4E9B; --card-color: #FAF8FD; --accent-hover: #543980;">
+            <div class="card-inner">
+              <div class="card-top-bar">
+                <span class="pill-tag">Cold-Pressed • 18 Rare Herbs</span>
+                <div class="circle-badge" title="100% Pure Active Plant Infusion">
+                  <span class="badge-number">100%</span>
+                  <span class="badge-unit">PURE</span>
+                </div>
+              </div>
+
+              <div class="card-image-wrap">
+                <img src="assets/new-oil-bottle-card.jpg" alt="Nachiyar Herbal Hair Oil Lavender Dropper Bottle" class="card-product-img" loading="lazy">
+                <a href="product.html?slug=herbal-hair-oil" class="quick-view-badge">View Formulation ↗</a>
+              </div>
+
+              <div class="card-details">
+                <div class="card-meta-row">
+                  <span class="product-category">Ayurvedic Hair & Scalp Vitalizer</span>
+                  <div class="rating-stars">★★★★★ <span class="rating-score">4.9</span></div>
+                </div>
+
+                <h3 class="product-card-title">Herbal Hair Oil</h3>
+                <p class="product-card-subtitle">Lavender Glass Bottle with Precision Dropper • 200ml</p>
+
+                <p class="product-card-desc">
+                  Slow-infused with 18 sacred Ayurvedic herbs including Bhringraj, Amla, Brahmi, and rare lavender flower extracts to deeply nourish roots and stimulate dormant follicles.
+                </p>
+
+                <div class="card-action-bar">
+                  <div class="card-pricing">
+                    <span class="price-current">₹599</span>
+                    <span class="price-mrp">₹699</span>
+                  </div>
+
+                  <button class="btn-quick-add" data-id="prod_oil_01" data-name="Herbal Hair Oil" data-price="599" data-img="assets/new-oil-bottle-card.jpg" data-size="200ml">
+                    <span class="btn-text">Add To Bag</span>
+                    <span class="btn-icon">+</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- PRODUCT CARD 2: HIBISCUS FLOWER SHAMPOO (Crimson) -->
+          <article class="product-card product-card--shampoo" id="card-shampoo" style="--card-bg: #822234; --card-color: #FCF4F6; --accent-hover: #691726;">
+            <div class="card-inner">
+              <div class="card-top-bar">
+                <span class="pill-tag">Sulfate-Free • Fresh Petals</span>
+                <div class="circle-badge" title="pH 5.5 Balanced Scalp Care">
+                  <span class="badge-number">pH 5.5</span>
+                  <span class="badge-unit">BALANCED</span>
+                </div>
+              </div>
+
+              <div class="card-image-wrap">
+                <img src="assets/new-shampoo-bottle-card.jpg" alt="Nachiyar Hibiscus Flower Shampoo Crimson Bottle" class="card-product-img" loading="lazy">
+                <a href="product.html?slug=hibiscus-flower-shampoo" class="quick-view-badge">View Formulation ↗</a>
+              </div>
+
+              <div class="card-details">
+                <div class="card-meta-row">
+                  <span class="product-category">Gentle Scalp Cleanser & Shine Wash</span>
+                  <div class="rating-stars">★★★★★ <span class="rating-score">4.8</span></div>
+                </div>
+
+                <h3 class="product-card-title">Hibiscus Flower Shampoo</h3>
+                <p class="product-card-subtitle">Crimson Botanical Pump Bottle • 250ml</p>
+
+                <p class="product-card-desc">
+                  Enriched with freshly picked South Indian hibiscus petals and gentle natural saponins. Cleanses without stripping natural oils, enhancing natural luster and strand resilience.
+                </p>
+
+                <div class="card-action-bar">
+                  <div class="card-pricing">
+                    <span class="price-current">₹549</span>
+                    <span class="price-mrp">₹649</span>
+                  </div>
+
+                  <button class="btn-quick-add" data-id="prod_shampoo_02" data-name="Hibiscus Flower Shampoo" data-price="549" data-img="assets/new-shampoo-bottle-card.jpg" data-size="250ml">
+                    <span class="btn-text">Add To Bag</span>
+                    <span class="btn-icon">+</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </article>
+
+        </div>
+
+        <!-- THE COMPLETE ROYAL HAIR RITUAL BUNDLE (Conversion Booster) -->
+        <div class="bundle-banner" style="--card-bg: #271434; --card-color: #F8F4FA;">
+          <div class="bundle-grid">
+            <div class="bundle-visual">
+              <img src="assets/duo-ritual-new.jpg" alt="The Royal Hair Ritual Duo" class="bundle-img">
+              <span class="bundle-badge">★ BEST VALUE: SAVE ₹149</span>
+            </div>
+            <div class="bundle-content">
+              <span class="bundle-eyebrow">THE SIGNATURE 2-STEP ROUTINE</span>
+              <h3 class="bundle-title">The Royal Hair Ritual (Duo Set)</h3>
+              <p class="bundle-description">
+                Experience full follicular revitalisation. Step 1: Pre-wash deep scalp nourishment with the Lavender Herbal Hair Oil. Step 2: Gentle balancing wash with the Hibiscus Flower Shampoo. Includes custom gold travel pouch.
+              </p>
+              <div class="bundle-features">
+                <span>✔ 1x Lavender Hair Oil (200ml)</span>
+                <span>✔ 1x Hibiscus Shampoo (250ml)</span>
+                <span>✔ Free Pan-India Express Delivery</span>
+              </div>
+              <div class="bundle-cta-row">
+                <div class="bundle-pricing">
+                  <span class="bundle-price-now">₹999</span>
+                  <span class="bundle-price-was">₹1,148</span>
+                  <span class="discount-pill">15% OFF</span>
+                </div>
+                <button class="btn-bundle-add" data-id="prod_duo_03" data-name="The Royal Hair Ritual (Duo Set)" data-price="999" data-img="assets/duo-ritual-new.jpg" data-size="Oil 200ml + Shampoo 250ml">
+                  Add The Ritual to Bag
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================== 6.5 VERIFIED CUSTOMER REVIEWS CONTINUOUS SCROLLING SECTION ==================== -->
+    <section class="reviews-ticker-section" id="customer-reviews-section">
+      <div class="section-container">
+        <div class="reviews-section-header">
+          <div class="reviews-header-info">
+            <span class="section-eyebrow">VERIFIED PATRON EXPERIENCES</span>
+            <h2 class="section-heading">Loved by Royal Patrons</h2>
+            <div class="reviews-aggregate-summary">
+              <div class="stars-gold">★★★★★</div>
+              <span class="aggregate-score" id="reviewsAvgScore">4.9 / 5.0</span>
+              <span class="aggregate-divider">•</span>
+              <span class="aggregate-count" id="reviewsCountText">Based on Verified Customer Reviews</span>
+            </div>
+          </div>
+          <div class="reviews-header-action">
+            <button class="btn btn-comment-review" id="btnOpenReviewModal">
+              <span class="btn-review-icon">✍️</span>
+              <span>Comment Your Review</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Continuous Right-to-Left Scrolling Track with Overlay Arrow Controls -->
+      <div class="reviews-scroller-viewport" id="reviewsScrollerViewport">
+        <button class="reviews-edge-nav reviews-edge-prev" id="btnPrevReviews" aria-label="Previous Review" title="Previous Review">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+        <button class="reviews-edge-nav reviews-edge-next" id="btnNextReviews" aria-label="Next Review" title="Next Review">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+        <div class="reviews-scroller-track" id="reviewsScrollerTrack">
+          <!-- Dynamically populated from /api/reviews -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 7. THE SCIENCE & INGREDIENT TRIAD (Years Beer Mirror) ==================== -->
+    <section class="science-section" id="the-science">
+      <div class="section-container">
+        <div class="section-header text-center">
+          <span class="section-eyebrow">OUR BOTANICAL CRAFTSMANSHIP</span>
+          <h2 class="section-heading">Formulated with Reverence</h2>
+          <p class="section-subtext">Every drop respects the sacred balance between traditional Indian apothecary and biological efficacy.</p>
+        </div>
+
+        <div class="triad-grid">
+          
+          <div class="triad-card">
+            <div class="triad-icon-wrap">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <circle cx="12" cy="12" r="5"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                <line x1="1" y1="12" x2="3" y2="12"></line>
+                <line x1="21" y1="12" x2="23" y2="12"></line>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+              </svg>
+            </div>
+            <h3 class="triad-title">21-Day Solar Steeping</h3>
+            <p class="triad-text">
+              We never apply artificial high-temperature boiling. Our 18 rare herbs undergo slow solar infusion in copper vats over 21 days, safeguarding sensitive therapeutic enzymes and phytonutrients.
+            </p>
+          </div>
+
+          <div class="triad-card">
+            <div class="triad-icon-wrap">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M12 2a9 9 0 0 1 9 9c0 4.97-4.03 9-9 9A9 9 0 0 1 3 11a9 9 0 0 1 9-9z"></path>
+                <path d="M12 7v5l3 3"></path>
+              </svg>
+            </div>
+            <h3 class="triad-title">Fresh Petal Extraction</h3>
+            <p class="triad-text">
+              We harvest blooming hibiscus flowers before morning dew dissipates. The petals are crushed fresh rather than dried, yielding rich mucilage, natural alpha-hydroxy acids, and amino acids.
+            </p>
+          </div>
+
+          <div class="triad-card">
+            <div class="triad-icon-wrap">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              </svg>
+            </div>
+            <h3 class="triad-title">Microbiome-Safe pH 5.5</h3>
+            <p class="triad-text">
+              Harsh commercial shampoos strip the scalp's protective lipid barrier, prompting excess sebum. Our pH 5.5 balanced formula respects follicular microbiota for lifelong calm.
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 8. EDITORIAL QUOTE / EXPERT BANNER ==================== -->
+    <section class="quote-split-section" id="story">
+      <div class="quote-split-grid">
+        <div class="quote-image-col">
+          <img src="assets/woman-flowing-hair.jpg" alt="Botanical hair wellness" class="quote-bg-img">
+          <div class="quote-img-overlay">
+            <div class="quote-badge">
+              <span>TRADITIONAL APOTHECARY</span>
+            </div>
+          </div>
+        </div>
+        <div class="quote-text-col">
+          <div class="quote-inner">
+            <span class="quote-mark">“</span>
+            <blockquote class="quote-text">
+              Most modern hair products use cheap liquid paraffin mineral oil and synthetic sulfates. Nachiyar’s cold-pressed lavender infusion is purely bioavailable: it absorbs within seconds without stickiness, nourishing follicles at their deepest root level.
+            </blockquote>
+            <div class="quote-author">
+              <strong class="author-name">Dr. Gayatri S. Raman</strong>
+              <span class="author-title">Ayurvedic Trichologist & Hair Wellness Researcher</span>
+            </div>
+            <a href="shop.html" class="btn btn--primary quote-cta">
+              Explore The Apothecary →
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 9. COMMUNITY UGC GALLERY ==================== -->
+    <section class="community-section">
+      <div class="section-container">
+        <div class="community-header">
+          <div class="community-left">
+            <span class="section-eyebrow">OUR BOTANICAL CIRCLE</span>
+            <h3 class="community-handle">@nachiyarherbals</h3>
+          </div>
+          <a href="https://instagram.com" target="_blank" rel="noopener" class="community-follow-btn">Follow On Instagram ↗</a>
+        </div>
+
+        <div class="ugc-tiles-grid">
+          <div class="ugc-tile">
+            <img src="assets/lifestyle-oil-massage.jpg" alt="Woman applying hair oil">
+            <div class="ugc-overlay"><span>View Ritual</span></div>
+          </div>
+          <div class="ugc-tile">
+            <img src="assets/lifestyle-shampoo-lather.jpg" alt="Shampoo lathering moment">
+            <div class="ugc-overlay"><span>View Ritual</span></div>
+          </div>
+          <div class="ugc-tile">
+            <img src="assets/lifestyle-flowing-hair.jpg" alt="Healthy glossy hair in wind">
+            <div class="ugc-overlay"><span>View Results</span></div>
+          </div>
+          <div class="ugc-tile">
+            <img src="assets/lifestyle-botanical-herbs.jpg" alt="Pure golden oil texture">
+            <div class="ugc-overlay"><span>Pure Extract</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+</main>
 
   <!-- ==================== 10. LUXURY FOOTER ==================== -->
   <footer class="site-footer">
@@ -1198,15 +1232,15 @@
           <ul class="footer-contact-list">
             <li>
               <span class="footer-contact-icon">&#128222;</span>
-              <a href="tel:+919092855565">+91 90928 55565</a>
+              <a href="tel:+919444088990" id="footerContactPhone">+91 94440 88990</a>
             </li>
             <li>
               <span class="footer-contact-icon">&#9993;&#65039;</span>
-              <a href="mailto:nachiyarherbals18@gmail.com">nachiyarherbals18@gmail.com</a>
+              <a href="mailto:care@nachiyarherbals.com" id="footerContactEmail">care@nachiyarherbals.com</a>
             </li>
             <li class="footer-address-item">
               <span class="footer-contact-icon">&#128205;</span>
-              <address>Plot No-51, Thiyagi Kandhan Servai Nagar, 10th Street, Madakkulam Main Road, Palanganatham, Madurai, Tamil Nadu &ndash; 625003.</address>
+              <address id="footerContactAddress">Nachiyar Botanical Heritage, No. 18 Temple Ring Road, Madurai, Tamil Nadu &ndash; 625001</address>
             </li>
           </ul>
 

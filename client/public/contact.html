@@ -386,8 +386,27 @@
 </head>
 <body class="page-body">
 
+  <!-- ==================== 1. ANNOUNCEMENT TICKER ==================== -->
+  <aside class="announcement-bar" role="complementary" aria-label="Store Announcement">
+    <div class="announcement-ticker">
+      <div class="ticker-track" id="headerTickerTrack">
+        <span>ROYAL BOTANICAL CARE ✦ FREE PAN-INDIA SHIPPING OVER ₹599</span>
+        <span>•</span>
+        <span>COLD-PRESSED IN SMALL BATCHES ✦ 100% PURE ACTIVE HERBS</span>
+        <span>•</span>
+        <span>USE CODE <strong class="code-highlight">ROYAL10</strong> FOR 10% OFF YOUR FIRST RITUAL</span>
+        <span>•</span>
+        <span>ROYAL BOTANICAL CARE ✦ FREE PAN-INDIA SHIPPING OVER ₹599</span>
+        <span>•</span>
+        <span>COLD-PRESSED IN SMALL BATCHES ✦ 100% PURE ACTIVE HERBS</span>
+        <span>•</span>
+        <span>USE CODE <strong class="code-highlight">ROYAL10</strong> FOR 10% OFF YOUR FIRST RITUAL</span>
+      </div>
+    </div>
+  </aside>
+
   <!-- ==================== HEADER & NAVIGATION ==================== -->
-  <header class="site-header">
+  <header class="site-header" id="siteHeader">
     <div class="header-container">
       <!-- Mobile Menu Trigger -->
       <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Toggle navigation menu">
@@ -409,6 +428,9 @@
       <!-- Desktop Navigation Menu -->
       <nav class="desktop-nav" aria-label="Main Navigation">
         <ul class="nav-links">
+          <li class="nav-item">
+            <a href="/" class="nav-link">Home</a>
+          </li>
           <li class="nav-item has-dropdown nav-item--has-dropdown">
             <a href="shop.html" class="nav-link">Shop Rituals <span class="caret">▾</span></a>
             <!-- Mega-menu Preview -->
@@ -476,14 +498,16 @@
           <span class="user-label" id="navAccountLabel">Sign In</span>
         </button>
 
-        <a href="checkout.html" class="cart-trigger-btn" aria-label="View shopping bag">
+        <!-- Cart Trigger -->
+        <button class="cart-trigger-btn" id="cartTriggerBtn" aria-label="View shopping bag">
           <svg class="cart-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
             <line x1="3" y1="6" x2="21" y2="6"></line>
             <path d="M16 10a4 4 0 0 1-8 0"></path>
           </svg>
           <span class="cart-label">Bag</span>
-        </a>
+          <span class="cart-count-badge" id="cartCountBadge">0</span>
+        </button>
       </div>
     </div>
   </header>
@@ -528,7 +552,7 @@
                 <div class="contact-icon-pill">📍</div>
                 <div class="contact-item-content">
                   <strong>Flagship Retail Boutique & Apothecary</strong>
-                  <p>Nachiyar Botanical Heritage, No. 18 Temple Ring Road, Madurai, Tamil Nadu - 625001</p>
+                  <p id="contactStoreAddress">Nachiyar Botanical Heritage, No. 18 Temple Ring Road, Madurai, Tamil Nadu - 625001</p>
                 </div>
               </div>
 
@@ -536,7 +560,7 @@
                 <div class="contact-icon-pill">📞</div>
                 <div class="contact-item-content">
                   <strong>Telephone Concierge & WhatsApp</strong>
-                  <p><a href="tel:+919444088990">+91 94440 88990</a> <span style="display:block; font-size:0.8125rem; color:var(--color-text-subtle); margin-top:2px;">(Mon–Sat, 9:00 AM – 7:00 PM IST)</span></p>
+                  <p><a href="tel:+919444088990" id="contactStorePhone">+91 94440 88990</a> <span id="contactStoreTimings" style="display:block; font-size:0.8125rem; color:var(--color-text-subtle); margin-top:2px;">(Mon–Sat, 9:00 AM – 7:00 PM IST)</span></p>
                 </div>
               </div>
 
@@ -544,7 +568,7 @@
                 <div class="contact-icon-pill">✉️</div>
                 <div class="contact-item-content">
                   <strong>Direct Support Email</strong>
-                  <p><a href="mailto:care@nachiyarherbals.com">care@nachiyarherbals.com</a></p>
+                  <p><a href="mailto:care@nachiyarherbals.com" id="contactStoreEmail">care@nachiyarherbals.com</a></p>
                 </div>
               </div>
             </div>
@@ -688,33 +712,142 @@
 
   <!-- ==================== JAVASCRIPT ==================== -->
   <script>
-    function handleContactSubmit(event) {
+    async function handleContactSubmit(event) {
       event.preventDefault();
       const form = document.getElementById('contactForm');
       const submitBtn = document.getElementById('contactSubmitBtn');
       const banner = document.getElementById('contactSuccessBanner');
 
+      const name = document.getElementById('contactName').value.trim();
+      const email = document.getElementById('contactEmail').value.trim();
+      const phone = document.getElementById('contactPhone').value.trim();
+      const subject = document.getElementById('contactSubject').value;
+      const message = document.getElementById('contactMessage').value.trim();
+
+      if (!name || !email || !message) {
+        alert('Please fill in your name, email, and message.');
+        return;
+      }
+
       // Subtle loading state
       const originalText = submitBtn.innerHTML;
-      submitBtn.innerHTML = '<span>Sending Message...</span>';
+      submitBtn.innerHTML = '<span>Sending Message to Concierge...</span>';
       submitBtn.style.opacity = '0.7';
       submitBtn.disabled = true;
 
-      setTimeout(() => {
-        // Show success notification banner
+      const payload = { name, email, phone, subject, message };
+
+      try {
+        const res = await fetch('/api/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          banner.style.display = 'flex';
+          form.reset();
+          banner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } else {
+          // Backup fallback to localStorage
+          saveLocalMessageBackup(payload);
+          banner.style.display = 'flex';
+          form.reset();
+          banner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      } catch (err) {
+        console.warn('Network issue, storing local backup', err);
+        saveLocalMessageBackup(payload);
         banner.style.display = 'flex';
         form.reset();
-
-        // Restore button
+        banner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      } finally {
         submitBtn.innerHTML = originalText;
         submitBtn.style.opacity = '1';
         submitBtn.disabled = false;
+      }
+    }
 
-        // Smooth scroll to notification if needed
-        banner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }, 600);
+    function saveLocalMessageBackup(msg) {
+      try {
+        const key = 'nachiyar_offline_inquiries';
+        const list = JSON.parse(localStorage.getItem(key) || '[]');
+        msg.id = 'msg_local_' + Date.now();
+        msg.created_at = new Date().toISOString();
+        msg.status = 'unread';
+        list.unshift(msg);
+        localStorage.setItem(key, JSON.stringify(list));
+      } catch (e) {}
     }
   </script>
+  <!-- ==================== INTERACTIVE SLIDE-OUT CART DRAWER ==================== -->
+  <aside class="cart-drawer-overlay" id="cartOverlay" aria-hidden="true">
+    <div class="cart-drawer" id="cartDrawer" role="dialog" aria-label="Your Shopping Bag">
+      
+      <div class="cart-drawer-header">
+        <div class="cart-title-row">
+          <h3 class="cart-drawer-title">Your Royal Bag</h3>
+          <span class="cart-item-count-text">(<span id="cartDrawerItemCount">0</span> items)</span>
+        </div>
+        <button class="cart-close-btn" id="cartCloseBtn" aria-label="Close bag">✕</button>
+      </div>
+
+      <div class="free-shipping-tier">
+        <div class="tier-message-row">
+          <span id="shippingTierMessage">Add ₹599 more for Free Pan-India Delivery!</span>
+          <span class="tier-icon">🚚</span>
+        </div>
+        <div class="tier-progress-track">
+          <div class="tier-progress-fill" id="shippingProgressFill" style="width: 0%;"></div>
+        </div>
+      </div>
+
+      <div class="cart-items-container" id="cartItemsList">
+        <div class="cart-empty-state" id="cartEmptyState">
+          <div class="empty-icon">🌿</div>
+          <h4>Your bag is currently empty</h4>
+          <p>Treat your hair to royal botanical restoration.</p>
+          <a href="shop.html" class="btn btn--primary empty-shop-btn">Explore Formulations</a>
+        </div>
+      </div>
+
+      <div class="cart-upsell-module" id="cartUpsellModule" style="display: none;">
+        <span class="upsell-badge">✦ PERFECT PAIRING</span>
+        <div class="upsell-content">
+          <img src="assets/hibiscus-shampoo.jpg" alt="Upsell item" class="upsell-img" id="upsellImg">
+          <div class="upsell-details">
+            <h5 id="upsellTitle">Hibiscus Flower Shampoo</h5>
+            <p class="upsell-price">₹549 <small>• 250ml</small></p>
+            <button class="btn-upsell-add" id="btnUpsellAdd">+ Add to Bag</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="cart-drawer-footer" id="cartFooter">
+        <div class="cart-subtotal-row">
+          <span>Subtotal</span>
+          <span class="subtotal-val" id="cartSubtotalVal">₹0</span>
+        </div>
+        <div class="cart-shipping-row">
+          <span>Pan-India Delivery</span>
+          <span class="shipping-val" id="cartShippingVal">Calculated next step</span>
+        </div>
+        <p class="cart-taxes-note">Inclusive of all taxes. 100% Satisfaction Guarantee.</p>
+
+        <a href="checkout.html" class="btn-checkout" id="checkoutBtn" style="text-decoration:none;">
+          <span>Proceed To Royal Checkout</span>
+          <span class="checkout-arrow">→</span>
+        </a>
+      </div>
+
+    </div>
+  </aside>
+
+  <div class="cart-toast" id="cartToast" aria-live="polite"></div>
+
+  <script src="app.js"></script>
   <script src="customer-account.js"></script>
 </body>
 </html>

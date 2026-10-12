@@ -11,11 +11,20 @@ router.get('/public', async (req, res) => {
     res.json({
       success: true,
       data: {
-        announcementText: settings.announcementText,
+        announcementText: settings.announcementText || 'ROYAL BOTANICAL CARE • FREE PAN-INDIA SHIPPING OVER ₹599',
         freeShippingThreshold: settings.freeShippingThreshold || 599,
         paymentMethods: settings.paymentMethods || {},
-        brandName: settings.brandName,
-        supportPhone: settings.supportPhone
+        brandName: settings.brandName || 'Nachiyar Herbals & Cosmetics',
+        gstin: settings.gstin || '33AAACH9876K1Z2',
+        supportPhone: settings.supportPhone || '+91 94440 88990',
+        supportEmail: settings.supportEmail || 'care@nachiyarherbals.com',
+        storeTimings: settings.storeTimings || 'Mon - Sat: 9:30 AM - 8:30 PM',
+        storeAddress: settings.storeAddress || 'Nachiyar Botanical Heritage, No. 18 Temple Ring Road, Madurai, Tamil Nadu - 625001',
+        couponCode: settings.couponCode || 'ROYAL15',
+        discountPercent: Number(settings.discountPercent) || 15,
+        couponExpiryDate: settings.couponExpiryDate || '',
+        couponActive: settings.couponActive !== false && settings.couponActive !== 'false',
+        couponTagline: settings.couponTagline || 'Surprise Royal Privilege Voucher'
       }
     });
   } catch (err) {

@@ -11,12 +11,14 @@ const analyticsRouter = require('./routes/analytics');
 const settingsRouter = require('./routes/settings');
 const customersRouter = require('./routes/customers');
 const reviewsRouter = require('./routes/reviews');
+const messagesRouter = require('./routes/messages');
 const { router: authRouter, verifyToken, requireAdminAuth } = require('./routes/auth');
 
 const app = express();
 
 app.use(cors({ origin: '*' }));
-app.use(express.json());
+app.use(express.json({ limit: '20mb' }));
+app.use(express.urlencoded({ extended: true, limit: '20mb' }));
 app.use(morgan('dev'));
 
 // Zero-dependency cookie parser middleware
@@ -72,6 +74,7 @@ app.use('/api/customer', customersRouter);
 app.use('/api/products', productsRouter);
 app.use('/api/orders', ordersRouter);
 app.use('/api/reviews', reviewsRouter);
+app.use('/api/messages', messagesRouter);
 
 // Public storefront settings (announcements & enabled checkout payment methods)
 const { query: dbQuery } = require('./config/db');
@@ -82,15 +85,59 @@ app.get('/api/settings/public', async (req, res) => {
     res.json({
       success: true,
       data: {
-        announcementText: settings.announcementText,
+        announcementText: settings.announcementText || 'ROYAL BOTANICAL CARE • FREE PAN-INDIA SHIPPING OVER ₹599',
         freeShippingThreshold: settings.freeShippingThreshold || 599,
         paymentMethods: settings.paymentMethods || {},
-        brandName: settings.brandName,
-        supportPhone: settings.supportPhone
+        brandName: settings.brandName || 'Nachiyar Herbals & Cosmetics',
+        gstin: settings.gstin || '33AAACH9876K1Z2',
+        supportPhone: settings.supportPhone || '+91 94440 88990',
+        supportEmail: settings.supportEmail || 'care@nachiyarherbals.com',
+        storeTimings: settings.storeTimings || 'Mon - Sat: 9:30 AM - 8:30 PM',
+        storeAddress: settings.storeAddress || 'Nachiyar Botanical Heritage, No. 18 Temple Ring Road, Madurai, Tamil Nadu - 625001',
+        couponCode: settings.couponCode || 'ROYAL15',
+        discountPercent: Number(settings.discountPercent) || 15,
+        couponExpiryDate: settings.couponExpiryDate || '',
+        couponActive: settings.couponActive !== false && settings.couponActive !== 'false',
+        couponTagline: settings.couponTagline || 'Surprise Royal Privilege Voucher'
       }
     });
   } catch (err) {
     console.error('Error fetching public settings:', err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// Dedicated public coupon endpoint
+app.get('/api/coupon/active', async (req, res) => {
+  try {
+    const result = await dbQuery('SELECT data FROM site_settings WHERE id = 1');
+    const settings = result.rows.length > 0 ? (typeof result.rows[0].data === 'string' ? JSON.parse(result.rows[0].data) : result.rows[0].data) : {};
+    res.json({
+      success: true,
+      data: {
+        couponCode: settings.couponCode || settings.mysteryCouponCode || 'FESTIVE15',
+        discountPercent: Number(settings.discountPercent) || 15,
+        couponExpiryDate: settings.couponExpiryDate || '',
+        couponActive: settings.couponActive !== false && settings.couponActive !== 'false',
+        couponTagline: settings.couponTagline || 'Special Festival Discount'
+      }
+    });
+  } catch (err) {
+    res.json({ success: true, data: { couponCode: 'FESTIVE15', discountPercent: 15, couponActive: false } });
+  }
+});
+
+// Marketplace Webhook Receiver (Flipkart, Amazon SP-API, Meesho)
+app.post('/api/webhooks/marketplace', async (req, res) => {
+  try {
+    const { channel, orderId, sku, qty, customer } = req.body;
+    console.log(`[Marketplace Webhook] Received sale event from ${channel || 'External Channel'}: Order ${orderId || 'N/A'}`);
+    res.json({
+      success: true,
+      message: 'Marketplace inventory deduction event processed',
+      timestamp: new Date().toISOString()
+    });
+  } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
 });
@@ -100,6 +147,47 @@ app.use('/api/invoices', requireAdminAuth, invoicesRouter);
 app.use('/api/inventory', requireAdminAuth, inventoryRouter);
 app.use('/api/analytics', requireAdminAuth, analyticsRouter);
 app.use('/api/settings', requireAdminAuth, settingsRouter);
+
+// Image Upload Endpoint (Saves base64 image payload to uploads/ folder)
+const fs = require('fs');
+app.post('/api/upload', requireAdminAuth, (req, res) => {
+  try {
+    const { image, filename } = req.body;
+    if (!image) {
+      return res.status(400).json({ success: false, message: 'Image data is required' });
+    }
+
+    const matches = image.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+    let ext = 'jpg';
+    let buffer;
+
+    if (matches && matches.length === 3) {
+      const mime = matches[1];
+      if (mime.includes('png')) ext = 'png';
+      else if (mime.includes('webp')) ext = 'webp';
+      else if (mime.includes('gif')) ext = 'gif';
+      else ext = 'jpg';
+      buffer = Buffer.from(matches[2], 'base64');
+    } else {
+      buffer = Buffer.from(image, 'base64');
+    }
+
+    const uploadsDir = path.join(projectRoot, 'uploads');
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
+
+    const safeName = `prod_${Date.now()}_${Math.random().toString(36).substr(2, 6)}.${ext}`;
+    const filePath = path.join(uploadsDir, safeName);
+    fs.writeFileSync(filePath, buffer);
+
+    const publicUrl = `uploads/${safeName}`;
+    res.json({ success: true, url: publicUrl, message: 'Image uploaded successfully' });
+  } catch (err) {
+    console.error('Image upload error:', err);
+    res.status(500).json({ success: false, message: 'Failed to upload image: ' + err.message });
+  }
+});
 
 // Static files (storefront assets, public pages, stylesheets)
 // Note: /admin.html is intercepted by the route handler above

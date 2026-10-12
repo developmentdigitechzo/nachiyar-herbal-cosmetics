@@ -569,15 +569,34 @@ body.admin-body {
 }
 
 .kpi-badge-hint {
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   font-weight: 800;
   color: var(--admin-primary);
   background-color: #F3E8FF;
-  padding: 2px 8px;
+  padding: 3px 10px;
   border-radius: 999px;
   letter-spacing: 0.04em;
-  opacity: 0.85;
-  transition: all 0.2s ease;
+  opacity: 0.9;
+  cursor: pointer;
+  pointer-events: auto;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  box-shadow: 0 1px 2px rgba(124, 90, 171, 0.12);
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.kpi-badge-hint:hover {
+  opacity: 1;
+  background-color: var(--admin-primary);
+  color: #FFFFFF;
+  transform: translateY(-1px) scale(1.06);
+  box-shadow: 0 3px 8px rgba(124, 90, 171, 0.25);
+}
+
+.kpi-badge-hint:active {
+  transform: scale(0.96);
 }
 
 .kpi-card:hover .kpi-badge-hint {
@@ -1184,12 +1203,37 @@ body.admin-body {
   font-size: 0.875rem;
 }
 
-.select-filter {
-  padding: 10px 16px;
+.select-filter,
+.form-select {
+  padding: 10px 36px 10px 14px;
   border-radius: 8px;
-  border: 1px solid var(--admin-border);
+  border: 1.5px solid var(--admin-border, #E2E8F0);
+  background-color: #FFFFFF;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748B'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px 16px;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
   font-family: inherit;
   font-size: 0.875rem;
+  font-weight: 500;
+  color: #1E293B;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  outline: none;
+}
+
+.select-filter:hover,
+.form-select:hover {
+  border-color: #CBD5E1;
+}
+
+.select-filter:focus,
+.form-select:focus {
+  border-color: #7C3AED;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
 }
 
 .table-responsive {
@@ -1459,9 +1503,11 @@ body.admin-body {
   transition: all 0.2s ease;
 }
 
-.modal-overlay.is-active {
-  opacity: 1;
-  visibility: visible;
+.modal-overlay.is-active,
+.modal-overlay.is-visible {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
 }
 
 .modal-box {
@@ -1484,12 +1530,21 @@ body.admin-body {
   max-width: 550px;
 }
 
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .modal-header {
   padding: 20px 24px;
   border-bottom: 1px solid var(--admin-border);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .modal-header h2 {
@@ -1507,6 +1562,10 @@ body.admin-body {
 .modal-body-scroll {
   padding: 24px;
   overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  max-height: calc(90vh - 145px);
+  overscroll-behavior: contain;
 }
 
 .modal-footer {
@@ -1516,6 +1575,7 @@ body.admin-body {
   justify-content: flex-end;
   gap: 12px;
   background-color: #F8FAFC;
+  flex-shrink: 0;
 }
 
 .form-section-title {
@@ -2305,5 +2365,245 @@ body.admin-body {
 .switch-toggle input:checked + .toggle-slider::before {
   transform: translateX(22px);
 }
+
+/* Image Upload Preview and Responsive Modal polish */
+#formProdImagePreview {
+  transition: transform 0.2s ease;
+}
+#formProdImagePreview:hover {
+  transform: scale(1.1);
+}
+
+@media (max-width: 768px) {
+  #custHistoryKpiStrip {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ==========================================================================
+   MARKETPLACE HUB (FLIPKART, AMAZON, MEESHO) STYLES
+   ========================================================================== */
+
+.marketplace-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.marketplace-kpi-card {
+  background: var(--admin-surface);
+  border: 2px solid var(--admin-border);
+  border-radius: 14px;
+  padding: 18px 20px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.marketplace-kpi-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.marketplace-kpi-card.active[data-channel="flipkart"] {
+  border-color: #2874F0;
+  box-shadow: 0 0 0 3px rgba(40, 116, 240, 0.15), 0 8px 20px rgba(40, 116, 240, 0.12);
+  background: linear-gradient(180deg, #FFFFFF 0%, #F5F9FF 100%);
+}
+
+.marketplace-kpi-card.active[data-channel="amazon"] {
+  border-color: #FF9900;
+  box-shadow: 0 0 0 3px rgba(255, 153, 0, 0.18), 0 8px 20px rgba(255, 153, 0, 0.12);
+  background: linear-gradient(180deg, #FFFFFF 0%, #FFFDF8 100%);
+}
+
+.marketplace-kpi-card.active[data-channel="meesho"] {
+  border-color: #E72E77;
+  box-shadow: 0 0 0 3px rgba(231, 46, 119, 0.15), 0 8px 20px rgba(231, 46, 119, 0.12);
+  background: linear-gradient(180deg, #FFFFFF 0%, #FFF8FA 100%);
+}
+
+.mkt-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.mkt-brand-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mkt-brand-badge strong {
+  font-size: 0.9375rem;
+  display: block;
+  color: var(--admin-text-main);
+}
+
+.mkt-brand-badge small {
+  font-size: 0.6875rem;
+  color: var(--admin-text-muted);
+  display: block;
+}
+
+.mkt-logo-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 0.9375rem;
+  color: #FFFFFF;
+}
+
+.fk-bg {
+  background: #2874F0;
+}
+
+.az-bg {
+  background: #131921;
+  color: #FF9900;
+  border: 1px solid #FF9900;
+}
+
+.msh-bg {
+  background: #802058;
+}
+
+.mkt-kpi-val {
+  font-size: 1.625rem;
+  font-weight: 800;
+  color: var(--admin-text-main);
+  letter-spacing: -0.02em;
+  margin-bottom: 4px;
+}
+
+.mkt-kpi-sub {
+  font-size: 0.75rem;
+  color: var(--admin-text-muted);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.mkt-kpi-footer {
+  padding-top: 10px;
+  border-top: 1px dashed var(--admin-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+}
+
+.mkt-switch-label {
+  font-weight: 700;
+  color: var(--admin-primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Channel tabs */
+.marketplace-channel-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.channel-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1.5px solid var(--admin-border);
+  background: var(--admin-surface);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--admin-text-main);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.channel-tab-btn:hover {
+  border-color: #94A3B8;
+  background: #F8FAFC;
+}
+
+.channel-tab-btn.active[data-channel="flipkart"] {
+  background: #2874F0;
+  color: #FFFFFF;
+  border-color: #2874F0;
+  box-shadow: 0 4px 12px rgba(40, 116, 240, 0.25);
+}
+
+.channel-tab-btn.active[data-channel="amazon"] {
+  background: #131921;
+  color: #FF9900;
+  border-color: #FF9900;
+  box-shadow: 0 4px 12px rgba(255, 153, 0, 0.25);
+}
+
+.channel-tab-btn.active[data-channel="meesho"] {
+  background: #802058;
+  color: #FFFFFF;
+  border-color: #802058;
+  box-shadow: 0 4px 12px rgba(128, 32, 88, 0.25);
+}
+
+.channel-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.fk-dot { background: #2874F0; }
+.az-dot { background: #FF9900; }
+.msh-dot { background: #E72E77; }
+
+.channel-tab-btn.active .channel-dot {
+  background: #FFFFFF;
+}
+
+/* Period Stats Strip */
+.period-stats-strip {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.p-stat {
+  display: flex;
+  flex-direction: column;
+}
+
+.p-stat small {
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  color: var(--admin-text-muted);
+  font-weight: 700;
+}
+
+.p-stat strong {
+  font-size: 0.9375rem;
+  color: var(--admin-text-main);
+}
+
+@media (max-width: 900px) {
+  .marketplace-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 
 

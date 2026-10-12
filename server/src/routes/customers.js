@@ -128,17 +128,41 @@ router.get('/orders', async (req, res) => {
   try {
     const email = req.query.email || '';
     const phone = req.query.phone || '';
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const cleanDigits = (phone || '').replace(/\D/g, '').slice(-10);
 
-    if (!email && !phone) {
+    let sql = 'SELECT * FROM orders WHERE 1=0';
+    const params = [];
+
+    if (cleanEmail && cleanDigits) {
+      sql = `
+        SELECT * FROM orders 
+        WHERE LOWER(customer->>'email') = $1 
+           OR REGEXP_REPLACE(customer->>'phone', '\\D', '', 'g') LIKE '%' || $2
+           OR LOWER(customer->>'email') LIKE '%' || $1 || '%'
+        ORDER BY created_at DESC
+      `;
+      params.push(cleanEmail, cleanDigits);
+    } else if (cleanEmail) {
+      sql = `
+        SELECT * FROM orders 
+        WHERE LOWER(customer->>'email') = $1 
+           OR LOWER(customer->>'email') LIKE '%' || $1 || '%'
+        ORDER BY created_at DESC
+      `;
+      params.push(cleanEmail);
+    } else if (cleanDigits) {
+      sql = `
+        SELECT * FROM orders 
+        WHERE REGEXP_REPLACE(customer->>'phone', '\\D', '', 'g') LIKE '%' || $1
+        ORDER BY created_at DESC
+      `;
+      params.push(cleanDigits);
+    } else {
       return res.json({ success: true, data: [] });
     }
 
-    const result = await query(`
-      SELECT * FROM orders 
-      WHERE LOWER(customer->>'email') = $1 
-         OR customer->>'phone' = $2
-      ORDER BY created_at DESC
-    `, [email.toLowerCase(), phone]);
+    const result = await query(sql, params);
 
     const orders = result.rows.map(o => ({
       id: o.id,
@@ -153,6 +177,7 @@ router.get('/orders', async (req, res) => {
       paymentMethod: o.payment_method,
       paymentStatus: o.payment_status,
       status: o.status || 'placed',
+      cancellationDetails: o.cancellation_details ? (typeof o.cancellation_details === 'string' ? JSON.parse(o.cancellation_details) : o.cancellation_details) : null,
       createdAt: o.created_at
     }));
 
@@ -185,9 +210,55 @@ router.get('/orders/:orderNumber', async (req, res) => {
       paymentMethod: o.payment_method,
       paymentStatus: o.payment_status,
       status: o.status || 'placed',
+      cancellationDetails: o.cancellation_details ? (typeof o.cancellation_details === 'string' ? JSON.parse(o.cancellation_details) : o.cancellation_details) : null,
       createdAt: o.created_at
     };
     res.json({ success: true, data: order });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// POST /api/customer/orders/:orderNumber/cancel
+router.post('/orders/:orderNumber/cancel', async (req, res) => {
+  try {
+    const { orderNumber } = req.params;
+    const { reason, comments, refundPreference } = req.body;
+
+    const existing = await query('SELECT * FROM orders WHERE order_number = $1 OR id = $1', [orderNumber]);
+    if (existing.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Order not found' });
+    }
+
+    const currentOrder = existing.rows[0];
+    if (currentOrder.status === 'delivered') {
+      return res.status(400).json({ success: false, message: 'Delivered orders cannot be cancelled.' });
+    }
+    if (currentOrder.status === 'cancelled') {
+      return res.status(400).json({ success: false, message: 'This order is already cancelled.' });
+    }
+
+    const cancellationData = {
+      reason: reason || 'Customer requested cancellation',
+      comments: comments || '',
+      refundPreference: refundPreference || 'original_payment_source',
+      requestedAt: new Date().toISOString(),
+      status: 'pending'
+    };
+
+    const updateRes = await query(`
+      UPDATE orders 
+      SET status = 'cancel_requested',
+          cancellation_details = $1
+      WHERE order_number = $2 OR id = $2
+      RETURNING *
+    `, [JSON.stringify(cancellationData), orderNumber]);
+
+    res.json({
+      success: true,
+      message: 'Cancellation request submitted successfully. Awaiting admin review.',
+      data: updateRes.rows[0]
+    });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }

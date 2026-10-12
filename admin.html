@@ -95,10 +95,22 @@
           <span class="badge-count" id="badgeOrderCount">2</span>
         </button>
 
+        <button class="nav-tab" data-tab="marketplaces" id="tabNavMarketplaces">
+          <span class="nav-icon">🌐</span>
+          <span class="nav-text">Marketplace Hub</span>
+          <span class="badge-count" style="background:#2874F0; color:#fff;" id="badgeMarketplaceActive">3</span>
+        </button>
+
         <button class="nav-tab" data-tab="reviews" id="tabNavReviews">
           <span class="nav-icon">⭐</span>
           <span class="nav-text">Customer Reviews</span>
           <span class="badge-count" id="badgePendingReviews" style="display:none; background-color:#DC2626; color:#fff;">0</span>
+        </button>
+
+        <button class="nav-tab" data-tab="messages" id="tabNavMessages">
+          <span class="nav-icon">📩</span>
+          <span class="nav-text">Customer Inquiries</span>
+          <span class="badge-count" id="badgeUnreadMessages" style="display:none; background-color:#8B5CF6; color:#fff;">0</span>
         </button>
 
         <button class="nav-tab" data-tab="settings" id="tabNavSettings">
@@ -342,6 +354,7 @@
                   <th>Counter POS</th>
                   <th>Total Lifetime Spend</th>
                   <th>Joined Date</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody id="customerAnalyticsTableBody">
@@ -596,18 +609,73 @@
             </div>
 
             <div class="pos-form-group" style="margin-top: 14px;">
-              <label>Payment Mode</label>
+              <label>Payment Mode *</label>
               <select id="posPaymentMode" class="form-input">
-                <option value="UPI (Store QR)">UPI (Google Pay / PhonePe / Paytm)</option>
-                <option value="Cash">Cash at Counter</option>
-                <option value="Card / POS Terminal">Credit / Debit Card Terminal</option>
-                <option value="Bank Transfer">NEFT / Bank Transfer</option>
+                <option value="UPI (Store QR)">⚡ UPI (Google Pay / PhonePe / Paytm / Dynamic QR)</option>
+                <option value="Cash">💵 Cash at Counter</option>
+                <option value="Card / POS Terminal">💳 Credit / Debit Card (Swipe Machine)</option>
+                <option value="Bank Transfer">🏦 Direct Bank Transfer / NEFT</option>
               </select>
             </div>
 
-            <div class="pos-actions-row">
-              <button class="btn-primary btn-block" id="btnGenerateInvoice">
-                <span>Generate Invoice & Deduct Stock</span>
+            <!-- Dynamic Payment Mode Context Boxes -->
+            <!-- 1. UPI QR & UTR Box -->
+            <div id="posUpiBox" class="pos-payment-subbox" style="margin-top: 12px; padding: 14px; background: #F8FAFC; border: 1px solid var(--admin-border); border-radius: 10px;">
+              <div style="display: flex; gap: 14px; align-items: center;">
+                <div style="width: 90px; height: 90px; background: #FFF; border: 1px solid var(--admin-border); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; padding: 4px;">
+                  <img id="posUpiQrImg" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi%3A%2F%2Fpay%3Fpa%3Dnachiyarherbals18%40okaxis%26pn%3DNachiyar%2520Herbals%26cu%3DINR" alt="Store UPI QR" style="width: 100%; height: 100%; object-fit: contain;">
+                </div>
+                <div style="flex: 1; min-width: 0;">
+                  <div style="font-weight: 700; font-size: 0.8125rem; color: var(--admin-text-main);">Scan UPI QR Code to Pay</div>
+                  <div style="font-size: 0.75rem; color: var(--admin-primary); font-family: monospace; font-weight: 700; margin-top: 2px;" id="posUpiIdDisplay">nachiyarherbals18@okaxis</div>
+                  <small style="display: block; font-size: 0.6875rem; color: var(--admin-text-muted); margin-top: 4px;">GPay, PhonePe, Paytm, BHIM</small>
+                </div>
+              </div>
+              <div class="form-group" style="margin-top: 10px; margin-bottom: 0;">
+                <label style="font-size: 0.75rem;">Enter UPI Ref / UTR Number (12 Digits) *</label>
+                <input type="text" id="posUpiUtr" class="form-input form-input-sm" placeholder="e.g. 428910284712" maxlength="20">
+              </div>
+            </div>
+
+            <!-- 2. Cash Payment Box -->
+            <div id="posCashBox" class="pos-payment-subbox" style="display: none; margin-top: 12px; padding: 14px; background: #F8FAFC; border: 1px solid var(--admin-border); border-radius: 10px;">
+              <div class="form-row">
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label style="font-size: 0.75rem;">Cash Tendered by Customer (₹)</label>
+                  <input type="number" id="posCashReceived" class="form-input form-input-sm" placeholder="e.g. 2000" min="0">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label style="font-size: 0.75rem;">Change to Return (₹)</label>
+                  <input type="text" id="posCashChange" class="form-input form-input-sm" readonly style="background: #E2E8F0; font-weight: 700; color: #059669;" value="₹0">
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. Card Terminal Box -->
+            <div id="posCardBox" class="pos-payment-subbox" style="display: none; margin-top: 12px; padding: 14px; background: #F8FAFC; border: 1px solid var(--admin-border); border-radius: 10px;">
+              <div class="form-row">
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label style="font-size: 0.75rem;">Card Last 4 Digits</label>
+                  <input type="text" id="posCardLast4" class="form-input form-input-sm" placeholder="e.g. 8892" maxlength="4">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label style="font-size: 0.75rem;">POS Approval / Auth Code</label>
+                  <input type="text" id="posCardAuthCode" class="form-input form-input-sm" placeholder="e.g. AUTH-7712">
+                </div>
+              </div>
+            </div>
+
+            <!-- 4. Bank Transfer Box -->
+            <div id="posBankBox" class="pos-payment-subbox" style="display: none; margin-top: 12px; padding: 14px; background: #F8FAFC; border: 1px solid var(--admin-border); border-radius: 10px;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label style="font-size: 0.75rem;">Bank Reference / Transaction ID *</label>
+                <input type="text" id="posBankRef" class="form-input form-input-sm" placeholder="e.g. NEFT-991204821">
+              </div>
+            </div>
+
+            <div class="pos-actions-row" style="margin-top: 16px;">
+              <button class="btn-primary btn-block" id="btnGenerateInvoice" style="padding: 12px 18px; font-weight: 700;">
+                <span>⚡ Print & Generate Tax Invoice</span>
                 <span class="icon-arrow">→</span>
               </button>
             </div>
@@ -625,9 +693,43 @@
           </div>
         </div>
 
+        <!-- Invoice Filter Period Toolbar (Week, Month, Year) -->
+        <div class="reviews-toolbar-card" style="margin-bottom: 20px;">
+          <div class="reviews-filter-tabs" id="invoicePeriodFilterTabs" style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button type="button" class="review-filter-btn active" data-period="all">
+              All Invoices (<span id="invCountAll">0</span>)
+            </button>
+            <button type="button" class="review-filter-btn" data-period="week">
+              📅 This Week (<span id="invCountWeek">0</span>)
+            </button>
+            <button type="button" class="review-filter-btn" data-period="month">
+              🗓️ This Month (<span id="invCountMonth">0</span>)
+            </button>
+            <button type="button" class="review-filter-btn" data-period="year">
+              📆 This Year (<span id="invCountYear">0</span>)
+            </button>
+          </div>
+        </div>
+
+        <!-- Period Summary Strip -->
+        <div id="invoicePeriodSummaryStrip" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 20px;">
+          <div style="background: #FFF; border: 1px solid var(--admin-border); border-radius: 12px; padding: 14px 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+            <span style="font-size: 0.75rem; color: var(--admin-text-muted); text-transform: uppercase; font-weight: 700;">Filtered Period Sales</span>
+            <h3 id="invSummarySalesVal" style="font-size: 1.35rem; font-weight: 800; color: #059669; margin-top: 4px;">₹0</h3>
+          </div>
+          <div style="background: #FFF; border: 1px solid var(--admin-border); border-radius: 12px; padding: 14px 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+            <span style="font-size: 0.75rem; color: var(--admin-text-muted); text-transform: uppercase; font-weight: 700;">Bills Generated</span>
+            <h3 id="invSummaryCountVal" style="font-size: 1.35rem; font-weight: 800; color: var(--admin-primary); margin-top: 4px;">0 bills</h3>
+          </div>
+          <div style="background: #FFF; border: 1px solid var(--admin-border); border-radius: 12px; padding: 14px 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+            <span style="font-size: 0.75rem; color: var(--admin-text-muted); text-transform: uppercase; font-weight: 700;">Units Sold at Counter</span>
+            <h3 id="invSummaryUnitsVal" style="font-size: 1.35rem; font-weight: 800; color: #0284C7; margin-top: 4px;">0 units</h3>
+          </div>
+        </div>
+
         <div class="card-panel">
           <div class="panel-filter-row">
-            <input type="text" class="input-search" id="invoiceSearchInput" placeholder="Search by invoice number or customer name...">
+            <input type="text" class="input-search" id="invoiceSearchInput" placeholder="Search by invoice number, customer name, or phone...">
           </div>
 
           <div class="table-responsive">
@@ -694,60 +796,177 @@
           <button class="btn-primary" id="btnSaveStoreSettings">Save All Settings</button>
         </div>
 
-        <div class="settings-form-grid">
-          <div class="card-panel">
-            <h3>Announcement Banner & Promotional Offers</h3>
-            <div class="form-group">
-              <label>Header Ticker Text</label>
-              <textarea id="setAnnouncementText" class="form-input" rows="2"></textarea>
+        <!-- Sub-Tabs Filter Toolbar (Banner, Business, Payments) -->
+        <div class="reviews-toolbar-card" style="margin-bottom: 24px;">
+          <div class="reviews-filter-tabs" id="settingsSubTabs" style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button type="button" class="review-filter-btn active" data-subtab="banner" id="btnSubtabBanner">
+              📢 Banner & Promotional Coupon
+            </button>
+            <button type="button" class="review-filter-btn" data-subtab="business" id="btnSubtabBusiness">
+              🏢 Business & Invoicing Information
+            </button>
+            <button type="button" class="review-filter-btn" data-subtab="payments" id="btnSubtabPayments">
+              💳 Payment Methods & Gateway Settings
+            </button>
+          </div>
+        </div>
+
+        <!-- ==================== SUBPANE 1: BANNER & PROMOTIONAL COUPON ==================== -->
+        <div class="settings-subpane" id="settingsSubpaneBanner">
+          <!-- Live Preview Banner Box -->
+          <div class="card-panel" style="margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+              <h3 style="margin: 0; font-size: 1.05rem; font-weight: 800; color: var(--admin-text-main);">👁️ Live Storefront Header Preview</h3>
+              <span class="badge-tag paid" style="font-size: 0.7rem; font-weight: 700;">REAL-TIME TICKER PREVIEW</span>
             </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label>Free Shipping Threshold (₹)</label>
-                <input type="number" id="setFreeShipping" class="form-input" value="599">
+            <div style="padding: 12px 18px; background: linear-gradient(135deg, #2E1B4E, #1F1035); color: #FFF; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; box-shadow: inset 0 1px 2px rgba(255,255,255,0.1);">
+              <div style="display: flex; align-items: center; gap: 10px; font-size: 0.8125rem; font-weight: 600;">
+                <span style="font-size: 1.15rem;">✨</span>
+                <span id="bannerPreviewText">ROYAL BOTANICAL CARE • FREE PAN-INDIA SHIPPING OVER ₹599</span>
               </div>
-              <div class="form-group">
-                <label>Mystery Discount Voucher Code</label>
-                <input type="text" id="setMysteryCode" class="form-input" value="ROYAL15">
+              <div id="bannerPreviewCouponBadge" style="background: #D4AF37; color: #1E1035; font-weight: 800; font-size: 0.75rem; padding: 4px 12px; border-radius: 999px; letter-spacing: 0.03em;">
+                Use Code: ROYAL15 (15% OFF)
               </div>
             </div>
           </div>
 
-          <div class="card-panel">
-            <h3>Business & Invoicing Information</h3>
-            <div class="form-group">
-              <label>Official Business / Brand Name</label>
-              <input type="text" id="setBrandName" class="form-input" value="Nachiyar Herbals & Cosmetics">
-            </div>
-            <div class="form-row">
+          <div class="settings-form-grid">
+            <div class="card-panel">
+              <h3 style="margin-top: 0; font-size: 1.1rem; font-weight: 800;">1. Storefront Announcement Bar</h3>
+              <p style="font-size: 0.8125rem; color: var(--admin-text-muted); margin-bottom: 16px;">Top running announcement text displayed continuously on the customer storefront.</p>
+
               <div class="form-group">
-                <label>GSTIN / Tax Registration</label>
-                <input type="text" id="setGstin" class="form-input">
+                <label>Header Ticker Text *</label>
+                <textarea id="setAnnouncementText" class="form-input" rows="2" placeholder="e.g. ROYAL BOTANICAL CARE • FREE PAN-INDIA SHIPPING OVER ₹599"></textarea>
               </div>
-              <div class="form-group">
-                <label>Support Phone</label>
-                <input type="tel" id="setSupportPhone" class="form-input">
+
+              <div class="form-group" style="margin-bottom: 0;">
+                <label>Free Shipping Minimum Order (₹)</label>
+                <input type="number" id="setFreeShipping" class="form-input" value="599" min="0">
+                <small style="color: var(--admin-text-muted); font-size: 0.75rem; margin-top: 4px; display: block;">Orders equal or above this amount automatically qualify for free delivery.</small>
               </div>
             </div>
-            <div class="form-group">
-              <label>Physical Boutique Address</label>
-              <textarea id="setStoreAddress" class="form-input" rows="2"></textarea>
+
+            <div class="card-panel">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <div>
+                  <h3 style="margin: 0; font-size: 1.1rem; font-weight: 800;">2. Discount Coupon & Expiry Campaign</h3>
+                  <p style="font-size: 0.8125rem; color: var(--admin-text-muted); margin-top: 2px;">Promotional voucher applied at online checkout.</p>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 0.75rem; font-weight: 700; color: var(--admin-text-muted);">Active</span>
+                  <label class="switch-toggle" style="position: relative; display: inline-block; width: 44px; height: 24px;">
+                    <input type="checkbox" id="setCouponActive" checked>
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Coupon Promo Code *</label>
+                  <div style="display: flex; gap: 8px;">
+                    <input type="text" id="setCouponCode" class="form-input" placeholder="e.g. ROYAL20" style="text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em; font-family: monospace;">
+                    <button type="button" class="btn-secondary" id="btnGenRandomCoupon" style="white-space: nowrap; font-size: 0.75rem; font-weight: 700;">🎲 Auto-Gen</button>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Discount Percentage (%) *</label>
+                  <div style="position: relative;">
+                    <input type="number" id="setDiscountPercent" class="form-input" min="1" max="90" value="15" placeholder="15">
+                    <span style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-weight: 800; color: var(--admin-text-muted);">%</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label>Coupon End Date / Expiry Date *</label>
+                  <input type="date" id="setCouponExpiryDate" class="form-input">
+                  <small style="color: var(--admin-text-muted); font-size: 0.75rem; margin-top: 4px; display: block;">Valid till 11:59 PM of this date. Will expire automatically.</small>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label>Offer Tagline (Storefront Display)</label>
+                  <input type="text" id="setCouponTagline" class="form-input" placeholder="e.g. Royal Harvest Privilege">
+                </div>
+              </div>
+
+              <!-- Hidden backwards-compatibility field for mystery code -->
+              <input type="hidden" id="setMysteryCode" value="ROYAL15">
+
+              <div style="margin-top: 20px; display: flex; justify-content: flex-end;">
+                <button type="button" class="btn-primary" id="btnSaveBannerSettings" style="padding: 10px 20px; font-weight: 700;">
+                  <span>🚀 Save & Publish Banner to Storefront</span>
+                </button>
+              </div>
             </div>
           </div>
+        </div>
+
+        <!-- ==================== SUBPANE 2: BUSINESS & INVOICING INFORMATION ==================== -->
+        <div class="settings-subpane" id="settingsSubpaneBusiness" style="display: none;">
           <div class="card-panel">
-            <h3>💳 Payment Methods & Gateway Settings</h3>
-            <p style="font-size: 0.8125rem; color: var(--color-text-muted); margin-bottom: 16px;">
-              Enable or disable payment methods dynamically for customer checkout. Disabled methods will be automatically hidden from customers and rejected at checkout API.
+            <h3 style="margin-top: 0; font-size: 1.15rem; font-weight: 800;">🏢 Business & Invoicing Legal Information</h3>
+            <p style="font-size: 0.8125rem; color: var(--admin-text-muted); margin-bottom: 20px;">
+              These details are printed on all offline counter POS Tax Invoices, online packing slips, and receipts.
+            </p>
+
+            <div class="form-group">
+              <label>Official Business / Brand Name *</label>
+              <input type="text" id="setBrandName" class="form-input" value="Nachiyar Herbals & Cosmetics">
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>GSTIN / Tax Registration Number</label>
+                <input type="text" id="setGstin" class="form-input" placeholder="33AAACH9876K1Z2">
+              </div>
+              <div class="form-group">
+                <label>Customer Support Helpline / Phone *</label>
+                <input type="tel" id="setSupportPhone" class="form-input" placeholder="+91 94440 88990">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Official Support Email Address</label>
+                <input type="email" id="setSupportEmail" class="form-input" placeholder="care@nachiyarherbals.com">
+              </div>
+              <div class="form-group">
+                <label>Store Boutique Operating Hours</label>
+                <input type="text" id="setStoreTimings" class="form-input" placeholder="Mon - Sat: 9:30 AM - 8:30 PM">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Physical Boutique Registered Address *</label>
+              <textarea id="setStoreAddress" class="form-input" rows="3" placeholder="Temple Ring Road, Madurai, Tamil Nadu - 625001"></textarea>
+            </div>
+
+            <div style="margin-top: 20px; display: flex; justify-content: flex-end;">
+              <button type="button" class="btn-primary" id="btnSaveBusinessSettings" style="padding: 10px 22px; font-weight: 700;">
+                <span>💾 Save Business Details</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================== SUBPANE 3: PAYMENT METHODS & GATEWAY SETTINGS ==================== -->
+        <div class="settings-subpane" id="settingsSubpanePayments" style="display: none;">
+          <div class="card-panel">
+            <h3 style="margin-top: 0; font-size: 1.15rem; font-weight: 800;">💳 Payment Methods & Gateway Settings</h3>
+            <p style="font-size: 0.8125rem; color: var(--admin-text-muted); margin-bottom: 20px;">
+              Enable or disable payment options dynamically for customer checkout. Disabled methods will be automatically hidden from customers and rejected at checkout API.
             </p>
 
             <div class="payment-settings-list" style="display: flex; flex-direction: column; gap: 14px;">
               <!-- 1. Cash on Delivery (COD) -->
-              <div class="payment-method-toggle-row" style="display: flex; align-items: center; justify-content: space-between; padding: 14px; background: var(--color-canvas); border: 1px solid var(--color-border); border-radius: 12px;">
-                <div style="display: flex; align-items: center; gap: 12px;">
-                  <span style="font-size: 1.5rem;">💵</span>
+              <div class="payment-method-toggle-row" style="display: flex; align-items: center; justify-content: space-between; padding: 16px; background: #F8FAFC; border: 1px solid var(--admin-border); border-radius: 12px;">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                  <span style="font-size: 1.6rem;">💵</span>
                   <div>
-                    <strong style="display: block; font-size: 0.9375rem;">Cash on Delivery (COD)</strong>
-                    <span style="font-size: 0.75rem; color: var(--color-text-muted);">Pay cash to courier executive upon delivery</span>
+                    <strong style="display: block; font-size: 0.95rem;">Cash on Delivery (COD)</strong>
+                    <span style="font-size: 0.75rem; color: var(--admin-text-muted);">Pay cash to courier executive upon delivery</span>
                   </div>
                 </div>
                 <label class="switch-toggle" style="position: relative; display: inline-block; width: 48px; height: 26px;">
@@ -757,13 +976,13 @@
               </div>
 
               <!-- 2. UPI Payments -->
-              <div class="payment-method-toggle-row" style="display: flex; flex-direction: column; gap: 10px; padding: 14px; background: var(--color-canvas); border: 1px solid var(--color-border); border-radius: 12px;">
+              <div class="payment-method-toggle-row" style="display: flex; flex-direction: column; gap: 12px; padding: 16px; background: #F8FAFC; border: 1px solid var(--admin-border); border-radius: 12px;">
                 <div style="display: flex; align-items: center; justify-content: space-between;">
-                  <div style="display: flex; align-items: center; gap: 12px;">
-                    <span style="font-size: 1.5rem;">⚡</span>
+                  <div style="display: flex; align-items: center; gap: 14px;">
+                    <span style="font-size: 1.6rem;">⚡</span>
                     <div>
-                      <strong style="display: block; font-size: 0.9375rem;">Instant UPI Payments</strong>
-                      <span style="font-size: 0.75rem; color: var(--color-text-muted);">Google Pay, PhonePe, Paytm, BHIM with dynamic QR</span>
+                      <strong style="display: block; font-size: 0.95rem;">Instant UPI Payments</strong>
+                      <span style="font-size: 0.75rem; color: var(--admin-text-muted);">Google Pay, PhonePe, Paytm, BHIM with dynamic QR</span>
                     </div>
                   </div>
                   <label class="switch-toggle" style="position: relative; display: inline-block; width: 48px; height: 26px;">
@@ -773,23 +992,23 @@
                 </div>
                 <div class="form-row" style="margin-top: 6px;">
                   <div class="form-group" style="margin-bottom: 0;">
-                    <label style="font-size: 0.75rem;">Store UPI ID / VPA</label>
-                    <input type="text" id="setPmUpiId" class="form-input" value="nachiyarherbals18@okaxis" placeholder="brand@okaxis">
+                    <label style="font-size: 0.75rem;">Store UPI ID / VPA *</label>
+                    <input type="text" id="setPmUpiId" class="form-input form-input-sm" value="nachiyarherbals18@okaxis" placeholder="brand@okaxis">
                   </div>
                   <div class="form-group" style="margin-bottom: 0;">
-                    <label style="font-size: 0.75rem;">UPI Merchant Display Name</label>
-                    <input type="text" id="setPmUpiName" class="form-input" value="Nachiyar Herbals & Cosmetics" placeholder="Merchant Name">
+                    <label style="font-size: 0.75rem;">UPI Merchant Display Name *</label>
+                    <input type="text" id="setPmUpiName" class="form-input form-input-sm" value="Nachiyar Herbals & Cosmetics" placeholder="Merchant Name">
                   </div>
                 </div>
               </div>
 
               <!-- 3. Credit / Debit Cards -->
-              <div class="payment-method-toggle-row" style="display: flex; align-items: center; justify-content: space-between; padding: 14px; background: var(--color-canvas); border: 1px solid var(--color-border); border-radius: 12px;">
-                <div style="display: flex; align-items: center; gap: 12px;">
-                  <span style="font-size: 1.5rem;">💳</span>
+              <div class="payment-method-toggle-row" style="display: flex; align-items: center; justify-content: space-between; padding: 16px; background: #F8FAFC; border: 1px solid var(--admin-border); border-radius: 12px;">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                  <span style="font-size: 1.6rem;">💳</span>
                   <div>
-                    <strong style="display: block; font-size: 0.9375rem;">Credit & Debit Cards</strong>
-                    <span style="font-size: 0.75rem; color: var(--color-text-muted);">Visa, MasterCard, RuPay, Maestro secure checkout</span>
+                    <strong style="display: block; font-size: 0.95rem;">Credit & Debit Cards</strong>
+                    <span style="font-size: 0.75rem; color: var(--admin-text-muted);">Visa, MasterCard, RuPay, Maestro secure checkout</span>
                   </div>
                 </div>
                 <label class="switch-toggle" style="position: relative; display: inline-block; width: 48px; height: 26px;">
@@ -799,12 +1018,12 @@
               </div>
 
               <!-- 4. Net Banking -->
-              <div class="payment-method-toggle-row" style="display: flex; align-items: center; justify-content: space-between; padding: 14px; background: var(--color-canvas); border: 1px solid var(--color-border); border-radius: 12px;">
-                <div style="display: flex; align-items: center; gap: 12px;">
-                  <span style="font-size: 1.5rem;">🏦</span>
+              <div class="payment-method-toggle-row" style="display: flex; align-items: center; justify-content: space-between; padding: 16px; background: #F8FAFC; border: 1px solid var(--admin-border); border-radius: 12px;">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                  <span style="font-size: 1.6rem;">🏦</span>
                   <div>
-                    <strong style="display: block; font-size: 0.9375rem;">Net Banking</strong>
-                    <span style="font-size: 0.75rem; color: var(--color-text-muted);">Direct instant transfer via 50+ Indian banks</span>
+                    <strong style="display: block; font-size: 0.95rem;">Net Banking</strong>
+                    <span style="font-size: 0.75rem; color: var(--admin-text-muted);">Direct instant transfer via 50+ Indian banks</span>
                   </div>
                 </div>
                 <label class="switch-toggle" style="position: relative; display: inline-block; width: 48px; height: 26px;">
@@ -812,6 +1031,12 @@
                   <span class="toggle-slider"></span>
                 </label>
               </div>
+            </div>
+
+            <div style="margin-top: 20px; display: flex; justify-content: flex-end;">
+              <button type="button" class="btn-primary" id="btnSavePaymentSettings" style="padding: 10px 22px; font-weight: 700;">
+                <span>💾 Save Payment Gateway Settings</span>
+              </button>
             </div>
           </div>
         </div>
@@ -876,7 +1101,407 @@
         </div>
       </section>
 
+      <!-- ==================== TAB 8: MARKETPLACE HUB (FLIPKART, AMAZON, MEESHO) ==================== -->
+      <section class="tab-pane" id="pane-marketplaces">
+        <div class="pane-header">
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+              <span class="badge-tag paid" style="background: #E0F2FE; color: #0369A1; font-weight: 800; font-size: 0.7rem; border-color: #BAE6FD;">OMNICHANNEL SYNC ACTIVE</span>
+              <span style="font-size: 0.75rem; color: var(--admin-text-muted);">Unified stock matrix across all marketplaces</span>
+            </div>
+            <h1 class="pane-title">Marketplace Hub &amp; Multi-Channel Sales</h1>
+            <p class="pane-desc">Manage seller integrations, publish formulations directly to Flipkart, Amazon &amp; Meesho, and track channel sales performance.</p>
+          </div>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button class="btn-secondary" id="btnMarketplaceApiModal">
+              <span>⚙️ API Keys &amp; Webhook Config</span>
+            </button>
+            <button class="btn-primary" id="btnQuickSellModal">
+              <span>🚀 Sell Now / List Product</span>
+              <span class="icon-arrow">+</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- ==================== 1. TOP 3 MARKETPLACE KPI BOXES ==================== -->
+        <div class="marketplace-kpi-grid">
+          <!-- Box 1: Flipkart -->
+          <div class="marketplace-kpi-card interactive-kpi active" data-channel="flipkart" id="mktBoxFlipkart" title="Click to view detailed Flipkart Sales &amp; Orders">
+            <div class="mkt-card-top">
+              <div class="mkt-brand-badge flipkart-badge">
+                <span class="mkt-logo-circle fk-bg">F</span>
+                <div>
+                  <strong>Flipkart Marketplace</strong>
+                  <small>Seller Hub API: FK_NACHIYAR_77</small>
+                </div>
+              </div>
+              <span class="badge-tag paid" style="font-size: 0.6875rem;">🟢 Live Sync</span>
+            </div>
+            <div class="mkt-card-body">
+              <div class="mkt-kpi-val" id="kpiFkRevenue">₹1,48,250</div>
+              <div class="mkt-kpi-sub">
+                <span>📦 <strong id="kpiFkUnits">215</strong> Units Sold</span>
+                <span>•</span>
+                <span>📋 <strong>3</strong> Live Listings</span>
+              </div>
+              <div class="mkt-kpi-footer">
+                <span>Net Bank Payout: <strong style="color: #059669;" id="kpiFkSettlement">₹1,26,012</strong></span>
+                <button type="button" class="btn-secondary btn-sm btn-open-channel-deepdive" data-channel="flipkart" style="font-weight: 700; font-size: 0.75rem; padding: 4px 10px; border-radius: 6px; cursor: pointer; color: #2874F0; border-color: #2874F0;">
+                  <span>View Channel →</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Box 2: Amazon -->
+          <div class="marketplace-kpi-card interactive-kpi" data-channel="amazon" id="mktBoxAmazon" title="Click to view detailed Amazon Sales &amp; Orders">
+            <div class="mkt-card-top">
+              <div class="mkt-brand-badge amazon-badge">
+                <span class="mkt-logo-circle az-bg">a</span>
+                <div>
+                  <strong>Amazon Seller Central</strong>
+                  <small>SP-API: NACHIYAR_IN</small>
+                </div>
+              </div>
+              <span class="badge-tag paid" style="font-size: 0.6875rem;">🟢 Live Sync</span>
+            </div>
+            <div class="mkt-card-body">
+              <div class="mkt-kpi-val" id="kpiAzRevenue">₹2,14,800</div>
+              <div class="mkt-kpi-sub">
+                <span>📦 <strong id="kpiAzUnits">298</strong> Units Sold</span>
+                <span>•</span>
+                <span>📋 <strong>3</strong> Live Listings</span>
+              </div>
+              <div class="mkt-kpi-footer">
+                <span>Net Bank Payout: <strong style="color: #059669;" id="kpiAzSettlement">₹1,82,580</strong></span>
+                <button type="button" class="btn-secondary btn-sm btn-open-channel-deepdive" data-channel="amazon" style="font-weight: 700; font-size: 0.75rem; padding: 4px 10px; border-radius: 6px; cursor: pointer; color: #D97706; border-color: #D97706;">
+                  <span>View Channel →</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Box 3: Meesho -->
+          <div class="marketplace-kpi-card interactive-kpi" data-channel="meesho" id="mktBoxMeesho" title="Click to view detailed Meesho Sales &amp; Orders">
+            <div class="mkt-card-top">
+              <div class="mkt-brand-badge meesho-badge">
+                <span class="mkt-logo-circle msh-bg">M</span>
+                <div>
+                  <strong>Meesho Supplier Panel</strong>
+                  <small>Supplier ID: MSH_8849</small>
+                </div>
+              </div>
+              <span class="badge-tag paid" style="font-size: 0.6875rem;">🟢 Live Sync</span>
+            </div>
+            <div class="mkt-card-body">
+              <div class="mkt-kpi-val" id="kpiMshRevenue">₹92,400</div>
+              <div class="mkt-kpi-sub">
+                <span>📦 <strong id="kpiMshUnits">164</strong> Units Sold</span>
+                <span>•</span>
+                <span>📋 <strong>3</strong> Live Listings</span>
+              </div>
+              <div class="mkt-kpi-footer">
+                <span>Net Bank Payout: <strong style="color: #059669;" id="kpiMshSettlement">₹83,160</strong></span>
+                <button type="button" class="btn-secondary btn-sm btn-open-channel-deepdive" data-channel="meesho" style="font-weight: 700; font-size: 0.75rem; padding: 4px 10px; border-radius: 6px; cursor: pointer; color: #802058; border-color: #802058;">
+                  <span>View Channel →</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================== 2. CHANNEL SUB-TABS & TIME PERIOD CONTROLS ==================== -->
+        <div class="card-panel" id="marketplaceChannelSection" style="margin-bottom: 20px; padding: 16px 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+            <!-- Channel Switcher Buttons -->
+            <div class="marketplace-channel-tabs" id="marketplaceChannelTabs">
+              <button type="button" class="channel-tab-btn active" data-channel="flipkart" id="tabBtnFlipkart">
+                <span class="channel-dot fk-dot"></span>
+                <span>Flipkart Marketplace</span>
+              </button>
+              <button type="button" class="channel-tab-btn" data-channel="amazon" id="tabBtnAmazon">
+                <span class="channel-dot az-dot"></span>
+                <span>Amazon Seller Central</span>
+              </button>
+              <button type="button" class="channel-tab-btn" data-channel="meesho" id="tabBtnMeesho">
+                <span class="channel-dot msh-dot"></span>
+                <span>Meesho Supplier Hub</span>
+              </button>
+            </div>
+
+            <!-- "Sell Now" Button for active channel -->
+            <div>
+              <button class="btn-primary" id="btnActiveChannelSellNow" style="background: #2874F0; border-color: #2874F0;">
+                <span id="txtChannelSellNowBtn">🚀 Sell Now on Flipkart (+ List Products)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Time Period Filters (All, This Week, This Month, This Year) -->
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--admin-border); flex-wrap: wrap; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 0.8125rem; font-weight: 700; color: var(--admin-text-muted);">SALES TIMELINE:</span>
+              <div class="marketplace-period-tabs" id="marketplacePeriodTabs">
+                <button type="button" class="review-filter-btn" data-period="all">All Time</button>
+                <button type="button" class="review-filter-btn" data-period="week">This Week</button>
+                <button type="button" class="review-filter-btn active" data-period="month">This Month</button>
+                <button type="button" class="review-filter-btn" data-period="year">This Year</button>
+              </div>
+            </div>
+
+            <!-- Period Summary Mini Strip -->
+            <div class="period-stats-strip" id="channelPeriodStatsStrip">
+              <div class="p-stat">
+                <small>Gross Channel Sales</small>
+                <strong id="stripGrossSales">₹48,900</strong>
+              </div>
+              <div class="p-stat">
+                <small>Units Dispatched</small>
+                <strong id="stripUnitsCount">68 units</strong>
+              </div>
+              <div class="p-stat">
+                <small id="stripFeeLabel">Platform Fees (15%)</small>
+                <strong style="color: #DC2626;" id="stripCommission">-₹7,335</strong>
+              </div>
+              <div class="p-stat">
+                <small>Net Bank Settlement</small>
+                <strong style="color: #059669;" id="stripNetPayout">₹41,565</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================== 3. TOP PRODUCTS SALES MATRIX FOR THIS CHANNEL ==================== -->
+        <div class="card-panel" style="margin-bottom: 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;">
+            <div>
+              <h3 style="margin: 0; font-size: 1.1rem; font-weight: 800;" id="channelProductsTitle">Flipkart Product Sales &amp; Listing Breakdown</h3>
+              <p style="font-size: 0.8125rem; color: var(--admin-text-muted); margin-top: 2px;">Units sold, revenue, and active listing status for Nachiyar botanical formulations on this channel.</p>
+            </div>
+            <button type="button" class="btn-secondary btn-sm" id="btnSyncAllChannelCatalog">
+              <span>🔄 Sync Master Stock with Channel</span>
+            </button>
+          </div>
+
+          <div class="table-responsive">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Product Formulation</th>
+                  <th>Channel SKU</th>
+                  <th>Nachiyar Price</th>
+                  <th>Channel Listing Price</th>
+                  <th>Channel Units Sold</th>
+                  <th>Channel Revenue</th>
+                  <th>Listing Status</th>
+                  <th style="text-align: right;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="channelProductsTableBody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ==================== 4. LIVE CHANNEL ORDERS TABLE ==================== -->
+        <div class="card-panel">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+            <div>
+              <h3 style="margin: 0; font-size: 1.1rem; font-weight: 800;" id="channelOrdersTitle">Flipkart Orders &amp; Dispatch History</h3>
+              <p style="font-size: 0.8125rem; color: var(--admin-text-muted); margin-top: 2px;">Orders received through this marketplace API with automated inventory deduction.</p>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <input type="text" id="marketplaceOrderSearch" class="form-input-sm" placeholder="Search order ID, patron, city..." style="width: 220px;">
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Marketplace Order ID</th>
+                  <th>Date &amp; Time</th>
+                  <th>Patron &amp; Destination</th>
+                  <th>Items &amp; Formulation</th>
+                  <th>Gross Value</th>
+                  <th>Commission</th>
+                  <th>Net Payout</th>
+                  <th>Fulfillment Status</th>
+                  <th style="text-align: right;">Dispatch Slip</th>
+                </tr>
+              </thead>
+              <tbody id="channelOrdersTableBody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== 10. CUSTOMER INQUIRIES & CONCIERGE MESSAGES ==================== -->
+      <section class="tab-pane" id="pane-messages">
+        <div class="pane-header">
+          <div class="pane-header-left">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+              <span class="badge-tag" style="background:#EDE9FE; color:#6B21A8; font-weight:800; border-color:#DDD6FE;">LIVE CONCIERGE INBOX</span>
+              <span style="font-size:0.75rem; color:var(--admin-text-muted);">Real-time inquiries from storefront contact page</span>
+            </div>
+            <h1 class="pane-title" style="margin:0;">Customer Inquiries & Messages</h1>
+            <p class="pane-desc">Patron consultations, wholesale requests, formulation questions, and order messages sent via contact portal.</p>
+          </div>
+          <div class="pane-actions">
+            <button class="btn-secondary" id="btnRefreshMessages">
+              <span>🔄 Refresh Inbox</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Metric Counter Cards -->
+        <div class="kpi-grid" style="margin-bottom: 24px;">
+          <div class="kpi-card">
+            <div class="kpi-icon">📬</div>
+            <div class="kpi-data">
+              <span class="kpi-label">Total Inquiries</span>
+              <h2 class="kpi-val" id="kpiTotalMessages">0</h2>
+              <span class="kpi-sub" id="kpiTotalMessagesSub">All-time contact messages</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon" style="background:#FEF2F2; color:#DC2626;">🔔</div>
+            <div class="kpi-data">
+              <span class="kpi-label">Unread / Action Needed</span>
+              <h2 class="kpi-val" id="kpiUnreadMessages" style="color:#DC2626;">0</h2>
+              <span class="kpi-sub" style="color:#DC2626;">Awaiting Concierge Reply</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon" style="background:#F0FDF4; color:#16A34A;">✅</div>
+            <div class="kpi-data">
+              <span class="kpi-label">Resolved Inquiries</span>
+              <h2 class="kpi-val" id="kpiResolvedMessages" style="color:#16A34A;">0</h2>
+              <span class="kpi-sub positive">Addressed by team</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter Tabs & Search Toolbar Card -->
+        <div class="reviews-toolbar-card" style="margin-bottom: 20px;">
+          <div class="reviews-filter-tabs" id="messagesFilterTabs">
+            <button type="button" class="review-filter-btn active" data-filter="all" id="btnMsgFilterAll">
+              All Inquiries (<span id="countMsgFilterAll">0</span>)
+            </button>
+            <button type="button" class="review-filter-btn" data-filter="unread" id="btnMsgFilterUnread">
+              🔔 Unread (<span id="countMsgFilterUnread">0</span>)
+            </button>
+            <button type="button" class="review-filter-btn" data-filter="read" id="btnMsgFilterRead">
+              👀 Read (<span id="countMsgFilterRead">0</span>)
+            </button>
+            <button type="button" class="review-filter-btn" data-filter="resolved" id="btnMsgFilterResolved">
+              ✅ Resolved (<span id="countMsgFilterResolved">0</span>)
+            </button>
+          </div>
+
+          <div style="display: flex; gap: 12px; align-items: center; flex: 1; justify-content: flex-end; flex-wrap: wrap;">
+            <select id="selectMessageSubjectFilter" class="select-filter" style="min-width: 190px;">
+              <option value="all">All Inquiry Types</option>
+              <option value="Hair Care Consultation">Hair Care Consultation</option>
+              <option value="Order Tracking & Shipping">Order Tracking &amp; Shipping</option>
+              <option value="Wholesale & Clinic Inquiry">Wholesale &amp; Salon Supply</option>
+              <option value="Ingredients & Formulation">Botanical Formulation</option>
+              <option value="Press & Partnership">Press &amp; Partnership</option>
+            </select>
+            <div class="reviews-search-box" style="flex: 1; max-width: 320px;">
+              <input type="text" id="inputSearchMessages" class="input-search" placeholder="Search patron, email, phone, keyword..." style="width: 100%;">
+            </div>
+          </div>
+        </div>
+
+        <!-- Messages Table View in Official Card-Panel -->
+        <div class="card-panel">
+          <div class="table-responsive">
+            <table class="admin-table" id="messagesTable">
+              <thead>
+                <tr>
+                  <th>Patron / Sender</th>
+                  <th>Contact Details</th>
+                  <th>Inquiry Nature</th>
+                  <th>Message Preview</th>
+                  <th>Date &amp; Time</th>
+                  <th>Status</th>
+                  <th style="text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="messagesTableBody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
     </main>
+  </div>
+
+  <!-- ==================== MODAL: CUSTOMER MESSAGE DETAIL & CONCIERGE REPLY ==================== -->
+  <div class="modal-overlay" id="messageDetailModalOverlay">
+    <div class="modal-box modal-box--large" style="max-width: 720px;">
+      <div class="modal-header">
+        <div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="badge-tag" id="modalMsgStatusBadge">UNREAD</span>
+            <h2 id="modalMsgSubject" style="margin:0; font-size:1.25rem;">Inquiry Details</h2>
+          </div>
+          <p id="modalMsgDate" style="margin:4px 0 0 0; color:var(--admin-text-muted); font-size:0.8125rem;">Submitted on ...</p>
+        </div>
+        <button class="modal-close-btn" id="modalMsgCloseBtn">✕</button>
+      </div>
+
+      <div class="modal-body" style="padding: 24px; display:flex; flex-direction:column; gap:18px;">
+        <!-- Patron Info Card -->
+        <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:12px; padding:16px; display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:12px;">
+          <div>
+            <span style="font-size:0.75rem; color:#64748B; font-weight:700; text-transform:uppercase;">Patron Name</span>
+            <div id="modalMsgSenderName" style="font-weight:800; font-size:1rem; color:#1E293B;">-</div>
+          </div>
+          <div>
+            <span style="font-size:0.75rem; color:#64748B; font-weight:700; text-transform:uppercase;">Email Address</span>
+            <div><a id="modalMsgSenderEmail" href="#" style="color:var(--admin-primary); font-weight:700; text-decoration:none;">-</a></div>
+          </div>
+          <div>
+            <span style="font-size:0.75rem; color:#64748B; font-weight:700; text-transform:uppercase;">Phone / Mobile</span>
+            <div id="modalMsgSenderPhone" style="font-weight:700; color:#1E293B;">-</div>
+          </div>
+        </div>
+
+        <!-- Message Body -->
+        <div>
+          <span style="font-size:0.75rem; color:#64748B; font-weight:700; text-transform:uppercase; display:block; margin-bottom:8px;">Full Customer Message</span>
+          <div id="modalMsgBody" style="background:#FFFFFF; border:1.5px solid #E2E8F0; border-radius:12px; padding:18px; font-size:0.9375rem; line-height:1.6; color:#334155; white-space:pre-wrap; min-height:100px;"></div>
+        </div>
+
+        <!-- Admin Internal Notes -->
+        <div>
+          <label for="modalMsgAdminNotes" style="font-size:0.75rem; color:#64748B; font-weight:700; text-transform:uppercase; display:block; margin-bottom:6px;">Concierge / Staff Resolution Notes</label>
+          <textarea id="modalMsgAdminNotes" class="form-input" rows="2" placeholder="Record internal follow-up notes, phone call logs, or resolution history..."></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+        <div style="display:flex; gap:8px;">
+          <a id="btnMsgReplyWhatsApp" href="#" target="_blank" class="btn-secondary" style="background:#25D366; color:#fff; border:none; display:inline-flex; align-items:center; gap:6px;">
+            <span>💬 WhatsApp Reply</span>
+          </a>
+          <a id="btnMsgReplyEmail" href="#" class="btn-secondary" style="display:inline-flex; align-items:center; gap:6px;">
+            <span>✉️ Email Reply</span>
+          </a>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button type="button" class="btn-secondary" id="btnMsgToggleStatus">Mark as Resolved ✅</button>
+          <button type="button" class="btn-primary" id="btnMsgSaveNotes">Save Changes</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- ==================== MODAL 1: ADD / EDIT PRODUCT ==================== -->
@@ -936,7 +1561,20 @@
           <div class="form-row">
             <div class="form-group flex-2">
               <label>Primary Image URL or Asset Path</label>
-              <input type="text" id="formProdImage" class="form-input" value="assets/herbal-hair-oil.jpg">
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <input type="text" id="formProdImage" class="form-input" value="assets/herbal-hair-oil.jpg" style="flex: 1;">
+                <label for="formProdImageFile" class="btn-secondary btn-sm" style="cursor: pointer; white-space: nowrap; margin: 0; display: inline-flex; align-items: center; gap: 6px;">
+                  📁 Upload Image
+                </label>
+                <input type="file" id="formProdImageFile" accept="image/*" style="display: none;">
+              </div>
+              <div id="imageUploadStatus" style="font-size: 0.75rem; color: var(--admin-primary); margin-top: 4px; display: none;"></div>
+            </div>
+            <div class="form-group" style="max-width: 130px;">
+              <label>Image Preview</label>
+              <div style="width: 60px; height: 60px; border-radius: 8px; border: 1px solid var(--admin-border); overflow: hidden; background: #F8FAFC; display: flex; align-items: center; justify-content: center;">
+                <img id="formProdImagePreview" src="assets/herbal-hair-oil.jpg" alt="Preview" style="width: 100%; height: 100%; object-fit: contain;">
+              </div>
             </div>
             <div class="form-group">
               <label>Brand Theme Color</label>
@@ -986,19 +1624,32 @@
     </div>
   </div>
 
-  <!-- ==================== MODAL 2: PRINTABLE INVOICE RECEIPT ==================== -->
+  <!-- ==================== MODAL 2: PRINTABLE INVOICE RECEIPT & SUCCESS POPUP ==================== -->
   <div class="modal-overlay" id="invoiceModalOverlay">
     <div class="modal-box modal-box--receipt">
-      <div class="modal-header no-print">
-        <h2>Tax Invoice</h2>
-        <div class="receipt-header-actions">
-          <button class="btn-primary btn-sm" onclick="window.print()">🖨️ Print Receipt</button>
-          <button class="modal-close-btn" id="invoiceModalClose">✕</button>
+      <div class="modal-header no-print" style="background: linear-gradient(135deg, #2E1B4E, #4A2E7A); color: #FFF; padding: 18px 24px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span style="font-size: 1.6rem;">🎉</span>
+          <div>
+            <h2 style="color: #FFF; font-size: 1.2rem; margin: 0; font-weight: 800;">Saved Invoice History (Generated Successfully)</h2>
+            <p style="color: #E9D5FF; font-size: 0.8rem; margin-top: 2px;">✅ Tax invoice generated, stock deducted, and saved in database.</p>
+          </div>
+        </div>
+        <div class="receipt-header-actions" style="display: flex; gap: 8px;">
+          <button class="btn-primary btn-sm" id="btnReceiptPrintDirect" style="background: #10B981; border: none; font-weight: 700; padding: 8px 16px;">🖨️ Print Tax Invoice</button>
+          <button class="modal-close-btn" id="invoiceModalClose" style="color: #FFF; font-size: 1.25rem;">✕</button>
         </div>
       </div>
 
-      <div class="receipt-printable-area" id="receiptPrintableArea">
-        <!-- Rendered dynamically -->
+      <div class="modal-body-scroll" style="padding: 0; max-height: calc(85vh - 130px);">
+        <div class="receipt-printable-area" id="receiptPrintableArea">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <div class="modal-footer no-print" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; background: #F8FAFC; border-top: 1px solid var(--admin-border);">
+        <button type="button" class="btn-secondary btn-sm" id="btnReceiptGotoHistory" style="font-weight: 700;">📁 View All in Invoice History →</button>
+        <button type="button" class="btn-primary btn-sm" id="btnReceiptOkClose" style="font-weight: 700; background: var(--admin-primary); padding: 8px 20px;">✓ OK (Go to Invoice History)</button>
       </div>
     </div>
   </div>
@@ -1053,6 +1704,439 @@
           🔒 Verified live database metrics (PostgreSQL)
         </span>
         <button type="button" class="btn-secondary" id="btnCloseAnalyticsModal">Close Report</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL 4: CUSTOMER PURCHASE HISTORY DRILL-DOWN ==================== -->
+  <div class="modal-overlay" id="customerOrderHistoryModalOverlay">
+    <div class="modal-box modal-box--large">
+      <div class="modal-header">
+        <div>
+          <h2 id="custHistoryModalTitle" style="font-size: 1.25rem;">Customer Purchase History</h2>
+          <p id="custHistoryModalSubtitle" style="font-size: 0.8125rem; color: var(--admin-text-muted); margin-top: 4px;">Complete timeline of purchases and items bought</p>
+        </div>
+        <button class="modal-close-btn" id="custHistoryModalClose">✕</button>
+      </div>
+      <div class="modal-body-scroll" style="padding: 20px;">
+        <div id="custHistoryKpiStrip" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 20px;">
+          <!-- Dynamically populated -->
+        </div>
+        <h4 style="font-size: 0.9375rem; margin-bottom: 12px; color: var(--admin-text-main);">All Orders & Invoices</h4>
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Date & Time</th>
+                <th>Channel / Type</th>
+                <th>Reference #</th>
+                <th>Products & Quantity Bought</th>
+                <th>Total (₹)</th>
+                <th>Payment</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="custHistoryTableBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: flex-end;">
+        <button type="button" class="btn-secondary" id="btnCloseCustHistoryModal">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL 5: MANUAL RESTOCK & INVENTORY ADJUSTMENT ==================== -->
+  <div class="modal-overlay" id="restockModalOverlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div>
+          <h2 style="font-size: 1.25rem;">📦 Manual Stock Restock / Adjustment</h2>
+          <p style="font-size: 0.8125rem; color: var(--admin-text-muted); margin-top: 4px;">Add fresh factory batch stock or adjust damaged units</p>
+        </div>
+        <button class="modal-close-btn" id="restockModalClose">✕</button>
+      </div>
+      <form id="restockForm" class="modal-form">
+        <div class="modal-body-scroll" style="padding: 20px;">
+          <div class="form-group">
+            <label>Select Product Formulation *</label>
+            <select id="restockProductSelect" class="form-input" required>
+              <!-- Dynamically populated -->
+            </select>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group flex-2">
+              <label>Current Live Stock in DB</label>
+              <input type="text" id="restockCurrentStock" class="form-input" readonly style="background: #F1F5F9; font-weight: 700; color: var(--admin-primary);">
+            </div>
+            <div class="form-group flex-2">
+              <label>Adjustment Units (+ / -) *</label>
+              <input type="number" id="restockUnits" class="form-input" placeholder="e.g. 50 or -5" required>
+              <small style="color: var(--admin-text-muted); font-size: 0.75rem;">Use positive (e.g. 50) to add stock, negative (e.g. -5) to deduct</small>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Batch / Reference Number</label>
+            <input type="text" id="restockReference" class="form-input" placeholder="e.g. BATCH-2026-OCT-04 or PO-9812">
+          </div>
+
+          <div class="form-group">
+            <label>Reason for Adjustment</label>
+            <select id="restockReasonSelect" class="form-input">
+              <option value="New Factory Production Batch">New Factory Production Batch Restock</option>
+              <option value="Warehouse Stock Count Reconciliation">Warehouse Stock Count Reconciliation</option>
+              <option value="Damaged / Expired Units Removed">Damaged / Expired Units Removed</option>
+              <option value="Sample / Tester Units Allocated">Sample / Tester Units Allocated</option>
+              <option value="Other / Custom Reason">Other / Custom Reason</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="restockCustomReasonGroup" style="display: none;">
+            <label>Specify Custom Reason</label>
+            <input type="text" id="restockCustomReason" class="form-input" placeholder="Enter reason...">
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" id="btnCancelRestockModal">Cancel</button>
+          <button type="submit" class="btn-primary">Update Stock in DB</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: SELL NOW / LIST PRODUCTS ON MARKETPLACE ==================== -->
+  <div class="modal-overlay" id="marketplaceSellNowModal">
+    <div class="modal-box modal-box--large">
+      <div class="modal-header">
+        <div>
+          <h2 id="modalSellNowTitle">🚀 Sell Now: Push Catalog to Flipkart</h2>
+          <p style="font-size: 0.8125rem; color: var(--admin-text-muted); margin-top: 2px;">Select formulations from your master inventory to publish or re-sync with the marketplace catalog.</p>
+        </div>
+        <button class="modal-close-btn" id="modalSellNowClose">✕</button>
+      </div>
+
+      <div class="modal-body-scroll" style="padding: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; background: #F8FAFC; border: 1px solid var(--admin-border); border-radius: 10px; padding: 12px 16px; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <strong style="font-size: 0.875rem;">Connected Channel: <span id="modalSellNowChannelBadge" style="color: #2874F0; font-weight: 800;">Flipkart Marketplace</span></strong>
+            <div style="font-size: 0.75rem; color: var(--admin-text-muted);">Stock automatically syncs with Unified Stock Matrix in real-time.</div>
+          </div>
+          <button type="button" class="btn-primary btn-sm" id="btnPushAllToChannel">
+            <span>⚡ Push All Formulations to Channel</span>
+          </button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Formulation</th>
+                <th>Master Stock</th>
+                <th>Channel Selling Price</th>
+                <th>Channel SKU</th>
+                <th>Status</th>
+                <th style="text-align: right;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="modalSellNowProductRows">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" id="btnCancelSellNowModal">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: MARKETPLACE API & WEBHOOK CONFIGURATION ==================== -->
+  <div class="modal-overlay" id="marketplaceApiModal">
+    <div class="modal-box modal-box--medium">
+      <div class="modal-header">
+        <div>
+          <h2>⚙️ Marketplace API &amp; Webhook Credentials</h2>
+          <p style="font-size: 0.8125rem; color: var(--admin-text-muted); margin-top: 2px;">Connect seller accounts for automated multi-channel synchronization.</p>
+        </div>
+        <button class="modal-close-btn" id="modalApiClose">✕</button>
+      </div>
+
+      <form id="marketplaceApiForm">
+        <div class="modal-body-scroll" style="padding: 20px;">
+          <!-- Flipkart Section -->
+          <div style="border-bottom: 1px solid var(--admin-border); padding-bottom: 16px; margin-bottom: 16px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+              <strong style="color: #2874F0;">🟡 Flipkart Seller API</strong>
+              <span class="badge-tag paid" style="font-size: 0.7rem;">Active (v3.0)</span>
+            </div>
+            <div class="form-row">
+              <div class="form-group flex-2">
+                <label>Flipkart Seller ID / Username</label>
+                <input type="text" id="apiFkSellerId" class="form-input" value="FK_NACHIYAR_77">
+              </div>
+              <div class="form-group flex-2">
+                <label>Application ID / App Secret</label>
+                <input type="password" id="apiFkSecret" class="form-input" value="••••••••••••••••">
+              </div>
+            </div>
+          </div>
+
+          <!-- Amazon Section -->
+          <div style="border-bottom: 1px solid var(--admin-border); padding-bottom: 16px; margin-bottom: 16px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+              <strong style="color: #FF9900;">📦 Amazon Selling Partner API (SP-API)</strong>
+              <span class="badge-tag paid" style="font-size: 0.7rem;">Active (LWA)</span>
+            </div>
+            <div class="form-row">
+              <div class="form-group flex-2">
+                <label>Merchant / Seller ID</label>
+                <input type="text" id="apiAzMerchantId" class="form-input" value="NACHIYAR_IN">
+              </div>
+              <div class="form-group flex-2">
+                <label>LWA Refresh Token</label>
+                <input type="password" id="apiAzToken" class="form-input" value="••••••••••••••••">
+              </div>
+            </div>
+          </div>
+
+          <!-- Meesho Section -->
+          <div style="border-bottom: 1px solid var(--admin-border); padding-bottom: 16px; margin-bottom: 16px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+              <strong style="color: #802058;">🛍️ Meesho Supplier Panel API</strong>
+              <span class="badge-tag paid" style="font-size: 0.7rem;">Active</span>
+            </div>
+            <div class="form-row">
+              <div class="form-group flex-2">
+                <label>Supplier ID</label>
+                <input type="text" id="apiMshSupplierId" class="form-input" value="MSH_8849">
+              </div>
+              <div class="form-group flex-2">
+                <label>Supplier API Auth Key</label>
+                <input type="password" id="apiMshKey" class="form-input" value="••••••••••••••••">
+              </div>
+            </div>
+          </div>
+
+          <!-- Webhook URL Box -->
+          <div style="background: #F1F5F9; border-radius: 8px; padding: 12px 14px;">
+            <label style="font-size: 0.75rem; font-weight: 700; color: var(--admin-text-muted); display: block; margin-bottom: 4px;">UNIFIED INVENTORY DEDUCTION WEBHOOK URL</label>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <input type="text" id="mktWebhookUrlInput" class="form-input" value="https://nachiyarherbals.com/api/webhooks/marketplace" readonly style="font-family: monospace; font-size: 0.8125rem; background: #fff;">
+              <button type="button" class="btn-secondary btn-sm" id="btnCopyWebhookUrl" style="white-space: nowrap;">📋 Copy</button>
+            </div>
+            <small style="color: var(--admin-text-muted); font-size: 0.7rem; display: block; margin-top: 4px;">Paste this URL in Flipkart, Amazon &amp; Meesho developer portal to automatically deduct live stock when sales occur.</small>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" id="btnCancelApiModal">Cancel</button>
+          <button type="submit" class="btn-primary">Save API Credentials</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: MARKETPLACE DISPATCH SLIP ==================== -->
+  <div class="modal-overlay" id="marketplaceSlipModal">
+    <div class="modal-box modal-box--medium">
+      <div class="modal-header">
+        <div>
+          <h2 id="modalSlipTitle">Marketplace Packing &amp; Dispatch Slip</h2>
+          <p style="font-size: 0.8125rem; color: var(--admin-text-muted); margin-top: 2px;">Official courier manifest &amp; tax declaration for channel logistics.</p>
+        </div>
+        <button class="modal-close-btn" id="modalSlipClose">✕</button>
+      </div>
+
+      <div class="modal-body-scroll" style="padding: 20px;" id="marketplaceSlipContent">
+        <!-- Dynamically rendered -->
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" id="btnCloseSlipModal">Close</button>
+        <button type="button" class="btn-primary" onclick="window.print()">🖨️ Print Dispatch Slip</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: CHANNEL DEEP-DIVE & INTELLIGENCE ==================== -->
+  <div class="modal-overlay" id="modalChannelDeepDive">
+    <div class="modal-box modal-box--large">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span class="mkt-logo-circle" id="deepDiveLogoCircle" style="width: 40px; height: 40px; font-size: 1.2rem;">F</span>
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <h2 id="deepDiveChannelTitle" style="margin: 0; font-size: 1.25rem;">Flipkart Marketplace Seller Intelligence</h2>
+              <span class="badge-tag paid" id="deepDiveStatusTag" style="font-size: 0.7rem;">🟢 Live Sync</span>
+            </div>
+            <p id="deepDiveSubtitle" style="font-size: 0.8125rem; color: var(--admin-text-muted); margin-top: 2px;">Seller ID: FK_NACHIYAR_77 • Automated Catalog &amp; Multi-Channel Inventory Management</p>
+          </div>
+        </div>
+        <button class="modal-close-btn" id="modalDeepDiveClose">✕</button>
+      </div>
+
+      <div class="modal-body-scroll" style="padding: 22px;">
+        <!-- Purpose Callout Banner -->
+        <div style="background: #F0F9FF; border: 1px solid #BAE6FD; border-radius: 10px; padding: 12px 16px; margin-bottom: 20px; display: flex; gap: 12px; align-items: flex-start;">
+          <span style="font-size: 1.25rem;">💡</span>
+          <div>
+            <strong style="color: #0369A1; font-size: 0.875rem; display: block; margin-bottom: 2px;">Channel Integration Purpose:</strong>
+            <p style="font-size: 0.8125rem; color: #0C4A6E; margin: 0; line-height: 1.45;">
+              Intha channel moolama namma Nachiyar products direct-ah antha marketplace-la sell aagi, stock auto-deduct aagum. Neenga inga irunthey sales performance, commission deductions, bank settlement amounts, matrum individual dispatch orders-ah track &amp; manage pannalam.
+            </p>
+          </div>
+        </div>
+
+        <!-- 4 Health & Performance Metrics -->
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px;">
+          <div style="background: #FFF; border: 1px solid var(--admin-border); border-radius: 10px; padding: 14px; text-align: center;">
+            <small style="color: var(--admin-text-muted); font-size: 0.7rem; font-weight: 700; text-transform: uppercase;">Seller Rating</small>
+            <div style="font-size: 1.35rem; font-weight: 900; color: #D97706; margin-top: 4px;">4.9 ★</div>
+            <span style="font-size: 0.6875rem; color: #059669; font-weight: 700;">Top Platinum Tier</span>
+          </div>
+          <div style="background: #FFF; border: 1px solid var(--admin-border); border-radius: 10px; padding: 14px; text-align: center;">
+            <small style="color: var(--admin-text-muted); font-size: 0.7rem; font-weight: 700; text-transform: uppercase;">On-Time Dispatch SLA</small>
+            <div style="font-size: 1.35rem; font-weight: 900; color: #059669; margin-top: 4px;">99.8%</div>
+            <span style="font-size: 0.6875rem; color: #059669; font-weight: 700;">Within 24 Hours</span>
+          </div>
+          <div style="background: #FFF; border: 1px solid var(--admin-border); border-radius: 10px; padding: 14px; text-align: center;">
+            <small style="color: var(--admin-text-muted); font-size: 0.7rem; font-weight: 700; text-transform: uppercase;">Return / RTO Rate</small>
+            <div style="font-size: 1.35rem; font-weight: 900; color: var(--admin-text-main); margin-top: 4px;">1.2%</div>
+            <span style="font-size: 0.6875rem; color: #059669; font-weight: 700;">Industry Benchmark &lt; 2%</span>
+          </div>
+          <div style="background: #FFF; border: 1px solid var(--admin-border); border-radius: 10px; padding: 14px; text-align: center;">
+            <small style="color: var(--admin-text-muted); font-size: 0.7rem; font-weight: 700; text-transform: uppercase;">Active Listings</small>
+            <div style="font-size: 1.35rem; font-weight: 900; color: var(--admin-primary); margin-top: 4px;">3 Items</div>
+            <span style="font-size: 0.6875rem; color: #059669; font-weight: 700;">100% In Stock</span>
+          </div>
+        </div>
+
+        <!-- Financial Statement & Payout Card -->
+        <div style="background: #F8FAFC; border: 1px solid var(--admin-border); border-radius: 12px; padding: 18px; margin-bottom: 20px;">
+          <h4 style="margin: 0 0 12px 0; font-size: 0.9375rem; font-weight: 800; color: var(--admin-text-main); display: flex; justify-content: space-between;">
+            <span>💳 Financial Settlement &amp; Bank Transfer Breakdown</span>
+            <span style="font-size: 0.75rem; color: var(--admin-text-muted); font-weight: 600;">Bank A/c: HDFC Bank ••••4012</span>
+          </h4>
+
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; font-size: 0.84375rem;">
+            <div style="background: #FFF; border: 1px solid var(--admin-border); border-radius: 8px; padding: 12px;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                <span style="color: var(--admin-text-muted);">Total Gross Orders Value:</span>
+                <strong id="deepDiveGrossVal">₹1,48,250</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 6px; color: #DC2626;">
+                <span>Platform Commission:</span>
+                <strong id="deepDiveFeeVal">-₹22,238</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between; color: #DC2626;">
+                <span>Logistics &amp; Shipping Charges:</span>
+                <strong id="deepDiveShippingFeeVal">-₹5,500</strong>
+              </div>
+            </div>
+
+            <div style="background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 8px; padding: 12px;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                <span style="color: #166534; font-weight: 700;">Total Settled in Bank:</span>
+                <strong style="color: #059669; font-size: 1.1rem;" id="deepDiveSettledVal">₹1,20,512</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--admin-text-muted); margin-top: 8px;">
+                <span>Next Scheduled Payout Date:</span>
+                <strong style="color: #1E293B;">15th Oct 2026</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--admin-text-muted); margin-top: 4px;">
+                <span>Pending Clearance Amount:</span>
+                <strong style="color: #D97706;">₹18,400</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Formulations Listed on this Channel -->
+        <h4 style="margin: 0 0 10px 0; font-size: 0.9375rem; font-weight: 800;">🌿 Formulations Published on this Channel</h4>
+        <div id="deepDiveProductsList" style="display: grid; gap: 8px;">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+        <button type="button" class="btn-secondary" id="btnDeepDiveClose">Close</button>
+        <div style="display: flex; gap: 10px;">
+          <a href="#" target="_blank" rel="noopener noreferrer" class="btn-secondary" id="btnDeepDiveExternalLink" style="text-decoration: none;">
+            <span>🌐 Open Seller Portal</span>
+          </a>
+          <button type="button" class="btn-primary" id="btnDeepDiveViewOrders">
+            <span>📋 View Channel Orders &amp; Details ↓</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== ORDER CANCELLATION & REFUND MODAL ==================== -->
+  <div class="modal-overlay" id="orderRefundModalOverlay">
+    <div class="modal-card" style="max-width: 560px;">
+      <div class="modal-header" style="background: #FFF1F2; border-bottom: 1px solid #FECDD3;">
+        <div>
+          <h3 style="margin: 0; font-size: 1.15rem; color: #9F1239;" id="refundModalTitle">Cancel Order & Process Refund</h3>
+          <p style="margin: 2px 0 0; font-size: 0.8125rem; color: #BE123C;">Review cancellation request and authorize payment refund & stock restock.</p>
+        </div>
+        <button type="button" class="modal-close" id="btnRefundModalClose">✕</button>
+      </div>
+
+      <div class="modal-body" style="padding: 22px;">
+        <input type="hidden" id="refundOrderId">
+        <input type="hidden" id="refundOrderNumber">
+
+        <div style="background: #FFF; border: 1px solid var(--admin-border); border-radius: 10px; padding: 14px; margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span style="color: var(--admin-text-muted); font-size: 0.8125rem;">Customer:</span>
+            <strong id="refundCustName" style="font-size: 0.875rem;">-</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span style="color: var(--admin-text-muted); font-size: 0.8125rem;">Payment Method:</span>
+            <span class="badge-tag paid" id="refundPaymentMethod">UPI</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span style="color: var(--admin-text-muted); font-size: 0.8125rem;">Cancellation Reason:</span>
+            <span id="refundReasonText" style="font-weight: 600; color: #991B1B; font-size: 0.8125rem; max-width: 60%; text-align: right;">-</span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--admin-text-muted); font-size: 0.8125rem;">Total Order Value:</span>
+            <strong id="refundTotalAmount" style="color: #059669; font-size: 1.05rem;">₹0</strong>
+          </div>
+        </div>
+
+        <div id="refundOnlineInputs">
+          <div class="form-group">
+            <label style="font-weight: 700; font-size: 0.8125rem;">Refund Amount (₹) *</label>
+            <input type="number" id="refundAmountInput" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label style="font-weight: 700; font-size: 0.8125rem;">Refund Transaction UTR / Ref ID (Optional)</label>
+            <input type="text" id="refundUtrInput" class="form-input" placeholder="e.g. UTR-982401842">
+          </div>
+        </div>
+
+        <div id="refundCodNotice" style="display:none; background: #F3F4F6; border: 1px solid #E5E7EB; border-radius: 8px; padding: 12px; margin-bottom: 12px; font-size: 0.8125rem; color: #374151;">
+          ℹ️ <strong>Cash on Delivery (COD) Order:</strong> No refund payment required. Approving will cancel the dispatch and automatically restore products to inventory stock.
+        </div>
+
+        <div style="background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 8px; padding: 10px 14px; font-size: 0.8125rem; color: #166534;">
+          🔄 <strong>Automatic Inventory Restock:</strong> All items in this order will be automatically credited back to Unified Inventory and audit-logged.
+        </div>
+      </div>
+
+      <div class="modal-footer" style="display: flex; justify-content: space-between;">
+        <button type="button" class="btn-secondary" id="btnRefundModalCancel">Cancel</button>
+        <button type="button" class="btn-primary" id="btnConfirmApproveRefund" style="background: #DC2626; border-color: #DC2626; color: #FFF; font-weight: 700;">
+          <span>✓ Authorize Cancellation & Restock</span>
+        </button>
       </div>
     </div>
   </div>

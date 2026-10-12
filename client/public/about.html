@@ -49,7 +49,26 @@
 </head>
 <body class="page-body">
 
-  <header class="site-header">
+  <!-- ==================== ANNOUNCEMENT TICKER ==================== -->
+  <aside class="announcement-bar" role="complementary" aria-label="Store Announcement">
+    <div class="announcement-ticker">
+      <div class="ticker-track" id="headerTickerTrack">
+        <span>ROYAL BOTANICAL CARE ✦ FREE PAN-INDIA SHIPPING OVER ₹599</span>
+        <span>•</span>
+        <span>COLD-PRESSED IN SMALL BATCHES ✦ 100% PURE ACTIVE HERBS</span>
+        <span>•</span>
+        <span>USE CODE <strong class="code-highlight">ROYAL10</strong> FOR 10% OFF YOUR FIRST RITUAL</span>
+        <span>•</span>
+        <span>ROYAL BOTANICAL CARE ✦ FREE PAN-INDIA SHIPPING OVER ₹599</span>
+        <span>•</span>
+        <span>COLD-PRESSED IN SMALL BATCHES ✦ 100% PURE ACTIVE HERBS</span>
+        <span>•</span>
+        <span>USE CODE <strong class="code-highlight">ROYAL10</strong> FOR 10% OFF YOUR FIRST RITUAL</span>
+      </div>
+    </div>
+  </aside>
+
+  <header class="site-header" id="siteHeader">
     <div class="header-container">
       <!-- Mobile Menu Trigger -->
       <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Toggle navigation menu">
@@ -71,7 +90,7 @@
       <nav class="desktop-nav">
         <ul class="nav-links">
           <li><a href="/" class="nav-link">Home</a></li>
-          <li><a href="shop.html" class="nav-link">Shop Formulations</a></li>
+          <li><a href="shop.html" class="nav-link">Shop Rituals</a></li>
           <li><a href="about.html" class="nav-link" style="color:var(--color-gold-dark);">About Us</a></li>
           <li><a href="contact.html" class="nav-link">Contact</a></li>
         </ul>
@@ -87,7 +106,16 @@
           <span class="user-label" id="navAccountLabel">Sign In</span>
         </button>
 
-        <a href="checkout.html" class="cart-trigger-btn"><span>Bag</span></a>
+        <!-- Cart Trigger -->
+        <button class="cart-trigger-btn" id="cartTriggerBtn" aria-label="View shopping bag">
+          <svg class="cart-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <path d="M16 10a4 4 0 0 1-8 0"></path>
+          </svg>
+          <span class="cart-label">Bag</span>
+          <span class="cart-count-badge" id="cartCountBadge">0</span>
+        </button>
       </div>
     </div>
   </header>
@@ -170,6 +198,73 @@
       </div>
     </div>
   </footer>
+
+  <!-- ==================== INTERACTIVE SLIDE-OUT CART DRAWER ==================== -->
+  <aside class="cart-drawer-overlay" id="cartOverlay" aria-hidden="true">
+    <div class="cart-drawer" id="cartDrawer" role="dialog" aria-label="Your Shopping Bag">
+      
+      <div class="cart-drawer-header">
+        <div class="cart-title-row">
+          <h3 class="cart-drawer-title">Your Royal Bag</h3>
+          <span class="cart-item-count-text">(<span id="cartDrawerItemCount">0</span> items)</span>
+        </div>
+        <button class="cart-close-btn" id="cartCloseBtn" aria-label="Close bag">✕</button>
+      </div>
+
+      <div class="free-shipping-tier">
+        <div class="tier-message-row">
+          <span id="shippingTierMessage">Add ₹599 more for Free Pan-India Delivery!</span>
+          <span class="tier-icon">🚚</span>
+        </div>
+        <div class="tier-progress-track">
+          <div class="tier-progress-fill" id="shippingProgressFill" style="width: 0%;"></div>
+        </div>
+      </div>
+
+      <div class="cart-items-container" id="cartItemsList">
+        <div class="cart-empty-state" id="cartEmptyState">
+          <div class="empty-icon">🌿</div>
+          <h4>Your bag is currently empty</h4>
+          <p>Treat your hair to royal botanical restoration.</p>
+          <a href="shop.html" class="btn btn--primary empty-shop-btn">Explore Formulations</a>
+        </div>
+      </div>
+
+      <div class="cart-upsell-module" id="cartUpsellModule" style="display: none;">
+        <span class="upsell-badge">✦ PERFECT PAIRING</span>
+        <div class="upsell-content">
+          <img src="assets/hibiscus-shampoo.jpg" alt="Upsell item" class="upsell-img" id="upsellImg">
+          <div class="upsell-details">
+            <h5 id="upsellTitle">Hibiscus Flower Shampoo</h5>
+            <p class="upsell-price">₹549 <small>• 250ml</small></p>
+            <button class="btn-upsell-add" id="btnUpsellAdd">+ Add to Bag</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="cart-drawer-footer" id="cartFooter">
+        <div class="cart-subtotal-row">
+          <span>Subtotal</span>
+          <span class="subtotal-val" id="cartSubtotalVal">₹0</span>
+        </div>
+        <div class="cart-shipping-row">
+          <span>Pan-India Delivery</span>
+          <span class="shipping-val" id="cartShippingVal">Calculated next step</span>
+        </div>
+        <p class="cart-taxes-note">Inclusive of all taxes. 100% Satisfaction Guarantee.</p>
+
+        <a href="checkout.html" class="btn-checkout" id="checkoutBtn" style="text-decoration:none;">
+          <span>Proceed To Royal Checkout</span>
+          <span class="checkout-arrow">→</span>
+        </a>
+      </div>
+
+    </div>
+  </aside>
+
+  <div class="cart-toast" id="cartToast" aria-live="polite"></div>
+
+  <script src="app.js"></script>
   <script src="customer-account.js"></script>
 </body>
 </html>

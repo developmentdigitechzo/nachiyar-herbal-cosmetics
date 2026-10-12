@@ -373,9 +373,13 @@
           </div>
 
           <!-- Coupon Code Input -->
-          <div style="display:flex; gap:10px; margin-block:16px;">
-            <input type="text" id="couponCodeInput" class="checkout-input" placeholder="Voucher Code (e.g. ROYAL10)">
-            <button type="button" class="btn-secondary" id="btnApplyCoupon" style="white-space:nowrap;">Apply</button>
+          <div style="margin-block:16px;">
+            <label style="display:block; font-size:0.8125rem; font-weight:700; color:var(--color-primary); margin-bottom:6px;">🎟️ Coupon Code (Optional)</label>
+            <div style="display:flex; gap:10px;">
+              <input type="text" id="couponCodeInput" class="checkout-input" placeholder="e.g. ROYAL15" style="text-transform:uppercase; font-weight:700; letter-spacing:0.04em;">
+              <button type="button" class="btn-secondary" id="btnApplyCoupon" style="white-space:nowrap; font-weight:700;">Apply</button>
+            </div>
+            <div id="couponFeedbackMsg" style="font-size:0.8125rem; font-weight:600; margin-top:6px; display:none;"></div>
           </div>
 
           <div style="border-top:1px solid var(--color-border); padding-top:16px;">
@@ -419,16 +423,21 @@
       const btnPlaceOrder = document.getElementById('btnPlaceOrder');
 
       let discountAmount = 0;
+      let appliedCouponCode = '';
       let activePaymentMethod = 'cod'; // default selection
       let selectedUpiApp = 'Google Pay';
       let selectedBank = 'HDFC Bank';
       let paymentMethodsConfig = {};
+      let storePublicSettings = {};
 
-      // 1. Fetch Admin Payment Settings
+      // 1. Fetch Admin Payment & Coupon Settings
       try {
         const settingsRes = await fetch('/api/settings/public').then(r => r.json());
-        if (settingsRes.success && settingsRes.data && settingsRes.data.paymentMethods) {
-          paymentMethodsConfig = settingsRes.data.paymentMethods;
+        if (settingsRes.success && settingsRes.data) {
+          storePublicSettings = settingsRes.data;
+          if (settingsRes.data.paymentMethods) {
+            paymentMethodsConfig = settingsRes.data.paymentMethods;
+          }
         } else {
           // Fallback if settings not yet initialized
           paymentMethodsConfig = {
@@ -444,7 +453,8 @@
 
       function calculateTotals() {
         const subtotal = cart.reduce((s, i) => s + (i.price * i.qty), 0);
-        const shipping = subtotal >= 599 ? 0 : 70;
+        const freeShipMin = Number(storePublicSettings?.freeShippingThreshold) || 599;
+        const shipping = subtotal >= freeShipMin ? 0 : 70;
         const total = Math.max(0, subtotal - discountAmount) + shipping;
         return { subtotal, shipping, total };
       }
@@ -668,7 +678,7 @@
 
       function renderCheckout() {
         if (cart.length === 0) {
-          itemsList.innerHTML = '<p style="color:var(--color-text-muted); padding:20px; text-align:center;">Your bag is empty. <a href="shop.html">Shop Formulations</a></p>';
+          itemsList.innerHTML = '<p style="color:var(--color-text-muted); padding:20px; text-align:center;">Your bag is empty. <a href="shop.html">Shop Rituals</a></p>';
           subtotalVal.textContent = '₹0';
           totalVal.textContent = '₹0';
           btnPlaceOrder.disabled = true;
@@ -712,21 +722,102 @@
         renderPaymentMethods();
       }
 
-      btnApplyCoupon.onclick = () => {
+      btnApplyCoupon.onclick = async () => {
         const code = couponInput.value.trim().toUpperCase();
-        const subtotal = cart.reduce((s, i) => s + (i.price * i.qty), 0);
-
-        if (code === 'ROYAL10') {
-          discountAmount = Math.round(subtotal * 0.1);
-          alert(`Coupon ROYAL10 applied! You saved ₹${discountAmount}`);
-          renderCheckout();
-        } else if (code === 'ROYAL15') {
-          discountAmount = Math.round(subtotal * 0.15);
-          alert(`Mystery Voucher ROYAL15 applied! You saved ₹${discountAmount}`);
-          renderCheckout();
-        } else {
-          alert('Invalid voucher code.');
+        const feedback = document.getElementById('couponFeedbackMsg');
+        if (!code) {
+          if (feedback) {
+            feedback.style.display = 'block';
+            feedback.style.color = '#DC2626';
+            feedback.textContent = '⚠️ Please enter a coupon code.';
+          } else alert('Please enter a coupon code.');
+          return;
         }
+
+        // Live check from API or localStorage
+        let savedLocalCoupon = {};
+        try {
+          savedLocalCoupon = JSON.parse(localStorage.getItem('nachiyar_active_coupon') || '{}');
+        } catch (e) {}
+
+        try {
+          const freshRes = await fetch('/api/coupon/active').then(r => r.json());
+          if (freshRes.success && freshRes.data) {
+            storePublicSettings = { ...storePublicSettings, ...freshRes.data };
+          }
+        } catch (e) {}
+
+        const subtotal = cart.reduce((s, i) => s + (i.price * i.qty), 0);
+        const configuredCode = (storePublicSettings?.couponCode || savedLocalCoupon?.couponCode || 'FESTIVE15').toUpperCase();
+        const configuredPct = Number(storePublicSettings?.discountPercent || savedLocalCoupon?.discountPercent || 15);
+        const expiryStr = storePublicSettings?.couponExpiryDate || savedLocalCoupon?.couponExpiryDate || '';
+        let isCouponActive = true;
+        if (storePublicSettings && typeof storePublicSettings.couponActive === 'boolean') {
+          isCouponActive = storePublicSettings.couponActive;
+        } else if (typeof savedLocalCoupon?.couponActive === 'boolean') {
+          isCouponActive = savedLocalCoupon.couponActive;
+        }
+
+        // Valid codes: either admin configured code, FESTIVE15, ROYAL15, ROYAL10
+        const isMatch = (code === configuredCode) || (code === 'FESTIVE15') || (code === 'ROYAL10') || (code === 'ROYAL15');
+
+        if (!isMatch) {
+          discountAmount = 0;
+          appliedCouponCode = '';
+          renderCheckout();
+          if (feedback) {
+            feedback.style.display = 'block';
+            feedback.style.color = '#DC2626';
+            feedback.textContent = `❌ Invalid coupon code "${code}". Please verify and try again.`;
+          } else alert('Invalid coupon code.');
+          return;
+        }
+
+        if (!isCouponActive) {
+          discountAmount = 0;
+          appliedCouponCode = '';
+          renderCheckout();
+          if (feedback) {
+            feedback.style.display = 'block';
+            feedback.style.color = '#DC2626';
+            feedback.textContent = `⚠️ Coupon code "${code}" is currently disabled.`;
+          } else alert('Coupon is currently inactive.');
+          return;
+        }
+
+        // Check expiry date
+        if (expiryStr) {
+          const expDate = new Date(expiryStr);
+          expDate.setHours(23, 59, 59, 999);
+          if (Date.now() > expDate.getTime()) {
+            discountAmount = 0;
+            appliedCouponCode = '';
+            renderCheckout();
+            if (feedback) {
+              feedback.style.display = 'block';
+              feedback.style.color = '#DC2626';
+              feedback.textContent = `⏰ This coupon expired on ${new Date(expiryStr).toLocaleDateString('en-IN')}.`;
+            } else alert('This coupon code has expired.');
+            return;
+          }
+        }
+
+        // Calculate discount percentage
+        let appliedPct = configuredPct;
+        if (code === 'ROYAL10') appliedPct = 10;
+        else if (code === configuredCode || code === 'FESTIVE15') appliedPct = configuredPct;
+        else if (code === 'ROYAL15') appliedPct = 15;
+
+        discountAmount = Math.round(subtotal * (appliedPct / 100));
+        appliedCouponCode = code;
+
+        if (feedback) {
+          feedback.style.display = 'block';
+          feedback.style.color = '#059669';
+          feedback.textContent = `🎉 Coupon "${code}" Applied! ${appliedPct}% discount deducted (-₹${discountAmount}).`;
+        }
+
+        renderCheckout();
       };
 
       checkoutForm.onsubmit = async (e) => {
@@ -817,22 +908,44 @@
           console.warn('Backend API unavailable, saving order to local session:', apiErr);
         }
 
-        // Always save order into customer orders store as reliable fallback
+        // Always save order and customer into session stores
         try {
+          // 1. Sync active customer profile
+          localStorage.setItem('nachiyar_customer', JSON.stringify({
+            id: 'cust_' + Date.now(),
+            name: payload.customer.name,
+            email: payload.customer.email,
+            phone: payload.customer.phone,
+            address: payload.customer.address,
+            city: payload.customer.city,
+            state: payload.customer.state,
+            pincode: payload.customer.pincode
+          }));
+
+          // 2. Track placed order numbers
+          const placedNumbers = JSON.parse(localStorage.getItem('nachiyar_placed_orders') || '[]');
+          if (!placedNumbers.includes(orderNumber)) placedNumbers.unshift(orderNumber);
+          localStorage.setItem('nachiyar_placed_orders', JSON.stringify(placedNumbers));
+
+          // 3. Save order into customer orders store
           const storedOrders = JSON.parse(localStorage.getItem('nachiyar_customer_orders') || '[]');
           storedOrders.unshift({
             id: orderId,
             orderNumber: orderNumber,
             customer: payload.customer,
             items: payload.items,
-            pricing: payload.pricing,
-            paymentMethod: payload.paymentMethod,
-            status: 'confirmed',
+            subtotal: subtotal,
+            discount: discountAmount,
+            shipping: shipping,
             total: total,
+            paymentMethod: payload.paymentMethod,
+            status: 'placed',
             createdAt: new Date().toISOString()
           });
           localStorage.setItem('nachiyar_customer_orders', JSON.stringify(storedOrders));
-        } catch (e) {}
+        } catch (e) {
+          console.warn('LocalStorage save error:', e);
+        }
 
         localStorage.removeItem('nachiyar_cart');
         window.location.href = `order-status.html?orderId=${orderId}&orderNumber=${orderNumber}`;

@@ -376,6 +376,18 @@
       border: 1px solid #FCD34D;
     }
 
+    .order-status-pill--cancel_requested {
+      background-color: #FFEDD5;
+      color: #C2410C;
+      border: 1px solid #FDBA74;
+    }
+
+    .order-status-pill--cancelled {
+      background-color: #FEE2E2;
+      color: #991B1B;
+      border: 1px solid #FCA5A5;
+    }
+
     /* Order Card Body */
     .order-card-main {
       padding: 24px;
@@ -1369,6 +1381,9 @@
       </div>
 
       <div class="order-modal-footer">
+        <button type="button" class="btn-order-cancel" id="modalBtnCancelOrder" style="background:#FFF1F2; color:#DC2626; border:1px solid #FECDD3; padding:8px 16px; border-radius:999px; font-weight:700; cursor:pointer;" onclick="triggerCancelModalForActiveOrder()">
+          <span>🚫 Cancel Order</span>
+        </button>
         <button type="button" class="btn-order-invoice" id="modalBtnDownloadInvoice" onclick="downloadInvoiceReceipt()">
           <span>📄 Download Official Tax Invoice</span>
         </button>
@@ -1376,6 +1391,88 @@
           <span>Done</span>
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- ==================== FLIPKART / AMAZON / MEESHO STYLE CANCELLATION MODAL ==================== -->
+  <div class="order-modal-backdrop" id="userCancelOrderModalBackdrop">
+    <div class="order-modal-window" style="max-width: 620px; max-height: 88vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 60px rgba(0,0,0,0.3);">
+      <div class="order-modal-header" style="background: #FFF1F2; border-bottom: 1px solid #FECDD3; flex-shrink: 0; padding: 18px 24px;">
+        <div>
+          <h3 style="margin: 0; font-size: 1.25rem; font-family: var(--font-display); color: #9F1239;" id="cancelModalOrderHeading">Cancel Order</h3>
+          <p style="margin: 2px 0 0; font-size: 0.8125rem; color: #BE123C;">Please select the reason for cancelling your handcrafted botanical order.</p>
+        </div>
+        <button type="button" class="modal-close-icon-btn" onclick="closeCancelOrderModal()" style="color: #9F1239; background: rgba(159, 18, 57, 0.08);">✕</button>
+      </div>
+
+      <form id="cancelOrderForm" onsubmit="submitOrderCancellation(event)" style="display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; margin: 0;">
+        <div class="order-modal-body" style="padding: 20px 24px; overflow-y: auto; flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 16px;">
+          <!-- Reason Selection List (Radio tiles like Flipkart/Amazon) -->
+          <div>
+            <label style="display: block; font-size: 0.875rem; font-weight: 700; margin-bottom: 10px; color: var(--color-text-main);">
+              Why are you cancelling this order? *
+            </label>
+            <div class="cancel-reasons-list" style="display: flex; flex-direction: column; gap: 8px;">
+              <label class="cancel-reason-item" style="display: flex; align-items: center; gap: 10px; padding: 9px 13px; border: 1.5px solid var(--color-border); border-radius: 10px; cursor: pointer; transition: all 0.2s; background: #FFF;">
+                <input type="radio" name="cancelReason" value="Expected delivery time is too long / Need it urgently" required checked>
+                <span style="font-size: 0.84rem;">⏱️ Expected delivery time is too long / Need it urgently</span>
+              </label>
+              <label class="cancel-reason-item" style="display: flex; align-items: center; gap: 10px; padding: 9px 13px; border: 1.5px solid var(--color-border); border-radius: 10px; cursor: pointer; transition: all 0.2s; background: #FFF;">
+                <input type="radio" name="cancelReason" value="Order created by mistake / Placed duplicate order">
+                <span style="font-size: 0.84rem;">🛒 Order created by mistake / Placed duplicate order</span>
+              </label>
+              <label class="cancel-reason-item" style="display: flex; align-items: center; gap: 10px; padding: 9px 13px; border: 1.5px solid var(--color-border); border-radius: 10px; cursor: pointer; transition: all 0.2s; background: #FFF;">
+                <input type="radio" name="cancelReason" value="Want to change delivery address or phone number">
+                <span style="font-size: 0.84rem;">📍 Want to change shipping address or mobile number</span>
+              </label>
+              <label class="cancel-reason-item" style="display: flex; align-items: center; gap: 10px; padding: 9px 13px; border: 1.5px solid var(--color-border); border-radius: 10px; cursor: pointer; transition: all 0.2s; background: #FFF;">
+                <input type="radio" name="cancelReason" value="Want to change formulation items or bottle quantity">
+                <span style="font-size: 0.84rem;">🌿 Want to modify items or ritual bottles</span>
+              </label>
+              <label class="cancel-reason-item" style="display: flex; align-items: center; gap: 10px; padding: 9px 13px; border: 1.5px solid var(--color-border); border-radius: 10px; cursor: pointer; transition: all 0.2s; background: #FFF;">
+                <input type="radio" name="cancelReason" value="Found cheaper alternative / Bought from local store">
+                <span style="font-size: 0.84rem;">💰 Found cheaper alternative / Bought locally</span>
+              </label>
+              <label class="cancel-reason-item" style="display: flex; align-items: center; gap: 10px; padding: 9px 13px; border: 1.5px solid var(--color-border); border-radius: 10px; cursor: pointer; transition: all 0.2s; background: #FFF;">
+                <input type="radio" name="cancelReason" value="Payment or checkout issue / Changed mind">
+                <span style="font-size: 0.84rem;">💳 Payment issue or changed my mind</span>
+              </label>
+              <label class="cancel-reason-item" style="display: flex; align-items: center; gap: 10px; padding: 9px 13px; border: 1.5px solid var(--color-border); border-radius: 10px; cursor: pointer; transition: all 0.2s; background: #FFF;">
+                <input type="radio" name="cancelReason" value="Other reason">
+                <span style="font-size: 0.84rem;">❓ Other reason</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Comments Textarea -->
+          <div>
+            <label style="display: block; font-size: 0.8125rem; font-weight: 700; color: var(--color-text-main); margin-bottom: 4px;">
+              Additional Comments / Feedback (Optional)
+            </label>
+            <textarea id="cancelCommentsInput" rows="2" class="form-input" style="width: 100%; border-radius: 8px; padding: 10px; border: 1px solid var(--color-border); font-family: inherit; font-size: 0.84rem;" placeholder="Any details for our customer care team..."></textarea>
+          </div>
+
+          <!-- Refund Details Box (Dynamic based on payment mode) -->
+          <div id="cancelRefundInfoBox" style="background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 12px; padding: 12px 16px;">
+            <strong style="color: #166534; font-size: 0.84rem; display: block; margin-bottom: 4px;">
+              💳 Online Payment Refund Policy:
+            </strong>
+            <p style="font-size: 0.8125rem; color: #14532D; margin: 0; line-height: 1.45;" id="cancelRefundInfoText">
+              Upon admin approval, your full refund will be credited directly to your original payment source (UPI / Bank Account) within 2-4 business days.
+            </p>
+          </div>
+        </div>
+
+        <!-- Sticky Footer with Prominent Actions -->
+        <div class="order-modal-footer" style="background: #FAF8F5; border-top: 1px solid var(--color-border); padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; z-index: 10;">
+          <button type="button" class="btn-order-view" onclick="closeCancelOrderModal()" style="border-radius: 999px; background: transparent; color: var(--color-text-main); border: 1.5px solid var(--color-border); padding: 10px 20px;">
+            <span>Don't Cancel (Keep Order)</span>
+          </button>
+          <button type="submit" class="btn-order-cancel" id="btnConfirmSubmitCancellation" style="background: #DC2626; color: #FFF; border: none; padding: 12px 24px; border-radius: 999px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 14px rgba(220, 38, 38, 0.35);">
+            <span>🚫 Confirm Cancellation →</span>
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -1410,7 +1507,7 @@
     let currentFilterStatus = 'all';
     let searchQuery = '';
     let currentPage = 1;
-    const ordersPerPage = 4;
+    const ordersPerPage = 20;
     let activeModalOrder = null;
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -1422,7 +1519,18 @@
         } catch (e) {}
       }
 
-      // If not logged in, offer quick demo or redirect
+      // If no active customer in storage, inspect if any order was placed recently
+      if (!activeCustomer) {
+        try {
+          const recentOrders = JSON.parse(localStorage.getItem('nachiyar_customer_orders') || '[]');
+          if (recentOrders.length > 0 && recentOrders[0].customer) {
+            activeCustomer = recentOrders[0].customer;
+            localStorage.setItem('nachiyar_customer', JSON.stringify(activeCustomer));
+          }
+        } catch (e) {}
+      }
+
+      // If still not logged in, offer quick demo or redirect
       if (!activeCustomer) {
         document.getElementById('dashboardHeroSection').style.display = 'none';
         document.getElementById('dashboardMainContainer').style.display = 'none';
@@ -1468,11 +1576,78 @@
 
     async function loadCustomerOrders() {
       try {
-        const res = await fetch(`/api/customer/orders?email=${encodeURIComponent(activeCustomer.email)}&phone=${encodeURIComponent(activeCustomer.phone || '')}`);
-        const json = await res.json();
-        allCustomerOrders = json.data || [];
+        const orderMap = new Map();
 
-        // If no orders returned from DB, fall back to rich demo orders list
+        // 1. Fetch orders from backend matching active customer
+        if (activeCustomer && (activeCustomer.email || activeCustomer.phone)) {
+          try {
+            const res = await fetch(`/api/customer/orders?email=${encodeURIComponent(activeCustomer.email || '')}&phone=${encodeURIComponent(activeCustomer.phone || '')}`);
+            if (res.ok) {
+              const json = await res.json();
+              (json.data || []).forEach(o => orderMap.set(o.orderNumber, o));
+            }
+          } catch (e) {
+            console.warn('API customer orders fetch error:', e);
+          }
+        }
+
+        // 2. Also check any orders stored in nachiyar_placed_orders
+        const placedNums = (() => {
+          try { return JSON.parse(localStorage.getItem('nachiyar_placed_orders') || '[]'); } catch(e) { return []; }
+        })();
+
+        for (const ordNum of placedNums) {
+          if (!orderMap.has(ordNum)) {
+            try {
+              const res = await fetch(`/api/orders/${encodeURIComponent(ordNum)}`);
+              if (res.ok) {
+                const json = await res.json();
+                if (json.success && json.data) {
+                  orderMap.set(json.data.orderNumber, json.data);
+                }
+              }
+            } catch (e) {}
+          }
+        }
+
+        // 3. Also merge from local cached orders (nachiyar_customer_orders)
+        try {
+          const localStored = JSON.parse(localStorage.getItem('nachiyar_customer_orders') || '[]');
+          localStored.forEach(o => {
+            if (o.orderNumber && !orderMap.has(o.orderNumber)) {
+              orderMap.set(o.orderNumber, o);
+            }
+          });
+        } catch (e) {}
+
+        // 4. Also check if activeCustomer phone (last 10 digits) or email matches any orders in /api/orders
+        try {
+          const resAll = await fetch('/api/orders');
+          if (resAll.ok) {
+            const jsonAll = await resAll.json();
+            const allDbOrders = jsonAll.data || [];
+            const userPhoneClean = (activeCustomer?.phone || '').replace(/\D/g, '').slice(-10);
+            const userEmailClean = (activeCustomer?.email || '').trim().toLowerCase();
+
+            allDbOrders.forEach(o => {
+              const c = o.customer || {};
+              const oPhone = (c.phone || '').replace(/\D/g, '').slice(-10);
+              const oEmail = (c.email || '').trim().toLowerCase();
+
+              if ((userPhoneClean && oPhone && userPhoneClean === oPhone) ||
+                  (userEmailClean && oEmail && userEmailClean === oEmail)) {
+                orderMap.set(o.orderNumber, o);
+              }
+            });
+          }
+        } catch (e) {}
+
+        allCustomerOrders = Array.from(orderMap.values());
+
+        // Sort newest first
+        allCustomerOrders.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+        // If no orders returned anywhere, only then fall back to rich demo orders list
         if (allCustomerOrders.length === 0) {
           allCustomerOrders = getFallbackOrders();
         }
@@ -1635,6 +1810,12 @@
       } else if (status === 'processing') {
         statusClass = 'order-status-pill--processing';
         statusLabel = 'Apothecary Prepared';
+      } else if (status === 'cancel_requested') {
+        statusClass = 'order-status-pill--cancel_requested';
+        statusLabel = '⏳ Cancellation Requested';
+      } else if (status === 'cancelled') {
+        statusClass = 'order-status-pill--cancelled';
+        statusLabel = '🚫 Order Cancelled';
       }
 
       const items = ord.items || [];
@@ -1690,11 +1871,24 @@
               </div>
               <div class="order-product-names-lockup">
                 <h4>${productNamesSummary}</h4>
-                <p>${status === 'delivered' ? 'Handed over directly to recipient' : 'Estimated Delivery within 24-48 business hours via Express Courier'}</p>
+                <p>${status === 'delivered' ? 'Handed over directly to recipient' : (status === 'cancelled' ? 'This order was cancelled. Refund processed.' : (status === 'cancel_requested' ? 'Cancellation request submitted and pending review.' : 'Estimated Delivery within 24-48 business hours via Express Courier'))}</p>
               </div>
             </div>
 
             <div class="order-card-actions" onclick="event.stopPropagation()">
+              ${(status === 'placed' || status === 'processing' || status === 'shipped') ? `
+                <button type="button" class="btn-order-cancel" onclick="triggerCancelModalForOrder('${ord.orderNumber}')" style="background:#FFF1F2; color:#DC2626; border:1px solid #FECDD3; padding:8px 16px; border-radius:999px; font-size:0.8125rem; font-weight:700; cursor:pointer;">
+                  <span>🚫 Cancel Order</span>
+                </button>
+              ` : (status === 'cancel_requested' ? `
+                <span style="font-size:0.75rem; color:#C2410C; background:#FFEDD5; border:1px solid #FDBA74; padding:6px 12px; border-radius:999px; font-weight:700;">
+                  ⏳ Cancellation Review Pending
+                </span>
+              ` : (status === 'cancelled' ? `
+                <span style="font-size:0.75rem; color:#991B1B; background:#FEE2E2; border:1px solid #FCA5A5; padding:6px 12px; border-radius:999px; font-weight:700;">
+                  🚫 Cancelled &amp; Refunded
+                </span>
+              ` : ''))}
               <button type="button" class="btn-order-view" onclick="openOrderModal('${ord.orderNumber}')">
                 <span>View Order Details</span>
                 <span>→</span>
@@ -1742,6 +1936,22 @@
 
       // Set 5-stage tracking timeline
       updateModalTimeline(order.status);
+
+      // Cancel button visibility
+      const cancelBtn = document.getElementById('modalBtnCancelOrder');
+      if (cancelBtn) {
+        if (order.status === 'placed' || order.status === 'processing' || order.status === 'shipped') {
+          cancelBtn.style.display = 'inline-flex';
+          cancelBtn.innerHTML = '<span>🚫 Cancel Order</span>';
+          cancelBtn.disabled = false;
+        } else if (order.status === 'cancel_requested') {
+          cancelBtn.style.display = 'inline-flex';
+          cancelBtn.innerHTML = '<span>⏳ Cancellation In Review</span>';
+          cancelBtn.disabled = true;
+        } else {
+          cancelBtn.style.display = 'none';
+        }
+      }
 
       // Render Item List
       const itemsList = document.getElementById('modalItemsList');
@@ -1797,6 +2007,7 @@
 
       // Reset
       [step1, step2, step3, step4, step5].forEach(s => s.className = 'timeline-step');
+      fillLine.style.background = 'linear-gradient(90deg, #10B981 0%, #7C5AAB 100%)';
 
       if (status === 'placed') {
         fillLine.style.width = '10%';
@@ -1833,8 +2044,153 @@
         step5.classList.add('is-done');
         title.textContent = 'Delivered Successfully to Your Doorstep';
         desc.textContent = 'Package received in good condition. Thank you for revering your hair with Nachiyar.';
+      } else if (status === 'cancel_requested') {
+        fillLine.style.width = '30%';
+        fillLine.style.background = '#F97316';
+        step1.classList.add('is-done');
+        title.textContent = 'Cancellation Request Under Review ⏳';
+        desc.textContent = 'Your request to cancel this order has been submitted. Our team is reviewing and processing refund if applicable.';
+      } else if (status === 'cancelled') {
+        fillLine.style.width = '100%';
+        fillLine.style.background = '#DC2626';
+        step1.classList.add('is-done');
+        title.textContent = 'Order Cancelled 🚫';
+        desc.textContent = 'This order was cancelled and items restocked. Any online payments are refunded to your original source.';
       }
     }
+
+    // ==================== CANCELLATION CONTROLLER (FLIPKART / AMAZON STYLE) ====================
+    let activeCancelOrderNumber = null;
+
+    window.triggerCancelModalForOrder = function(orderNumber) {
+      const order = allCustomerOrders.find(o => o.orderNumber === orderNumber);
+      if (!order) return;
+      activeCancelOrderNumber = orderNumber;
+      
+      document.getElementById('cancelModalOrderHeading').textContent = `Cancel Order #${order.orderNumber}`;
+      
+      // Update refund note based on payment method
+      const isCod = (order.paymentMethod || '').toLowerCase().includes('cash') || (order.paymentMethod || '').toLowerCase().includes('cod');
+      const refundInfoBox = document.getElementById('cancelRefundInfoBox');
+      const refundInfoText = document.getElementById('cancelRefundInfoText');
+      if (refundInfoBox && refundInfoText) {
+        if (isCod) {
+          refundInfoBox.style.background = '#F3F4F6';
+          refundInfoBox.style.borderColor = '#E5E7EB';
+          refundInfoBox.querySelector('strong').style.color = '#374151';
+          refundInfoBox.querySelector('strong').textContent = '💵 Cash On Delivery Cancellation:';
+          refundInfoText.style.color = '#4B5563';
+          refundInfoText.textContent = 'No payment was collected. Your order dispatch will be stopped immediately without any cancellation fee.';
+        } else {
+          refundInfoBox.style.background = '#F0FDF4';
+          refundInfoBox.style.borderColor = '#BBF7D0';
+          refundInfoBox.querySelector('strong').style.color = '#166534';
+          refundInfoBox.querySelector('strong').textContent = '💳 Online Payment Refund Policy:';
+          refundInfoText.style.color = '#14532D';
+          refundInfoText.textContent = `Paid amount ₹${order.total} will be refunded directly to your original payment source (${order.paymentMethod || 'UPI/Card'}) upon admin verification within 2-4 business days.`;
+        }
+      }
+
+      document.getElementById('userCancelOrderModalBackdrop').classList.add('is-open');
+      document.body.style.overflow = 'hidden';
+    };
+
+    window.triggerCancelModalForActiveOrder = function() {
+      if (!activeModalOrder) return;
+      closeOrderModal();
+      triggerCancelModalForOrder(activeModalOrder.orderNumber);
+    };
+
+    window.closeCancelOrderModal = function() {
+      const m = document.getElementById('userCancelOrderModalBackdrop');
+      if (m) m.classList.remove('is-open');
+      document.body.style.overflow = '';
+      activeCancelOrderNumber = null;
+    };
+
+    window.submitOrderCancellation = async function(e) {
+      e.preventDefault();
+      if (!activeCancelOrderNumber) return;
+
+      const btn = document.getElementById('btnConfirmSubmitCancellation');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = 'Submitting Request...';
+      }
+
+      const selectedReason = document.querySelector('input[name="cancelReason"]:checked')?.value || 'Customer requested cancellation';
+      const comments = document.getElementById('cancelCommentsInput')?.value || '';
+
+      try {
+        let isSuccess = false;
+
+        // 1. Try dedicated cancellation request endpoint
+        try {
+          const res = await fetch(`/api/orders/${encodeURIComponent(activeCancelOrderNumber)}/cancel-request`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              reason: selectedReason,
+              comments: comments,
+              refundPreference: 'original_source'
+            })
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            if (data.success) {
+              isSuccess = true;
+            }
+          }
+        } catch (apiErr) {
+          console.warn('Direct cancel-request endpoint unreachable, attempting fallback:', apiErr);
+        }
+
+        // 2. Seamless fallback: If node server process was not yet restarted, use active PATCH endpoint
+        if (!isSuccess) {
+          const patchRes = await fetch(`/api/orders/${encodeURIComponent(activeCancelOrderNumber)}/status`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'cancel_requested' })
+          });
+
+          if (patchRes.ok) {
+            const patchData = await patchRes.json();
+            if (patchData.success) {
+              isSuccess = true;
+              // Cache questionnaire reason for Admin display
+              try {
+                const cancelCache = JSON.parse(localStorage.getItem('nachiyar_cancellations') || '{}');
+                cancelCache[activeCancelOrderNumber] = {
+                  reason: selectedReason,
+                  comments: comments,
+                  refundPreference: 'original_source',
+                  requestedAt: new Date().toISOString()
+                };
+                localStorage.setItem('nachiyar_cancellations', JSON.stringify(cancelCache));
+              } catch (e) {}
+            }
+          }
+        }
+
+        if (isSuccess) {
+          alert('Cancellation request submitted successfully! Our team will review and approve your cancellation and process your refund.');
+          closeCancelOrderModal();
+          // Reload orders
+          await loadCustomerOrders();
+        } else {
+          alert('Unable to submit cancellation request at this moment. Please contact care@nachiyarherbals.com');
+        }
+      } catch (err) {
+        console.error('Cancellation error:', err);
+        alert('Network error submitting cancellation request. Please try again.');
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '<span>🚫 Confirm Cancellation →</span>';
+        }
+      }
+    };
 
     // Invoice Generator
     window.downloadInvoiceForOrder = function(orderNumber) {
@@ -2014,5 +2370,6 @@
       });
     }
   </script>
+  <script src="customer-account.js"></script>
 </body>
 </html>

@@ -100,14 +100,75 @@ document.addEventListener('DOMContentLoaded', async () => {
   const mysteryTab = document.getElementById('mysteryTab');
   const mysteryDismiss = document.getElementById('mysteryDismiss');
 
+  // Helper: Synchronize Admin Business, Invoicing & Contact Details across Storefront
+  function updateStorefrontBusinessDetails(settings) {
+    if (!settings) return;
+    try {
+      localStorage.setItem('nachiyar_store_settings', JSON.stringify(settings));
+    } catch (e) {}
+
+    // Update Phone Links & Text
+    if (settings.supportPhone) {
+      const cleanPhone = settings.supportPhone.replace(/\s+/g, '');
+      const phoneEls = document.querySelectorAll('#footerContactPhone, #contactStorePhone, .dynamic-store-phone');
+      phoneEls.forEach(el => {
+        el.textContent = settings.supportPhone;
+        if (el.tagName === 'A') el.href = `tel:${cleanPhone}`;
+      });
+    }
+
+    // Update Email Links & Text
+    if (settings.supportEmail) {
+      const emailEls = document.querySelectorAll('#footerContactEmail, #contactStoreEmail, .drawer-support, .dynamic-store-email');
+      emailEls.forEach(el => {
+        if (el.classList.contains('drawer-support')) {
+          el.textContent = `Customer Concierge: ${settings.supportEmail}`;
+        } else {
+          el.textContent = settings.supportEmail;
+        }
+        if (el.tagName === 'A') el.href = `mailto:${settings.supportEmail}`;
+      });
+    }
+
+    // Update Registered Address
+    if (settings.storeAddress) {
+      const addrEls = document.querySelectorAll('#footerContactAddress, #contactStoreAddress, .dynamic-store-address');
+      addrEls.forEach(el => {
+        el.textContent = settings.storeAddress;
+      });
+    }
+
+    // Update Store / Boutique Hours
+    if (settings.storeTimings) {
+      const timeEls = document.querySelectorAll('#contactStoreTimings, .dynamic-store-timings');
+      timeEls.forEach(el => {
+        el.textContent = `(${settings.storeTimings})`;
+      });
+    }
+
+    // Update Brand Name & Bio
+    if (settings.brandName) {
+      const brandEls = document.querySelectorAll('#footerBrandName, .dynamic-store-brand');
+      brandEls.forEach(el => {
+        el.textContent = settings.brandName;
+      });
+    }
+  }
+
+  // Pre-apply cached settings from localStorage for instant zero-flicker render
+  try {
+    const cachedSettings = JSON.parse(localStorage.getItem('nachiyar_store_settings') || 'null');
+    if (cachedSettings) updateStorefrontBusinessDetails(cachedSettings);
+  } catch (e) {}
+
   // Fetch live products & settings from REST API
   try {
     const [pRes, sRes] = await Promise.all([
-      fetch('/api/products').then(r => r.json()),
-      fetch('/api/settings').then(r => r.json())
+      fetch('/api/products').then(r => r.json()).catch(() => ({ success: false })),
+      fetch('/api/settings/public').then(r => r.json()).catch(() => ({ success: false }))
     ]);
 
-    if (pRes.success && pRes.data.length) {
+    if (pRes.success && pRes.data && pRes.data.length) {
       // Map live API products into our dynamic frontend store
       pRes.data.forEach(p => {
         if (p.slug === 'herbal-hair-oil' || p.name.includes('Oil')) {
@@ -120,27 +181,108 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     }
 
-    if (sRes.success) {
-      FREE_SHIPPING_THRESHOLD = sRes.data.freeShippingThreshold || 599;
-      if (sRes.data.announcementText) {
-        const track = document.getElementById('headerTickerTrack');
-        if (track) {
-          track.innerHTML = `
-            <span>${sRes.data.announcementText}</span>
-            <span>•</span>
-            <span>${sRes.data.announcementText}</span>
-          `;
+    if (sRes.success && sRes.data) {
+      const data = sRes.data;
+      FREE_SHIPPING_THRESHOLD = data.freeShippingThreshold || 599;
+
+      // 1. Dynamic Storefront Business & Contact Information Sync
+      updateStorefrontBusinessDetails(data);
+
+      // 2. Storefront Top Running Ticker & Banner Controls
+      const savedLocalCoupon = JSON.parse(localStorage.getItem('nachiyar_active_coupon') || '{}');
+      const activeCouponCode = (data.couponCode || savedLocalCoupon?.couponCode || 'FESTIVE15').toUpperCase();
+      const activeDiscountPct = Number(data.discountPercent || savedLocalCoupon?.discountPercent || 15);
+      const activeExpiry = data.couponExpiryDate || savedLocalCoupon?.couponExpiryDate || '';
+
+      // Check explicit toggle from server first
+      let isCouponActive = false;
+      if (typeof data.couponActive === 'boolean') {
+        isCouponActive = data.couponActive;
+      } else if (typeof savedLocalCoupon?.couponActive === 'boolean') {
+        isCouponActive = savedLocalCoupon.couponActive;
+      }
+
+      // Check expiration date
+      if (isCouponActive && activeExpiry) {
+        const expDate = new Date(activeExpiry);
+        expDate.setHours(23, 59, 59, 999);
+        if (Date.now() > expDate.getTime()) {
+          isCouponActive = false;
+        }
+      }
+
+      // Update cached active coupon in localStorage
+      try {
+        localStorage.setItem('nachiyar_active_coupon', JSON.stringify({
+          couponCode: activeCouponCode,
+          discountPercent: activeDiscountPct,
+          couponExpiryDate: activeExpiry,
+          couponActive: isCouponActive
+        }));
+      } catch (err) {}
+
+      // Render Header Running Ticker
+      const track = document.getElementById('headerTickerTrack');
+      if (track) {
+        const ann = data.announcementText || 'ROYAL BOTANICAL CARE • FREE PAN-INDIA SHIPPING OVER ₹599';
+        const expText = activeExpiry ? ` (VALID TILL ${new Date(activeExpiry).toLocaleDateString('en-IN')})` : '';
+        const couponSnippet = isCouponActive ? `USE CODE: ${activeCouponCode} FOR ${activeDiscountPct}% OFF${expText}` : '';
+        const fullMessage = couponSnippet ? `${ann}  ✦  ${couponSnippet}` : ann;
+
+        track.innerHTML = `
+          <span>${fullMessage}</span>
+          <span>•</span>
+          <span>${fullMessage}</span>
+        `;
+      }
+
+      // 3. Flipkart / Amazon Style Promotional Hero Banner
+      const promoBanner = document.getElementById('promoHeroBanner');
+      if (promoBanner) {
+        if (!isCouponActive) {
+          promoBanner.style.display = 'none';
+        } else {
+          promoBanner.style.display = 'block';
+          const discEl = document.getElementById('promoBannerDiscount');
+          const codeEl = document.getElementById('promoBannerCode');
+          const pillEl = document.getElementById('promoBannerCodePill');
+          const expEl = document.getElementById('promoBannerExpiryText');
+          if (discEl) discEl.textContent = `${activeDiscountPct}%`;
+          if (codeEl) codeEl.textContent = activeCouponCode;
+          if (pillEl) pillEl.textContent = activeCouponCode;
+          if (expEl) expEl.textContent = activeExpiry ? `Valid till ${new Date(activeExpiry).toLocaleDateString('en-IN')}.` : 'Valid for a limited period.';
+
+          const btnCopy = document.getElementById('btnCopyPromoCoupon');
+          if (btnCopy) {
+            btnCopy.onclick = () => {
+              if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(activeCouponCode).then(() => {
+                  const btnTxt = document.getElementById('copyPromoBtnText');
+                  if (btnTxt) {
+                    btnTxt.textContent = '✓ Copied!';
+                    setTimeout(() => { btnTxt.textContent = '📋 Copy Code'; }, 2000);
+                  }
+                }).catch(() => {
+                  prompt('Copy your coupon code:', activeCouponCode);
+                });
+              } else {
+                prompt('Copy your coupon code:', activeCouponCode);
+              }
+            };
+          }
         }
       }
     }
   } catch (err) {
-    console.log('Running with built-in catalog data');
+    console.log('Running with built-in catalog data:', err);
   }
 
   // Header Scroll
   window.addEventListener('scroll', () => {
-    if (window.scrollY > 40) siteHeader.classList.add('is-scrolled');
-    else siteHeader.classList.remove('is-scrolled');
+    if (siteHeader) {
+      if (window.scrollY > 40) siteHeader.classList.add('is-scrolled');
+      else siteHeader.classList.remove('is-scrolled');
+    }
   });
 
   // Mobile Drawer

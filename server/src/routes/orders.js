@@ -16,6 +16,7 @@ function mapOrder(row) {
     paymentMethod: row.payment_method,
     paymentStatus: row.payment_status,
     status: row.status,
+    cancellationDetails: row.cancellation_details ? (typeof row.cancellation_details === 'string' ? JSON.parse(row.cancellation_details) : row.cancellation_details) : null,
     createdAt: row.created_at
   };
 }
@@ -222,6 +223,190 @@ router.patch('/:id/status', async (req, res) => {
     res.json({ success: true, data: mapOrder(result.rows[0]) });
   } catch (err) {
     console.error('Error updating order status:', err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// 4. POST /api/orders/:id/cancel-request (Customer submits cancellation request with questionnaire)
+router.post('/:id/cancel-request', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { reason, comments, refundPreference } = req.body;
+
+    const existing = await query('SELECT * FROM orders WHERE id = $1 OR order_number = $1 LIMIT 1', [id]);
+    if (existing.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Order not found' });
+    }
+
+    const currentOrder = existing.rows[0];
+    if (currentOrder.status === 'delivered') {
+      return res.status(400).json({ success: false, message: 'Delivered orders cannot be cancelled. You may contact care desk for returns.' });
+    }
+    if (currentOrder.status === 'cancelled') {
+      return res.status(400).json({ success: false, message: 'This order is already cancelled.' });
+    }
+
+    const cancellationData = {
+      reason: reason || 'Customer requested cancellation',
+      comments: comments || '',
+      refundPreference: refundPreference || 'original_payment_source',
+      requestedAt: new Date().toISOString(),
+      status: 'pending'
+    };
+
+    const updateRes = await query(`
+      UPDATE orders 
+      SET status = 'cancel_requested',
+          cancellation_details = $1
+      WHERE id = $2 OR order_number = $2
+      RETURNING *
+    `, [JSON.stringify(cancellationData), id]);
+
+    res.json({
+      success: true,
+      message: 'Cancellation request submitted successfully. Awaiting admin review.',
+      data: mapOrder(updateRes.rows[0])
+    });
+  } catch (err) {
+    console.error('Error submitting cancellation request:', err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// 5. POST /api/orders/:id/cancel-approve (Admin Approves Cancellation, Processes Refund & Restores Inventory Stock)
+router.post('/:id/cancel-approve', async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const { id } = req.params;
+    const { refundAmount, refundMode, refundUtr, refundNotes } = req.body;
+
+    await client.query('BEGIN');
+
+    const existing = await client.query('SELECT * FROM orders WHERE id = $1 OR order_number = $1 FOR UPDATE', [id]);
+    if (existing.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ success: false, message: 'Order not found' });
+    }
+
+    const orderRow = existing.rows[0];
+    const orderItems = typeof orderRow.items === 'string' ? JSON.parse(orderRow.items) : orderRow.items;
+    const isOnlinePaid = !/cod|cash on delivery/i.test(orderRow.payment_method || '');
+
+    // Restore stock back into unified matrix
+    for (const item of orderItems) {
+      const prodId = item.productId || item.id;
+      const qty = Math.max(1, Number(item.qty || 1));
+      const pRes = await client.query('SELECT id, name, stock, online_sold FROM products WHERE id = $1', [prodId]);
+      if (pRes.rows.length > 0) {
+        const prod = pRes.rows[0];
+        const prevStock = Number(prod.stock) || 0;
+        const newStock = prevStock + qty;
+        const newOnlineSold = Math.max(0, (Number(prod.online_sold) || 0) - qty);
+
+        await client.query(
+          'UPDATE products SET stock = $1, online_sold = $2, updated_at = NOW() WHERE id = $3',
+          [newStock, newOnlineSold, prodId]
+        );
+
+        await client.query(`
+          INSERT INTO inventory_logs (
+            id, product_id, product_name, channel, reference,
+            change, prev_stock, new_stock, timestamp, reason
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), $9)
+        `, [
+          `log_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+          prod.id,
+          prod.name,
+          'online',
+          orderRow.order_number,
+          qty,
+          prevStock,
+          newStock,
+          `Order #${orderRow.order_number} Cancellation Accepted & Restocked (+${qty})`
+        ]);
+      }
+    }
+
+    // Build approved cancellation details
+    const existingCancelDetails = orderRow.cancellation_details 
+      ? (typeof orderRow.cancellation_details === 'string' ? JSON.parse(orderRow.cancellation_details) : orderRow.cancellation_details) 
+      : {};
+
+    const updatedCancelDetails = {
+      ...existingCancelDetails,
+      status: 'approved',
+      approvedAt: new Date().toISOString(),
+      refundAmount: Number(refundAmount !== undefined ? refundAmount : orderRow.total),
+      refundMode: refundMode || (isOnlinePaid ? 'Original Source (UPI / Card)' : 'N/A (Cash on Delivery)'),
+      refundUtr: refundUtr || `REF_${Date.now()}`,
+      refundNotes: refundNotes || (isOnlinePaid ? 'Full refund initiated to customer account' : 'COD order cancelled prior to delivery')
+    };
+
+    const newPaymentStatus = isOnlinePaid ? 'refunded' : 'cancelled';
+
+    const updateRes = await client.query(`
+      UPDATE orders 
+      SET status = 'cancelled',
+          payment_status = $1,
+          cancellation_details = $2
+      WHERE id = $3 OR order_number = $3
+      RETURNING *
+    `, [newPaymentStatus, JSON.stringify(updatedCancelDetails), id]);
+
+    await client.query('COMMIT');
+
+    res.json({
+      success: true,
+      message: `Order #${orderRow.order_number} cancelled successfully. Inventory restored and refund recorded.`,
+      data: mapOrder(updateRes.rows[0])
+    });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error('Error approving cancellation:', err);
+    res.status(500).json({ success: false, message: err.message });
+  } finally {
+    client.release();
+  }
+});
+
+// 6. POST /api/orders/:id/cancel-reject (Admin Rejects Cancellation Request)
+router.post('/:id/cancel-reject', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { rejectionReason } = req.body;
+
+    const existing = await query('SELECT * FROM orders WHERE id = $1 OR order_number = $1 LIMIT 1', [id]);
+    if (existing.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Order not found' });
+    }
+
+    const orderRow = existing.rows[0];
+    const existingCancelDetails = orderRow.cancellation_details 
+      ? (typeof orderRow.cancellation_details === 'string' ? JSON.parse(orderRow.cancellation_details) : orderRow.cancellation_details) 
+      : {};
+
+    const updatedCancelDetails = {
+      ...existingCancelDetails,
+      status: 'rejected',
+      rejectedAt: new Date().toISOString(),
+      rejectionReason: rejectionReason || 'Order has already been prepared and dispatched via express courier.'
+    };
+
+    const updateRes = await query(`
+      UPDATE orders 
+      SET status = 'processing',
+          cancellation_details = $1
+      WHERE id = $2 OR order_number = $2
+      RETURNING *
+    `, [JSON.stringify(updatedCancelDetails), id]);
+
+    res.json({
+      success: true,
+      message: `Cancellation request for Order #${orderRow.order_number} was rejected. Order returned to processing.`,
+      data: mapOrder(updateRes.rows[0])
+    });
+  } catch (err) {
+    console.error('Error rejecting cancellation:', err);
     res.status(500).json({ success: false, message: err.message });
   }
 });

@@ -24,85 +24,177 @@
   } catch (e) {}
 
   document.addEventListener('DOMContentLoaded', () => {
-    ensureMobileNavDrawer();
-    injectAccountUI();
-    bindNavbarAccountButton();
+    ensureMobileCurvedBottomNav();
+    if (!window.location.pathname.includes('account.html')) {
+      injectAccountUI();
+      bindNavbarAccountButton();
+    }
     updateNavbarUserState();
 
     // Auto open drawer if redirected from login/register
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('open_account') === 'true') {
+    if (urlParams.get('open_account') === 'true' && !window.location.pathname.includes('account.html')) {
       setTimeout(openAccountDrawer, 300);
     }
   });
 
-  // Ensure Mobile Drawer is always present and active on all customer pages
-  function ensureMobileNavDrawer() {
-    const headerContainer = document.querySelector('.site-header .header-container');
-    if (!headerContainer) return;
+  // Curved Floating Bottom Navigation Bar for Mobile (Home, Shop Rituals, About Us, Contact)
+  function ensureMobileCurvedBottomNav() {
+    // 1. Remove any legacy hamburger toggles and drawers
+    const existingToggle = document.getElementById('mobileNavToggle');
+    if (existingToggle) existingToggle.remove();
+    document.querySelectorAll('.mobile-nav-toggle').forEach(el => el.remove());
 
-    let toggleBtn = document.getElementById('mobileNavToggle');
-    if (!toggleBtn) {
-      toggleBtn = document.createElement('button');
-      toggleBtn.id = 'mobileNavToggle';
-      toggleBtn.className = 'mobile-nav-toggle';
-      toggleBtn.setAttribute('aria-label', 'Toggle navigation menu');
-      toggleBtn.innerHTML = `
-        <span class="hamburger-line"></span>
-        <span class="hamburger-line"></span>
-        <span class="hamburger-line"></span>
-      `;
-      headerContainer.insertBefore(toggleBtn, headerContainer.firstChild);
+    const existingDrawer = document.getElementById('mobileDrawer');
+    if (existingDrawer) existingDrawer.remove();
+    document.querySelectorAll('.mobile-drawer').forEach(el => el.remove());
+
+    if (document.getElementById('mobileCurvedBottomNav')) return;
+
+    const NAV_ITEMS = [
+      {
+        id: 'home',
+        name: 'Home',
+        url: '/',
+        match: ['/', '/index.html', 'index.html'],
+        icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5L12 3l9 7.5V20a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V10.5z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`
+      },
+      {
+        id: 'shop',
+        name: 'Shop Rituals',
+        url: 'shop.html',
+        match: ['shop.html', 'product.html'],
+        icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>`
+      },
+      {
+        id: 'about',
+        name: 'About Us',
+        url: 'about.html',
+        match: ['about.html'],
+        icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 4 13C4 7 11 2 20 2c0 9-5 16-11 16z"/><path d="M8 16c2-3 5-6 9-8"/></svg>`
+      },
+      {
+        id: 'contact',
+        name: 'Contact',
+        url: 'contact.html',
+        match: ['contact.html'],
+        icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="13" y2="13"/></svg>`
+      }
+    ];
+
+    // Detect active page index
+    const currentPath = (window.location.pathname || '').toLowerCase();
+    let activeIndex = -1;
+
+    for (let idx = 0; idx < NAV_ITEMS.length; idx++) {
+      const item = NAV_ITEMS[idx];
+      let matched = false;
+      for (const pattern of item.match) {
+        if (pattern === '/' && (currentPath.endsWith('/') || currentPath === '' || currentPath.endsWith('index.html'))) {
+          matched = true;
+          break;
+        } else if (pattern !== '/' && currentPath.includes(pattern)) {
+          matched = true;
+          break;
+        }
+      }
+      if (matched) {
+        activeIndex = idx;
+        break;
+      }
     }
 
-    let drawer = document.getElementById('mobileDrawer');
-    if (!drawer) {
-      drawer = document.createElement('div');
-      drawer.id = 'mobileDrawer';
-      drawer.className = 'mobile-drawer';
-      drawer.innerHTML = `
-        <div class="mobile-drawer-inner">
-          <div class="mobile-drawer-header">
-            <span class="drawer-title">Navigation</span>
-            <button class="drawer-close-btn" id="mobileDrawerClose" aria-label="Close menu">✕</button>
+    if (activeIndex === -1 && (currentPath === '' || currentPath.endsWith('/'))) {
+      activeIndex = 0;
+    }
+
+    const nav = document.createElement('nav');
+    nav.id = 'mobileCurvedBottomNav';
+    nav.className = 'mobile-curved-bottom-nav';
+    nav.setAttribute('aria-label', 'Mobile Navigation');
+
+    nav.innerHTML = `
+      <div class="mobile-nav-tabs" id="mobileNavTabs">
+        <div class="mobile-nav-glider-wrapper" id="mobileNavGlider">
+          <div class="nav-wave-shape">
+            <svg viewBox="0 0 110 34" class="nav-wave-svg" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M 0,34 C 24,34 30,24 38,12 C 46,0 55,0 64,0 C 72,0 80,12 88,24 C 94,34 100,34 110,34 L 110,38 L 0,38 Z" fill="#FFFFFF"/>
+              <path d="M 0,34 C 24,34 30,24 38,12 C 46,0 55,0 64,0 C 72,0 80,12 88,24 C 94,34 100,34 110,34" fill="none" stroke="rgba(124, 90, 171, 0.22)" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
           </div>
-          <ul class="mobile-nav-list">
-            <li><a href="/" class="mobile-link">Home</a></li>
-            <li><a href="shop.html" class="mobile-link" style="color:var(--color-lavender-primary); font-weight:800;">Shop Rituals (View & Buy) →</a></li>
-            <li><a href="about.html" class="mobile-link">About Us</a></li>
-            <li><a href="contact.html" class="mobile-link">Contact</a></li>
-            <li><a href="account.html" class="mobile-link" style="font-weight:700;">My Account & Orders</a></li>
-          </ul>
-          <div class="mobile-drawer-footer">
-            <p class="drawer-support">Customer Concierge: care@nachiyarherbals.com</p>
+          <div class="nav-bubble-circle" id="navBubbleCircle">
+            <div class="bubble-icon-slot" id="bubbleIconSlot"></div>
           </div>
         </div>
-      `;
-      document.body.appendChild(drawer);
-    }
+        ${NAV_ITEMS.map((item, idx) => `
+          <a href="${item.url}" class="mobile-nav-tab ${idx === activeIndex ? 'is-active' : ''}" data-idx="${idx}">
+            <span class="tab-icon-wrap">${item.icon}</span>
+            <span class="tab-label">${item.name}</span>
+          </a>
+        `).join('')}
+      </div>
+    `;
 
-    const closeBtn = document.getElementById('mobileDrawerClose');
+    document.body.appendChild(nav);
 
-    toggleBtn.onclick = (e) => {
-      e.stopPropagation();
-      drawer.classList.add('is-open');
-      document.body.style.overflow = 'hidden';
-    };
+    const glider = document.getElementById('mobileNavGlider');
+    const bubble = document.getElementById('navBubbleCircle');
+    const bubbleSlot = document.getElementById('bubbleIconSlot');
+    const tabs = nav.querySelectorAll('.mobile-nav-tab');
 
-    if (closeBtn) {
-      closeBtn.onclick = (e) => {
-        e.stopPropagation();
-        drawer.classList.remove('is-open');
-        document.body.style.overflow = '';
-      };
-    }
-
-    drawer.onclick = (e) => {
-      if (e.target === drawer) {
-        drawer.classList.remove('is-open');
-        document.body.style.overflow = '';
+    function updateActiveGlider(idx, animateBubble = true) {
+      if (idx < 0 || idx >= NAV_ITEMS.length) {
+        if (glider) glider.style.opacity = '0';
+        tabs.forEach(t => t.classList.remove('is-active'));
+        return;
       }
-    };
+      if (glider) {
+        glider.style.opacity = '1';
+        glider.style.transform = `translateX(${idx * 100}%)`;
+      }
+      if (bubbleSlot) {
+        bubbleSlot.innerHTML = NAV_ITEMS[idx].icon;
+      }
+      tabs.forEach((t, i) => {
+        if (i === idx) {
+          t.classList.add('is-active');
+        } else {
+          t.classList.remove('is-active');
+        }
+      });
+      if (animateBubble && bubble) {
+        bubble.classList.remove('is-bouncing');
+        void bubble.offsetWidth;
+        bubble.classList.add('is-bouncing');
+      }
+    }
+
+    // Set initial position
+    if (activeIndex >= 0) {
+      updateActiveGlider(activeIndex, false);
+    } else {
+      if (glider) glider.style.opacity = '0';
+    }
+
+    // Bind smooth navigation and glide animation
+    tabs.forEach((tab, idx) => {
+      tab.addEventListener('click', (e) => {
+        const isCurrent = (idx === activeIndex);
+        if (isCurrent) {
+          e.preventDefault();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          updateActiveGlider(idx, true);
+          return;
+        }
+
+        e.preventDefault();
+        updateActiveGlider(idx, true);
+        const targetUrl = tab.getAttribute('href');
+        setTimeout(() => {
+          window.location.href = targetUrl;
+        }, 220);
+      });
+    });
   }
 
   // 1. Update navbar button state
@@ -149,7 +241,7 @@
     if (btn) {
       btn.onclick = (e) => {
         e.preventDefault();
-        window.location.href = 'account.html';
+        openAccountDrawer();
       };
     }
   }
@@ -388,9 +480,23 @@
     try {
       const res = await fetch(`/api/customer/orders?email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone || '')}`);
       const json = await res.json();
-      const orders = json.data || [];
+      const dbOrders = json.data || [];
+      const orderMap = new Map();
+      dbOrders.forEach(o => orderMap.set(o.orderNumber, o));
 
-      if (countPill) countPill.textContent = `${orders.length} Orders`;
+      try {
+        const localStored = JSON.parse(localStorage.getItem('nachiyar_customer_orders') || '[]');
+        localStored.forEach(o => {
+          if (o.orderNumber && !orderMap.has(o.orderNumber)) {
+            orderMap.set(o.orderNumber, o);
+          }
+        });
+      } catch (e) {}
+
+      const orders = Array.from(orderMap.values());
+      orders.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+      if (countPill) countPill.textContent = `${orders.length} ${orders.length === 1 ? 'Order' : 'Orders'}`;
 
       if (orders.length === 0) {
         container.innerHTML = `
@@ -452,6 +558,14 @@
       stepIndex = 4;
       trackFillPercent = '100%';
       statusNotice = 'Package delivered successfully to your doorstep.';
+    } else if (status === 'cancel_requested') {
+      stepIndex = 1;
+      trackFillPercent = '30%';
+      statusNotice = 'Cancellation requested by you. Admin review & refund processing in progress.';
+    } else if (status === 'cancelled') {
+      stepIndex = 0;
+      trackFillPercent = '100%';
+      statusNotice = 'Order cancelled. Amount refunded to original payment mode.';
     }
 
     const items = ord.items || [];
@@ -477,12 +591,12 @@
         <div class="tracking-stepper-wrap">
           <div class="stepper-progress-bar">
             <div class="stepper-track-line"></div>
-            <div class="stepper-track-fill" style="width: ${trackFillPercent};"></div>
+            <div class="stepper-track-fill" style="width: ${trackFillPercent}; ${status === 'cancelled' ? 'background:#DC2626;' : ''}"></div>
 
             <!-- Step 1: Placed -->
             <div class="stepper-node ${stepIndex >= 1 ? (stepIndex === 1 ? 'is-active' : 'is-done') : ''}">
-              <div class="stepper-circle">${stepIndex > 1 ? '✓' : '1'}</div>
-              <span class="stepper-label">Placed</span>
+              <div class="stepper-circle">${stepIndex > 1 ? '✓' : (status === 'cancelled' ? '✕' : '1')}</div>
+              <span class="stepper-label">${status === 'cancelled' ? 'Cancelled' : 'Placed'}</span>
             </div>
 
             <!-- Step 2: Prepared -->
@@ -506,16 +620,23 @@
         </div>
 
         <!-- Live Status Notice Box -->
-        <div class="tracking-status-notice">
-          <span>⚡</span>
+        <div class="tracking-status-notice" style="${status === 'cancelled' ? 'background:#FEE2E2; border-color:#FCA5A5;' : (status === 'cancel_requested' ? 'background:#FFEDD5; border-color:#FDBA74;' : '')}">
+          <span>${status === 'cancelled' ? '🚫' : (status === 'cancel_requested' ? '⏳' : '⚡')}</span>
           <div>
-            <strong>Status: ${status.toUpperCase()}</strong> — ${statusNotice}
+            <strong>Status: ${(status === 'cancel_requested' ? 'CANCEL REQUESTED' : (status === 'cancelled' ? 'CANCELLED' : status)).toUpperCase()}</strong> — ${statusNotice}
           </div>
         </div>
 
         <!-- Ordered Items Preview -->
         <div class="order-items-preview">
           ${itemsHtml}
+        </div>
+
+        <!-- Actions -->
+        <div style="margin-top:10px; text-align:right;">
+          <a href="account.html" style="font-size:0.75rem; font-weight:700; color:var(--color-lavender-primary); text-decoration:none;">
+            View Details / Cancel in Account →
+          </a>
         </div>
       </div>
     `;
