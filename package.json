@@ -6,9 +6,11 @@
   "scripts": {
     "start": "node server/src/index.js",
     "dev": "node server/src/index.js",
+    "start:prod": "node -e \"process.env.NODE_ENV='production'; require('./server/src/index.js')\"",
     "server": "node server/src/index.js",
     "client": "npm run dev --prefix client",
-    "db:migrate": "node server/src/db/migrate.js"
+    "db:migrate": "node server/src/db/migrate.js",
+    "test:env": "node test-environments.js"
   },
   "dependencies": {
     "cors": "^2.8.5",

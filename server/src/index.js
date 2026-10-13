@@ -1,23 +1,38 @@
-require('dotenv').config();
+const config = require('./config/environment');
 const app = require('./app');
 const { pool } = require('./config/db');
+const storageService = require('./services/storage');
 
-const PORT = process.env.PORT || 5000;
+const PORT = config.port;
 
 // Test DB connection before listening
 pool.query('SELECT NOW()', (err, res) => {
   if (err) {
-    console.error('❌ Could not connect to PostgreSQL:', err);
+    console.error(`❌ [${config.env.toUpperCase()}] PostgreSQL connection failed:`, err.message);
   } else {
-    console.log('✅ PostgreSQL connected successfully at:', res.rows[0].now);
+    console.log(`✅ [${config.env.toUpperCase()}] PostgreSQL connected successfully at:`, res.rows[0].now);
   }
 });
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`==================================================================`);
-  console.log(`🌿 NACHIYAR HERBALS & COSMETICS - NODE + EXPRESS + POSTGRESQL`);
-  console.log(`📡 REST API Server listening on: http://localhost:${PORT}`);
-  console.log(`📦 Health check:                http://localhost:${PORT}/api/health`);
-  console.log(`🧴 Products API:                 http://localhost:${PORT}/api/products`);
+  console.log(`🌿 NACHIYAR HERBALS & COSMETICS - UNIFIED ARCHITECTURE`);
+  console.log(`🌍 Environment:          ${config.env.toUpperCase()}`);
+  console.log(`🗄️ Database:             ${config.database.host || 'PostgreSQL Connection'} (SSL: ${Boolean(config.database.ssl)})`);
+  console.log(`📁 File Storage:         ${storageService.getStorageType().toUpperCase()} (${storageService.getStorageDirectory()})`);
+  console.log(`📡 Storefront:           http://localhost:${PORT}`);
+  console.log(`💼 Admin Console:        http://localhost:${PORT}/admin.html`);
+  console.log(`📦 Health Check:         http://localhost:${PORT}/api/health`);
+  console.log(`🧴 Products API:         http://localhost:${PORT}/api/products`);
   console.log(`==================================================================`);
 });
+
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`\n⚠️ Port ${PORT} is already in use by another process.`);
+  } else {
+    console.error('Server error:', err);
+  }
+});
+
+module.exports = server;

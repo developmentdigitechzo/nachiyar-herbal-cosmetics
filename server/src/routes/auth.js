@@ -3,14 +3,16 @@ const router = express.Router();
 const crypto = require('crypto');
 const { query } = require('../config/db');
 
+const config = require('../config/environment');
+
 // In-memory active session tokens: token -> { user, expiresAt }
 const activeSessions = new Map();
 
-// Default passwords for staff accounts (can be overridden via environment variables)
+// Passwords for staff accounts (loaded from environment configuration)
 const DEFAULT_PASSWORDS = {
-  admin: process.env.ADMIN_PASSWORD || 'admin123',
-  inventory: process.env.INVENTORY_PASSWORD || 'inventory123',
-  billing: process.env.BILLING_PASSWORD || 'billing123'
+  admin: config.auth.adminPassword,
+  inventory: config.auth.inventoryPassword,
+  billing: config.auth.billingPassword
 };
 
 function generateToken() {

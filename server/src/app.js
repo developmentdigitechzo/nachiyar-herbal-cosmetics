@@ -3,6 +3,9 @@ const cors = require('cors');
 const morgan = require('morgan');
 const path = require('path');
 
+const config = require('./config/environment');
+const storageService = require('./services/storage');
+
 const productsRouter = require('./routes/products');
 const ordersRouter = require('./routes/orders');
 const invoicesRouter = require('./routes/invoices');
@@ -36,7 +39,7 @@ app.use((req, res, next) => {
   next();
 });
 
-const projectRoot = path.join(__dirname, '..', '..');
+const projectRoot = config.projectRoot;
 
 // =========================================================================
 // ADMIN ROUTE & PAGE SECURITY GATE
@@ -63,9 +66,18 @@ app.get('/admin-login.html', (req, res) => {
   res.sendFile(path.join(projectRoot, 'admin-login.html'));
 });
 
-// Health check
+// Health check with environment diagnostics
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.json({
+    status: 'ok',
+    environment: config.env,
+    storageType: storageService.getStorageType(),
+    database: {
+      host: config.database.host || (config.database.connectionString ? 'configured' : 'none'),
+      ssl: Boolean(config.database.ssl)
+    },
+    timestamp: new Date().toISOString()
+  });
 });
 
 // Mount Public REST API Routes
@@ -88,35 +100,8 @@ app.get('/api/settings/public', async (req, res) => {
         announcementText: settings.announcementText || 'ROYAL BOTANICAL CARE • FREE PAN-INDIA SHIPPING OVER ₹599',
         freeShippingThreshold: settings.freeShippingThreshold || 599,
         paymentMethods: settings.paymentMethods || {},
-        brandName: settings.brandName || 'Nachiyar Herbals & Cosmetics',
-        gstin: settings.gstin || '33AAACH9876K1Z2',
-        supportPhone: settings.supportPhone || '+91 94440 88990',
-        supportEmail: settings.supportEmail || 'care@nachiyarherbals.com',
-        storeTimings: settings.storeTimings || 'Mon - Sat: 9:30 AM - 8:30 PM',
-        storeAddress: settings.storeAddress || 'Nachiyar Botanical Heritage, No. 18 Temple Ring Road, Madurai, Tamil Nadu - 625001',
-        couponCode: settings.couponCode || 'ROYAL15',
-        discountPercent: Number(settings.discountPercent) || 15,
-        couponExpiryDate: settings.couponExpiryDate || '',
-        couponActive: settings.couponActive !== false && settings.couponActive !== 'false',
-        couponTagline: settings.couponTagline || 'Surprise Royal Privilege Voucher'
-      }
-    });
-  } catch (err) {
-    console.error('Error fetching public settings:', err);
-    res.status(500).json({ success: false, message: err.message });
-  }
-});
-
-// Dedicated public coupon endpoint
-app.get('/api/coupon/active', async (req, res) => {
-  try {
-    const result = await dbQuery('SELECT data FROM site_settings WHERE id = 1');
-    const settings = result.rows.length > 0 ? (typeof result.rows[0].data === 'string' ? JSON.parse(result.rows[0].data) : result.rows[0].data) : {};
-    res.json({
-      success: true,
-      data: {
-        couponCode: settings.couponCode || settings.mysteryCouponCode || 'FESTIVE15',
-        discountPercent: Number(settings.discountPercent) || 15,
+        couponCode: settings.couponCode || 'FESTIVE15',
+        discountPercent: settings.discountPercent || 15,
         couponExpiryDate: settings.couponExpiryDate || '',
         couponActive: settings.couponActive !== false && settings.couponActive !== 'false',
         couponTagline: settings.couponTagline || 'Special Festival Discount'
@@ -148,46 +133,32 @@ app.use('/api/inventory', requireAdminAuth, inventoryRouter);
 app.use('/api/analytics', requireAdminAuth, analyticsRouter);
 app.use('/api/settings', requireAdminAuth, settingsRouter);
 
-// Image Upload Endpoint (Saves base64 image payload to uploads/ folder)
-const fs = require('fs');
-app.post('/api/upload', requireAdminAuth, (req, res) => {
+// Image Upload Endpoint (Environment-aware: Local storage in dev, cPanel storage in prod)
+app.post('/api/upload', requireAdminAuth, async (req, res) => {
   try {
     const { image, filename } = req.body;
     if (!image) {
       return res.status(400).json({ success: false, message: 'Image data is required' });
     }
 
-    const matches = image.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-    let ext = 'jpg';
-    let buffer;
-
-    if (matches && matches.length === 3) {
-      const mime = matches[1];
-      if (mime.includes('png')) ext = 'png';
-      else if (mime.includes('webp')) ext = 'webp';
-      else if (mime.includes('gif')) ext = 'gif';
-      else ext = 'jpg';
-      buffer = Buffer.from(matches[2], 'base64');
-    } else {
-      buffer = Buffer.from(image, 'base64');
-    }
-
-    const uploadsDir = path.join(projectRoot, 'uploads');
-    if (!fs.existsSync(uploadsDir)) {
-      fs.mkdirSync(uploadsDir, { recursive: true });
-    }
-
-    const safeName = `prod_${Date.now()}_${Math.random().toString(36).substr(2, 6)}.${ext}`;
-    const filePath = path.join(uploadsDir, safeName);
-    fs.writeFileSync(filePath, buffer);
-
-    const publicUrl = `uploads/${safeName}`;
-    res.json({ success: true, url: publicUrl, message: 'Image uploaded successfully' });
+    const result = await storageService.saveBase64Image(image, filename);
+    res.json({
+      success: true,
+      url: result.url,
+      filename: result.filename,
+      storageType: result.storageType,
+      message: 'Image uploaded successfully'
+    });
   } catch (err) {
     console.error('Image upload error:', err);
     res.status(500).json({ success: false, message: 'Failed to upload image: ' + err.message });
   }
 });
+
+// Dedicated uploads file serving from active storage directory (Local or cPanel)
+app.use('/uploads', express.static(storageService.getStorageDirectory(), {
+  maxAge: '7d'
+}));
 
 // Static files (storefront assets, public pages, stylesheets)
 // Note: /admin.html is intercepted by the route handler above
