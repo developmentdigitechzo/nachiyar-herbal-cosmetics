@@ -1269,11 +1269,17 @@ body.admin-body {
 }
 
 .badge-tag {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
   padding: 4px 10px;
   border-radius: 999px;
   font-size: 0.6875rem;
   font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+  line-height: 1.2;
 }
 
 .badge-tag.active { background-color: #DEF7EC; color: #03543F; }
@@ -2430,7 +2436,17 @@ body.admin-body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
   margin-bottom: 12px;
+}
+
+.mkt-card-top .badge-tag {
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  padding: 4px 10px !important;
 }
 
 .mkt-brand-badge {
