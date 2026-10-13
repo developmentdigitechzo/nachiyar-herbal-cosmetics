@@ -671,7 +671,7 @@ async function initStorefrontApp() {
       upsellImg.src = PRODUCTS.shampoo.image;
       upsellTitle.textContent = PRODUCTS.shampoo.title;
       if (upsellPriceEl) upsellPriceEl.innerHTML = `₹${PRODUCTS.shampoo.price} <small> • 250ml</small>`;
-      btnUpsellAdd.onclick = () => {
+      btnUpsellAdd.onclick = (e) => {
         addToCart({
           id: PRODUCTS.shampoo.id,
           name: PRODUCTS.shampoo.title,
@@ -679,14 +679,14 @@ async function initStorefrontApp() {
           img: PRODUCTS.shampoo.image,
           size: '250ml Pump Bottle',
           qty: 1
-        });
+        }, e);
       };
     } else if (hasShampoo && !hasOil) {
       cartUpsellModule.style.display = 'block';
       upsellImg.src = PRODUCTS.oil.image;
       upsellTitle.textContent = PRODUCTS.oil.title;
       if (upsellPriceEl) upsellPriceEl.innerHTML = `₹${PRODUCTS.oil.price} <small> • 200ml</small>`;
-      btnUpsellAdd.onclick = () => {
+      btnUpsellAdd.onclick = (e) => {
         addToCart({
           id: PRODUCTS.oil.id,
           name: PRODUCTS.oil.title,
@@ -694,7 +694,7 @@ async function initStorefrontApp() {
           img: PRODUCTS.oil.image,
           size: '200ml Glass Bottle',
           qty: 1
-        });
+        }, e);
       };
     } else {
       cartUpsellModule.style.display = 'none';
@@ -724,7 +724,178 @@ async function initStorefrontApp() {
     });
   }
 
-  // Add to cart with fly animation
+  // Universal Luxury Fly-to-Bag Physics Animation (Desktop & Mobile)
+  function flyProductToCart(sourceOrigin, imgSrc, onComplete) {
+    const targetCartBtn = document.getElementById('cartTriggerBtn') || document.querySelector('.cart-trigger-btn');
+    
+    // Default fallback coordinates if cart button is obscured
+    let endX = window.innerWidth - 60;
+    let endY = 40;
+
+    if (targetCartBtn) {
+      const cRect = targetCartBtn.getBoundingClientRect();
+      if (cRect.width > 0 && cRect.height > 0) {
+        endX = Math.min(window.innerWidth - 20, Math.max(20, cRect.left + cRect.width / 2));
+        endY = Math.min(window.innerHeight - 20, Math.max(15, cRect.top + cRect.height / 2));
+      }
+    }
+
+    // Determine starting coordinates
+    let startX = window.innerWidth / 2;
+    let startY = window.innerHeight / 2;
+
+    if (sourceOrigin) {
+      let el = null;
+      if (sourceOrigin instanceof Element) {
+        el = sourceOrigin;
+      } else if (sourceOrigin.currentTarget instanceof Element) {
+        el = sourceOrigin.currentTarget;
+      } else if (sourceOrigin.target instanceof Element) {
+        el = sourceOrigin.target;
+      } else if (typeof sourceOrigin.clientX === 'number') {
+        startX = sourceOrigin.clientX;
+        startY = sourceOrigin.clientY;
+      }
+
+      if (el && el.getBoundingClientRect) {
+        const sRect = el.getBoundingClientRect();
+        startX = Math.min(window.innerWidth - 25, Math.max(25, sRect.left + sRect.width / 2));
+        startY = Math.min(window.innerHeight - 25, Math.max(25, sRect.top + sRect.height / 2));
+      }
+    }
+
+    const safeImg = imgSrc || 'assets/new-oil-bottle-card.jpg';
+    const isMobile = window.innerWidth <= 600;
+    const pSize = isMobile ? 52 : 66;
+    const pRadius = pSize / 2;
+    const duration = 1150; // Smooth 1.15s luxury glide
+
+    // Spawn floating particle element
+    const particle = document.createElement('div');
+    particle.className = 'fly-particle';
+    particle.innerHTML = `<img src="${safeImg}" alt="Added Product">`;
+    document.body.appendChild(particle);
+
+    // Parabolic arc midpoint calculation (arcing gracefully upwards towards the header)
+    const midX = (startX + endX) / 2;
+    const dist = Math.hypot(endX - startX, endY - startY);
+    const arcHeight = isMobile ? Math.min(Math.max(dist * 0.25, 45), 110) : Math.min(Math.max(dist * 0.28, 70), 220);
+    const midY = Math.max(15, Math.min(startY, endY) - arcHeight);
+
+    // Midpoint sub-segments for fluid curved path
+    const p1X = startX + (midX - startX) * 0.45;
+    const p1Y = startY + (midY - startY) * 0.75;
+    const p2X = midX + (endX - midX) * 0.55;
+    const p2Y = midY + (endY - midY) * 0.35;
+
+    const keyframes = [
+      {
+        transform: `translate3d(${startX - pRadius}px, ${startY - pRadius}px, 0) scale(0.5)`,
+        opacity: 0,
+        offset: 0
+      },
+      {
+        transform: `translate3d(${startX - pRadius}px, ${startY - pRadius - 28}px, 0) scale(1.22)`,
+        opacity: 1,
+        offset: 0.12
+      },
+      {
+        transform: `translate3d(${p1X - pRadius}px, ${p1Y - pRadius}px, 0) scale(1.12)`,
+        opacity: 1,
+        offset: 0.32
+      },
+      {
+        transform: `translate3d(${midX - pRadius}px, ${midY - pRadius}px, 0) scale(1.0)`,
+        opacity: 1,
+        offset: 0.58
+      },
+      {
+        transform: `translate3d(${p2X - pRadius}px, ${p2Y - pRadius}px, 0) scale(0.75)`,
+        opacity: 0.95,
+        offset: 0.82
+      },
+      {
+        transform: `translate3d(${endX - pRadius}px, ${endY - pRadius}px, 0) scale(0.32)`,
+        opacity: 0.9,
+        offset: 0.96
+      },
+      {
+        transform: `translate3d(${endX - pRadius}px, ${endY - pRadius}px, 0) scale(0)`,
+        opacity: 0,
+        offset: 1
+      }
+    ];
+
+    // Helper: spawn magical sparkling stardust along the path
+    function spawnSparkle(x, y) {
+      const sp = document.createElement('div');
+      sp.className = 'fly-sparkle-trail';
+      sp.innerHTML = '✦';
+      sp.style.left = `${x}px`;
+      sp.style.top = `${y}px`;
+      document.body.appendChild(sp);
+      setTimeout(() => sp.remove(), 650);
+    }
+
+    setTimeout(() => spawnSparkle(p1X, p1Y), 240);
+    setTimeout(() => spawnSparkle(midX, midY), 540);
+    setTimeout(() => spawnSparkle(p2X, p2Y), 820);
+
+    const animation = particle.animate(keyframes, {
+      duration: duration,
+      easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+      fill: 'forwards'
+    });
+
+    animation.onfinish = () => {
+      particle.remove();
+
+      // Impact bounce on cart trigger button
+      if (targetCartBtn) {
+        targetCartBtn.animate([
+          { transform: 'scale(1)' },
+          { transform: 'scale(1.4) rotate(-14deg)', offset: 0.3 },
+          { transform: 'scale(1.18) rotate(9deg)', offset: 0.65 },
+          { transform: 'scale(1)', offset: 1 }
+        ], {
+          duration: 420,
+          easing: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+        });
+
+        // Spawn gold shockwave impact ripple
+        const ripple = document.createElement('div');
+        ripple.className = 'fly-impact-shockwave';
+        ripple.style.left = `${endX}px`;
+        ripple.style.top = `${endY}px`;
+        document.body.appendChild(ripple);
+        setTimeout(() => ripple.remove(), 600);
+
+        // Spawn +1 Floating Badge
+        const plusOne = document.createElement('div');
+        plusOne.className = 'fly-plus-one';
+        plusOne.textContent = '+1';
+        plusOne.style.left = `${endX}px`;
+        plusOne.style.top = `${endY - 10}px`;
+        document.body.appendChild(plusOne);
+        setTimeout(() => plusOne.remove(), 850);
+      }
+
+      // Pop cart count badge
+      if (cartCountBadge) {
+        cartCountBadge.animate([
+          { transform: 'scale(1)' },
+          { transform: 'scale(1.55)', color: '#D4AF37', offset: 0.5 },
+          { transform: 'scale(1)' }
+        ], { duration: 320 });
+      }
+
+      if (typeof onComplete === 'function') {
+        onComplete();
+      }
+    };
+  }
+
+  // Add to cart with parabolic fly animation
   function addToCart(item, clickEvent = null) {
     const existing = cart.find(i => i.id === item.id);
     if (existing) {
@@ -734,51 +905,13 @@ async function initStorefrontApp() {
     }
 
     updateCartUI();
+    showToast(`Added ${item.name} to your Royal Bag! ✨`);
 
-    if (clickEvent && cartTriggerBtn) {
-      spawnFlyParticle(clickEvent, item.img);
-    }
-
-    showToast(`Added ${item.name} to your Royal Bag!`);
-
-    setTimeout(() => {
-      openCartDrawer();
-    }, 450);
-  }
-
-  function spawnFlyParticle(e, imgSrc) {
-    const rect = e.target.getBoundingClientRect();
-    const cartRect = cartTriggerBtn.getBoundingClientRect();
-
-    const particle = document.createElement('div');
-    particle.className = 'fly-particle';
-    particle.innerHTML = `<img src="${imgSrc}" alt="Added Product">`;
-    document.body.appendChild(particle);
-
-    const startX = rect.left + rect.width / 2 - 25;
-    const startY = rect.top + rect.height / 2 - 25;
-    const endX = cartRect.left + cartRect.width / 2 - 25;
-    const endY = cartRect.top + cartRect.height / 2 - 25;
-
-    particle.style.left = `${startX}px`;
-    particle.style.top = `${startY}px`;
-    particle.style.transform = 'scale(1)';
-    particle.style.opacity = '1';
-
-    requestAnimationFrame(() => {
-      particle.style.left = `${endX}px`;
-      particle.style.top = `${endY}px`;
-      particle.style.transform = 'scale(0.3)';
-      particle.style.opacity = '0.5';
+    flyProductToCart(clickEvent, item.img, () => {
+      setTimeout(() => {
+        openCartDrawer();
+      }, 100);
     });
-
-    setTimeout(() => {
-      particle.remove();
-      if (cartCountBadge) {
-        cartCountBadge.style.transform = 'scale(1.4)';
-        setTimeout(() => cartCountBadge.style.transform = 'scale(1)', 200);
-      }
-    }, 700);
   }
 
   function showToast(msg) {

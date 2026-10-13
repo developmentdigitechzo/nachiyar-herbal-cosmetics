@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=5.0">
   <link rel="stylesheet" href="customer-account.css">
   <style>
     .pdp-page-container {
@@ -790,8 +790,127 @@
         };
       });
 
+      // Luxury Fly-to-Bag Animation for PDP
+      function flyProductToCart(sourceOrigin, imgSrc, onComplete) {
+        const targetCartBtn = document.getElementById('pdpCartTriggerBtn') || document.querySelector('.cart-trigger-btn');
+        let endX = window.innerWidth - 60;
+        let endY = 40;
+
+        if (targetCartBtn) {
+          const cRect = targetCartBtn.getBoundingClientRect();
+          if (cRect.width > 0 && cRect.height > 0) {
+            endX = Math.min(window.innerWidth - 20, Math.max(20, cRect.left + cRect.width / 2));
+            endY = Math.min(window.innerHeight - 20, Math.max(15, cRect.top + cRect.height / 2));
+          }
+        }
+
+        let startX = window.innerWidth / 2;
+        let startY = window.innerHeight / 2;
+
+        if (sourceOrigin) {
+          let el = sourceOrigin instanceof Element ? sourceOrigin : (sourceOrigin.currentTarget || sourceOrigin.target);
+          if (el && el.getBoundingClientRect) {
+            const sRect = el.getBoundingClientRect();
+            startX = Math.min(window.innerWidth - 25, Math.max(25, sRect.left + sRect.width / 2));
+            startY = Math.min(window.innerHeight - 25, Math.max(25, sRect.top + sRect.height / 2));
+          }
+        }
+
+        const safeImg = imgSrc || (currentProduct && currentProduct.images && currentProduct.images[0]) || 'assets/nachiyar-logo.png';
+        const isMobile = window.innerWidth <= 600;
+        const pSize = isMobile ? 52 : 66;
+        const pRadius = pSize / 2;
+        const duration = 1150; // Smooth 1.15s luxury glide
+
+        const particle = document.createElement('div');
+        particle.className = 'fly-particle';
+        particle.innerHTML = `<img src="${safeImg}" alt="Added Product">`;
+        document.body.appendChild(particle);
+
+        const midX = (startX + endX) / 2;
+        const dist = Math.hypot(endX - startX, endY - startY);
+        const arcHeight = isMobile ? Math.min(Math.max(dist * 0.25, 45), 110) : Math.min(Math.max(dist * 0.28, 70), 220);
+        const midY = Math.max(15, Math.min(startY, endY) - arcHeight);
+
+        const p1X = startX + (midX - startX) * 0.45;
+        const p1Y = startY + (midY - startY) * 0.75;
+        const p2X = midX + (endX - midX) * 0.55;
+        const p2Y = midY + (endY - midY) * 0.35;
+
+        const keyframes = [
+          { transform: `translate3d(${startX - pRadius}px, ${startY - pRadius}px, 0) scale(0.5)`, opacity: 0, offset: 0 },
+          { transform: `translate3d(${startX - pRadius}px, ${startY - pRadius - 28}px, 0) scale(1.22)`, opacity: 1, offset: 0.12 },
+          { transform: `translate3d(${p1X - pRadius}px, ${p1Y - pRadius}px, 0) scale(1.12)`, opacity: 1, offset: 0.32 },
+          { transform: `translate3d(${midX - pRadius}px, ${midY - pRadius}px, 0) scale(1.0)`, opacity: 1, offset: 0.58 },
+          { transform: `translate3d(${p2X - pRadius}px, ${p2Y - pRadius}px, 0) scale(0.75)`, opacity: 0.95, offset: 0.82 },
+          { transform: `translate3d(${endX - pRadius}px, ${endY - pRadius}px, 0) scale(0.32)`, opacity: 0.9, offset: 0.96 },
+          { transform: `translate3d(${endX - pRadius}px, ${endY - pRadius}px, 0) scale(0)`, opacity: 0, offset: 1 }
+        ];
+
+        function spawnSparkle(x, y) {
+          const sp = document.createElement('div');
+          sp.className = 'fly-sparkle-trail';
+          sp.innerHTML = '✦';
+          sp.style.left = `${x}px`;
+          sp.style.top = `${y}px`;
+          document.body.appendChild(sp);
+          setTimeout(() => sp.remove(), 650);
+        }
+
+        setTimeout(() => spawnSparkle(p1X, p1Y), 240);
+        setTimeout(() => spawnSparkle(midX, midY), 540);
+        setTimeout(() => spawnSparkle(p2X, p2Y), 820);
+
+        const animation = particle.animate(keyframes, {
+          duration: duration,
+          easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+          fill: 'forwards'
+        });
+
+        animation.onfinish = () => {
+          particle.remove();
+
+          if (targetCartBtn) {
+            targetCartBtn.animate([
+              { transform: 'scale(1)' },
+              { transform: 'scale(1.4) rotate(-14deg)', offset: 0.3 },
+              { transform: 'scale(1.18) rotate(9deg)', offset: 0.65 },
+              { transform: 'scale(1)', offset: 1 }
+            ], {
+              duration: 420,
+              easing: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+            });
+
+            const ripple = document.createElement('div');
+            ripple.className = 'fly-impact-shockwave';
+            ripple.style.left = `${endX}px`;
+            ripple.style.top = `${endY}px`;
+            document.body.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 600);
+
+            const plusOne = document.createElement('div');
+            plusOne.className = 'fly-plus-one';
+            plusOne.textContent = '+1';
+            plusOne.style.left = `${endX}px`;
+            plusOne.style.top = `${endY - 10}px`;
+            document.body.appendChild(plusOne);
+            setTimeout(() => plusOne.remove(), 850);
+          }
+
+          if (cartBadge) {
+            cartBadge.animate([
+              { transform: 'scale(1)' },
+              { transform: 'scale(1.55)', color: '#D4AF37', offset: 0.5 },
+              { transform: 'scale(1)' }
+            ], { duration: 320 });
+          }
+
+          if (typeof onComplete === 'function') onComplete();
+        };
+      }
+
       // Add To Bag Action
-      document.getElementById('dynAddToCartBtn').onclick = () => {
+      document.getElementById('dynAddToCartBtn').onclick = (e) => {
         if (!currentProduct) return;
         const cart = JSON.parse(localStorage.getItem('nachiyar_cart') || '[]');
         const unitPrice = selectedVariant ? selectedVariant.price : currentProduct.price;
@@ -814,6 +933,8 @@
 
         localStorage.setItem('nachiyar_cart', JSON.stringify(cart));
         cartBadge.textContent = cart.reduce((s, i) => s + i.qty, 0);
+
+        flyProductToCart(e.currentTarget, currentProduct.images[0]);
 
         const toast = document.getElementById('cartToast');
         toast.textContent = `Added ${currentProduct.name} (x${qty}) to your Bag!`;
