@@ -39,6 +39,7 @@ function mapProduct(row) {
 // 1. GET /api/products
 router.get('/', async (req, res) => {
   try {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     const { category, q } = req.query;
     let sql = 'SELECT * FROM products WHERE 1=1';
     const params = [];
@@ -66,6 +67,7 @@ router.get('/', async (req, res) => {
 // 2. GET /api/products/:idOrSlug
 router.get('/:idOrSlug', async (req, res) => {
   try {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     const { idOrSlug } = req.params;
     const result = await query(
       'SELECT * FROM products WHERE id = $1 OR slug = $1 LIMIT 1',
@@ -219,6 +221,29 @@ router.put('/:id', async (req, res) => {
       RETURNING *;
     `;
 
+    let finalVariants = null;
+    if (body.variants) {
+      finalVariants = typeof body.variants === 'string' ? body.variants : JSON.stringify(body.variants);
+    } else if (current.variants && body.price !== undefined) {
+      try {
+        let vars = typeof current.variants === 'string' ? JSON.parse(current.variants) : current.variants;
+        if (Array.isArray(vars) && vars.length > 0) {
+          let stdIdx = vars.findIndex(v => 
+            (v.id && (v.id.includes('200') || v.id.includes('250') || v.id.includes('standard') || v.id.includes('std'))) ||
+            (v.name && (v.name.includes('200ml') || v.name.includes('250ml') || v.name.includes('Standard') || v.name.includes('Full Ritual')))
+          );
+          if (stdIdx === -1) stdIdx = 0;
+          vars[stdIdx].price = Number(body.price);
+          if (body.mrp !== undefined) {
+            vars[stdIdx].mrp = Number(body.mrp);
+          }
+          finalVariants = JSON.stringify(vars);
+        }
+      } catch (e) {
+        console.warn('Could not auto-sync variant price:', e);
+      }
+    }
+
     const values = [
       body.name || null,
       body.subtitle || null,
@@ -237,7 +262,7 @@ router.put('/:id', async (req, res) => {
       body.benefits ? JSON.stringify(body.benefits) : null,
       body.ingredients || null,
       body.howToUse || null,
-      body.variants ? JSON.stringify(body.variants) : null,
+      finalVariants,
       body.status || null,
       id
     ];

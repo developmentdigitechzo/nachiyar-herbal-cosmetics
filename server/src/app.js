@@ -191,10 +191,17 @@ app.post('/api/upload', requireAdminAuth, (req, res) => {
 
 // Static files (storefront assets, public pages, stylesheets)
 // Note: /admin.html is intercepted by the route handler above
-app.use(express.static(projectRoot));
+app.use(express.static(projectRoot, {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.html') || filePath.endsWith('.js')) {
+      res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+    }
+  }
+}));
 
 // Fallback route for storefront homepage
 app.get('/', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, must-revalidate');
   res.sendFile(path.join(projectRoot, 'index.html'));
 });
 

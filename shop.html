@@ -238,19 +238,29 @@
       ];
 
       // Fetch products from live backend API or use default products
-      try {
-        const res = await fetch('/api/products').then(r => r.json());
-        if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
-          allProducts = res.data;
-        } else {
+      async function loadShopProducts() {
+        try {
+          const res = await fetch('/api/products?_t=' + Date.now(), { cache: 'no-store' }).then(r => r.json());
+          if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
+            allProducts = res.data;
+          } else {
+            allProducts = DEFAULT_PRODUCTS;
+          }
+        } catch (e) {
+          console.warn('API unavailable, rendering catalog from default catalog:', e);
           allProducts = DEFAULT_PRODUCTS;
         }
-      } catch (e) {
-        console.warn('API unavailable, rendering catalog from default catalog:', e);
-        allProducts = DEFAULT_PRODUCTS;
+        renderCatalog(document.querySelector('.filter-btn.active')?.dataset.cat || 'all');
       }
 
-      renderCatalog('all');
+      await loadShopProducts();
+
+      // Cross-tab real-time sync when admin edits products
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'nachiyar_products_updated' || e.key === 'nachiyar_store_products') {
+          loadShopProducts();
+        }
+      });
 
       function renderCatalog(filter) {
         catalogGrid.innerHTML = '';

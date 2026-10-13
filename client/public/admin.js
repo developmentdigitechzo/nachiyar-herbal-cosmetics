@@ -1172,12 +1172,31 @@ document.addEventListener('DOMContentLoaded', () => {
     e.preventDefault();
     const id = document.getElementById('formProductId').value;
     const imgVal = document.getElementById('formProdImage').value.trim() || 'assets/herbal-hair-oil.jpg';
+    const newPrice = Number(document.getElementById('formProdPrice').value);
+    const newMrp = Number(document.getElementById('formProdMrp').value);
+
+    // Sync variants if this product has existing variants
+    let variantsToSave = null;
+    if (id && Array.isArray(products)) {
+      const existingProd = products.find(x => x.id === id);
+      if (existingProd && Array.isArray(existingProd.variants) && existingProd.variants.length > 0) {
+        variantsToSave = JSON.parse(JSON.stringify(existingProd.variants));
+        let stdIdx = variantsToSave.findIndex(v => 
+          (v.id && (v.id.includes('200') || v.id.includes('250') || v.id.includes('standard') || v.id.includes('std'))) ||
+          (v.name && (v.name.includes('200ml') || v.name.includes('250ml') || v.name.includes('Standard') || v.name.includes('Full Ritual')))
+        );
+        if (stdIdx === -1) stdIdx = 0;
+        variantsToSave[stdIdx].price = newPrice;
+        if (newMrp) variantsToSave[stdIdx].mrp = newMrp;
+      }
+    }
+
     const payload = {
       name: document.getElementById('formProdName').value.trim(),
       category: document.getElementById('formProdCategory').value,
       subtitle: document.getElementById('formProdSubtitle').value.trim(),
-      price: Number(document.getElementById('formProdPrice').value),
-      mrp: Number(document.getElementById('formProdMrp').value),
+      price: newPrice,
+      mrp: newMrp,
       stock: Number(document.getElementById('formProdStock').value),
       sku: document.getElementById('formProdSku').value.trim(),
       images: [imgVal],
@@ -1186,6 +1205,7 @@ document.addEventListener('DOMContentLoaded', () => {
       description: document.getElementById('formProdDesc').value.trim(),
       ingredients: document.getElementById('formProdIngredients').value.trim(),
       slug: document.getElementById('formProdSlug').value.trim(),
+      variants: variantsToSave,
       seo: {
         metaTitle: document.getElementById('formProdMetaTitle').value.trim(),
         metaDescription: document.getElementById('formProdMetaDesc').value.trim(),
@@ -1206,6 +1226,20 @@ document.addEventListener('DOMContentLoaded', () => {
     if (res.success) {
       showToast(id ? 'Product updated successfully.' : 'New product created.');
       productModalOverlay.classList.remove('is-active');
+
+      // Broadcast update to all open storefront tabs and refresh cache
+      try {
+        localStorage.setItem('nachiyar_products_updated', Date.now().toString());
+        const freshList = await fetch('/api/products?_t=' + Date.now()).then(r => r.json());
+        if (freshList && freshList.success && freshList.data) {
+          localStorage.setItem('nachiyar_store_products', JSON.stringify(freshList.data));
+        }
+        try {
+          const channel = new BroadcastChannel('nachiyar_store_channel');
+          channel.postMessage({ type: 'PRODUCTS_UPDATED', timestamp: Date.now() });
+        } catch (e) {}
+      } catch (err) {}
+
       loadAllData();
     } else {
       alert(`Error: ${res.message}`);

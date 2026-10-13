@@ -643,23 +643,34 @@
       };
 
       // Fetch product data from API or use default product map
-      try {
-        const res = await fetch(`/api/products/${slug}`).then(r => r.json());
-        if (res && res.success && res.data) {
-          currentProduct = res.data;
-        } else {
+      async function loadProductPage() {
+        try {
+          const res = await fetch(`/api/products/${slug}?_t=${Date.now()}`, { cache: 'no-store' }).then(r => r.json());
+          if (res && res.success && res.data) {
+            currentProduct = res.data;
+          } else {
+            currentProduct = DEFAULT_PRODUCTS_MAP[slug] || DEFAULT_PRODUCTS_MAP['herbal-hair-oil'];
+          }
+        } catch (e) {
+          console.warn('API unavailable, rendering product from default map:', e);
           currentProduct = DEFAULT_PRODUCTS_MAP[slug] || DEFAULT_PRODUCTS_MAP['herbal-hair-oil'];
         }
-      } catch (e) {
-        console.warn('API unavailable, rendering product from default map:', e);
-        currentProduct = DEFAULT_PRODUCTS_MAP[slug] || DEFAULT_PRODUCTS_MAP['herbal-hair-oil'];
+
+        if (currentProduct) {
+          renderProductPage(currentProduct);
+        } else {
+          document.getElementById('dynTitle').textContent = 'Product Not Found';
+        }
       }
 
-      if (currentProduct) {
-        renderProductPage(currentProduct);
-      } else {
-        document.getElementById('dynTitle').textContent = 'Product Not Found';
-      }
+      await loadProductPage();
+
+      // Cross-tab real-time sync when admin edits products
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'nachiyar_products_updated' || e.key === 'nachiyar_store_products') {
+          loadProductPage();
+        }
+      });
 
       function renderProductPage(p) {
         document.title = `${p.name} | Nachiyar Herbals & Cosmetics`;
@@ -706,10 +717,23 @@
         const variantContainer = document.getElementById('dynVariantPills');
         variantContainer.innerHTML = '';
         if (p.variants && p.variants.length) {
-          selectedVariant = p.variants[0];
+          const stdIdx = p.variants.findIndex(v => 
+            v.price === p.price || 
+            (v.id && (v.id.includes('200') || v.id.includes('250') || v.id.includes('standard') || v.id.includes('std'))) ||
+            (v.name && (v.name.includes('200ml') || v.name.includes('250ml') || v.name.includes('Standard') || v.name.includes('Full Ritual')))
+          );
+          const defaultIdx = stdIdx !== -1 ? stdIdx : 0;
+          if (p.price && p.variants[defaultIdx]) {
+            p.variants[defaultIdx].price = Number(p.price);
+          }
+
+          selectedVariant = p.variants[defaultIdx];
+          document.getElementById('dynPrice').textContent = `₹${selectedVariant.price}`;
+          document.getElementById('dynBtnLabel').textContent = `Add To Bag • ₹${selectedVariant.price * qty}`;
+
           p.variants.forEach((v, idx) => {
             const btn = document.createElement('button');
-            btn.className = `size-pill ${idx === 0 ? 'active' : ''}`;
+            btn.className = `size-pill ${idx === defaultIdx ? 'active' : ''}`;
             btn.textContent = `${v.name} (₹${v.price})`;
             btn.onclick = () => {
               document.querySelectorAll('.size-pill').forEach(b => b.classList.remove('active'));

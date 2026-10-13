@@ -3,7 +3,7 @@
  * Dynamic Storefront Experience & Live REST API Connection
  */
 
-document.addEventListener('DOMContentLoaded', async () => {
+async function initStorefrontApp() {
 
   // Default fallback data (updated dynamically from /api/products)
   let PRODUCTS = {
@@ -155,30 +155,325 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // Pre-apply cached settings from localStorage for instant zero-flicker render
+  // Internal helper to reliably map live backend products into storefront PRODUCTS dictionary
+  function updateProductMap(p) {
+    if (!p) return;
+    const pId = p.id || '';
+    const pSlug = p.slug || '';
+    const pName = (p.name || '').toLowerCase();
+
+    const isDuo = pId === 'prod_duo_03' || pSlug === 'royal-hair-ritual-duo' || pName.includes('ritual') || pName.includes('duo');
+    const isOil = !isDuo && (pId === 'prod_oil_01' || pSlug === 'herbal-hair-oil' || pName.includes('oil'));
+    const isShampoo = !isDuo && (pId === 'prod_shampoo_02' || pSlug === 'hibiscus-flower-shampoo' || pName.includes('shampoo'));
+
+    const parsedPrice = Number(p.price);
+    const parsedMrp = Number(p.mrp) || Math.round(parsedPrice * 1.2);
+    const parsedImg = (p.images && p.images[0]) || '';
+
+    if (isOil) {
+      PRODUCTS.oil = {
+        ...PRODUCTS.oil,
+        id: pId || PRODUCTS.oil.id,
+        title: p.name || PRODUCTS.oil.title,
+        subtitle: p.subtitle || PRODUCTS.oil.subtitle,
+        price: parsedPrice || PRODUCTS.oil.price,
+        subPrice: Math.round((parsedPrice || PRODUCTS.oil.price) * 0.9),
+        image: parsedImg || PRODUCTS.oil.image
+      };
+    } else if (isShampoo) {
+      PRODUCTS.shampoo = {
+        ...PRODUCTS.shampoo,
+        id: pId || PRODUCTS.shampoo.id,
+        title: p.name || PRODUCTS.shampoo.title,
+        subtitle: p.subtitle || PRODUCTS.shampoo.subtitle,
+        price: parsedPrice || PRODUCTS.shampoo.price,
+        subPrice: Math.round((parsedPrice || PRODUCTS.shampoo.price) * 0.9),
+        image: parsedImg || PRODUCTS.shampoo.image
+      };
+    } else if (isDuo) {
+      PRODUCTS.duo = {
+        ...PRODUCTS.duo,
+        id: pId || PRODUCTS.duo.id,
+        title: p.name || PRODUCTS.duo.title,
+        subtitle: p.subtitle || PRODUCTS.duo.subtitle,
+        price: parsedPrice || PRODUCTS.duo.price,
+        subPrice: Math.round((parsedPrice || PRODUCTS.duo.price) * 0.9),
+        image: parsedImg || PRODUCTS.duo.image
+      };
+    }
+  }
+
+  // Helper: Synchronize Live Products, Rates & Images across the entire Storefront DOM
+  function applyLiveProductsToDOM(productsList) {
+    if (!productsList || !productsList.length) return;
+
+    productsList.forEach(p => {
+      updateProductMap(p);
+
+      const pPrice = Number(p.price);
+      const pMrp = Number(p.mrp) || Math.round(pPrice * 1.2);
+      const pImg = (p.images && p.images[0]) || '';
+      const pName = p.name || '';
+      const pSub = p.subtitle || '';
+      const pId = p.id || '';
+      const pSlug = p.slug || '';
+
+      const isDuo = pId === 'prod_duo_03' || pSlug === 'royal-hair-ritual-duo' || pName.toLowerCase().includes('ritual') || pName.toLowerCase().includes('duo');
+      const isOil = !isDuo && (pId === 'prod_oil_01' || pSlug === 'herbal-hair-oil' || pName.toLowerCase().includes('oil'));
+      const isShampoo = !isDuo && (pId === 'prod_shampoo_02' || pSlug === 'hibiscus-flower-shampoo' || pName.toLowerCase().includes('shampoo'));
+
+      // 1. Header Mega Menu
+      if (isOil) {
+        const megaOil = document.querySelector('.mega-card[href*="herbal-hair-oil"]');
+        if (megaOil) {
+          const h4 = megaOil.querySelector('h4'); if (h4) h4.textContent = pName;
+          const priceP = megaOil.querySelector('.mega-price'); if (priceP) priceP.textContent = `₹${pPrice} • 200ml`;
+          const img = megaOil.querySelector('img'); if (img && pImg) img.src = pImg;
+        }
+      } else if (isShampoo) {
+        const megaShamp = document.querySelector('.mega-card[href*="hibiscus-flower-shampoo"]');
+        if (megaShamp) {
+          const h4 = megaShamp.querySelector('h4'); if (h4) h4.textContent = pName;
+          const priceP = megaShamp.querySelector('.mega-price'); if (priceP) priceP.textContent = `₹${pPrice} • 250ml`;
+          const img = megaShamp.querySelector('img'); if (img && pImg) img.src = pImg;
+        }
+      } else if (isDuo) {
+        const megaDuo = document.querySelector('.mega-card[href*="royal-hair-ritual-duo"]');
+        if (megaDuo) {
+          const h4 = megaDuo.querySelector('h4'); if (h4) h4.textContent = pName;
+          const savingsPct = pMrp > pPrice ? Math.round(((pMrp - pPrice) / pMrp) * 100) : 15;
+          const priceP = megaDuo.querySelector('.mega-price');
+          if (priceP) priceP.innerHTML = `₹${pPrice} <s class="old-price">₹${pMrp}</s> (Save ${savingsPct}%)`;
+          const img = megaDuo.querySelector('img'); if (img && pImg) img.src = pImg;
+        }
+      }
+
+      // 2. Desktop Hero Flank Cards
+      if (isOil) {
+        const flankOil = document.querySelector('.hero-product-flank--left .hero-flank-card') || document.querySelector('.flank-oil');
+        if (flankOil) {
+          const title = flankOil.querySelector('.flank-name') || flankOil.querySelector('.flank-title');
+          if (title) title.textContent = pName;
+          const sub = flankOil.querySelector('.flank-sub');
+          if (sub && pSub) sub.textContent = pSub;
+          const price = flankOil.querySelector('.flank-price');
+          if (price) price.textContent = `₹${pPrice}`;
+          const btn = flankOil.querySelector('.btn-quick-add');
+          if (btn) {
+            btn.dataset.id = pId;
+            btn.dataset.name = pName;
+            btn.dataset.price = pPrice;
+            if (pImg) btn.dataset.img = pImg;
+          }
+        }
+      } else if (isShampoo) {
+        const flankShamp = document.querySelector('.hero-product-flank--right .hero-flank-card') || document.querySelector('.flank-shampoo');
+        if (flankShamp) {
+          const title = flankShamp.querySelector('.flank-name') || flankShamp.querySelector('.flank-title');
+          if (title) title.textContent = pName;
+          const sub = flankShamp.querySelector('.flank-sub');
+          if (sub && pSub) sub.textContent = pSub;
+          const price = flankShamp.querySelector('.flank-price');
+          if (price) price.textContent = `₹${pPrice}`;
+          const btn = flankShamp.querySelector('.btn-quick-add');
+          if (btn) {
+            btn.dataset.id = pId;
+            btn.dataset.name = pName;
+            btn.dataset.price = pPrice;
+            if (pImg) btn.dataset.img = pImg;
+          }
+        }
+      }
+
+      // 3. Mobile Hero Showcase
+      if (isOil) {
+        const nameEl = document.querySelector('.m-hero-stage--oil .m-bottle-name');
+        if (nameEl) nameEl.textContent = pName;
+        const subEl = document.querySelector('.m-hero-stage--oil .m-bottle-sub');
+        if (subEl) subEl.textContent = `200ml • ₹${pPrice}`;
+        const mBuyOil = document.querySelector('.m-hero-stage--buy-oil .btn-quick-add');
+        if (mBuyOil) {
+          mBuyOil.dataset.id = pId;
+          mBuyOil.dataset.name = pName;
+          mBuyOil.dataset.price = pPrice;
+          if (pImg) mBuyOil.dataset.img = pImg;
+        }
+      } else if (isShampoo) {
+        const nameEl = document.querySelector('.m-hero-stage--shampoo .m-bottle-name');
+        if (nameEl) nameEl.textContent = pName;
+        const subEl = document.querySelector('.m-hero-stage--shampoo .m-bottle-sub');
+        if (subEl) subEl.textContent = `250ml • ₹${pPrice}`;
+        const mBuyShamp = document.querySelector('.m-hero-stage--buy-shampoo .btn-quick-add');
+        if (mBuyShamp) {
+          mBuyShamp.dataset.id = pId;
+          mBuyShamp.dataset.name = pName;
+          mBuyShamp.dataset.price = pPrice;
+          if (pImg) mBuyShamp.dataset.img = pImg;
+        }
+      }
+
+      // 4. Featured Collection: "Two Formulations. Zero Compromise." (#card-oil, #card-shampoo, .bundle-banner)
+      if (isOil) {
+        const cardOil = document.getElementById('card-oil');
+        if (cardOil) {
+          const title = cardOil.querySelector('.product-card-title');
+          if (title) title.textContent = pName;
+          const sub = cardOil.querySelector('.product-card-subtitle');
+          if (sub && pSub) sub.textContent = pSub;
+          const curPrice = cardOil.querySelector('.price-current');
+          if (curPrice) curPrice.textContent = `₹${pPrice}`;
+          const mrpPrice = cardOil.querySelector('.price-mrp');
+          if (mrpPrice) mrpPrice.textContent = `₹${pMrp}`;
+          const img = cardOil.querySelector('.card-product-img');
+          if (img && pImg) img.src = pImg;
+          const btn = cardOil.querySelector('.btn-quick-add');
+          if (btn) {
+            btn.dataset.id = pId;
+            btn.dataset.name = pName;
+            btn.dataset.price = pPrice;
+            if (pImg) btn.dataset.img = pImg;
+          }
+        }
+      } else if (isShampoo) {
+        const cardShamp = document.getElementById('card-shampoo');
+        if (cardShamp) {
+          const title = cardShamp.querySelector('.product-card-title');
+          if (title) title.textContent = pName;
+          const sub = cardShamp.querySelector('.product-card-subtitle');
+          if (sub && pSub) sub.textContent = pSub;
+          const curPrice = cardShamp.querySelector('.price-current');
+          if (curPrice) curPrice.textContent = `₹${pPrice}`;
+          const mrpPrice = cardShamp.querySelector('.price-mrp');
+          if (mrpPrice) mrpPrice.textContent = `₹${pMrp}`;
+          const img = cardShamp.querySelector('.card-product-img');
+          if (img && pImg) img.src = pImg;
+          const btn = cardShamp.querySelector('.btn-quick-add');
+          if (btn) {
+            btn.dataset.id = pId;
+            btn.dataset.name = pName;
+            btn.dataset.price = pPrice;
+            if (pImg) btn.dataset.img = pImg;
+          }
+        }
+      } else if (isDuo) {
+        const bundle = document.querySelector('.bundle-banner');
+        if (bundle) {
+          const title = bundle.querySelector('.bundle-title');
+          if (title) title.textContent = pName;
+          const curPrice = bundle.querySelector('.bundle-price-now');
+          if (curPrice) curPrice.textContent = `₹${pPrice}`;
+          const wasPrice = bundle.querySelector('.bundle-price-was');
+          if (wasPrice) wasPrice.textContent = `₹${pMrp}`;
+          const badge = bundle.querySelector('.bundle-badge');
+          if (badge) {
+            const savings = pMrp - pPrice;
+            badge.textContent = savings > 0 ? `★ BEST VALUE: SAVE ₹${savings}` : '★ ROYAL COMBO VALUE';
+          }
+          const discPill = bundle.querySelector('.discount-pill');
+          if (discPill) {
+            const pct = pMrp > pPrice ? Math.round(((pMrp - pPrice) / pMrp) * 100) : 0;
+            discPill.textContent = pct > 0 ? `${pct}% OFF` : 'SPECIAL PRICE';
+          }
+          const img = bundle.querySelector('.bundle-img');
+          if (img && pImg) img.src = pImg;
+          const btn = bundle.querySelector('.btn-bundle-add');
+          if (btn) {
+            btn.dataset.id = pId;
+            btn.dataset.name = pName;
+            btn.dataset.price = pPrice;
+            if (pImg) btn.dataset.img = pImg;
+          }
+        }
+      }
+
+      // 5. Update ALL quick-add and add-to-bag buttons across the page matching this product ID or slug
+      document.querySelectorAll(`[data-id="${pId}"], [data-id="${pSlug}"]`).forEach(btn => {
+        btn.dataset.price = pPrice;
+        btn.dataset.name = pName;
+        if (pImg) btn.dataset.img = pImg;
+      });
+    });
+
+    // 6. Refresh any items already in the user's cart with updated prices
+    if (Array.isArray(cart) && cart.length > 0) {
+      let cartChanged = false;
+      cart.forEach(item => {
+        const live = Object.values(PRODUCTS).find(p => p.id === item.id || p.slug === item.id || (item.name && item.name.includes(p.title)));
+        if (live && live.price && (!item.size || item.size.includes('200ml') || item.size.includes('250ml') || item.size.includes('Standard'))) {
+          if (item.price !== live.price) {
+            item.price = live.price;
+            cartChanged = true;
+          }
+        }
+      });
+      if (cartChanged) {
+        saveCart();
+        updateCartUI();
+      }
+    }
+
+    renderUpsellRecommendation();
+  }
+
+  // Expose global methods for testing or direct inter-window communication
+  window.applyLiveProductsToDOM = applyLiveProductsToDOM;
+
+  // Pre-apply cached settings & products from localStorage for instant zero-flicker render
   try {
     const cachedSettings = JSON.parse(localStorage.getItem('nachiyar_store_settings') || 'null');
     if (cachedSettings) updateStorefrontBusinessDetails(cachedSettings);
+
+    const cachedProducts = JSON.parse(localStorage.getItem('nachiyar_store_products') || 'null');
+    if (cachedProducts && cachedProducts.length) {
+      applyLiveProductsToDOM(cachedProducts);
+    }
   } catch (e) {}
 
-  // Fetch live products & settings from REST API
+  // Function to reload live products with cache-busting
+  async function reloadLiveProducts() {
+    try {
+      const pRes = await fetch('/api/products?_t=' + Date.now(), { cache: 'no-store' }).then(r => r.json());
+      if (pRes && pRes.success && Array.isArray(pRes.data) && pRes.data.length) {
+        try { localStorage.setItem('nachiyar_store_products', JSON.stringify(pRes.data)); } catch (e) {}
+        applyLiveProductsToDOM(pRes.data);
+      }
+    } catch (err) {
+      console.warn('Failed to refresh products:', err);
+    }
+  }
+
+  window.reloadLiveProducts = reloadLiveProducts;
+
+  // Cross-tab real-time listener: when admin updates any product, instantly update storefront without page refresh!
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'nachiyar_products_updated' || e.key === 'nachiyar_store_products') {
+      reloadLiveProducts();
+    }
+  });
+
+  // Cross-tab BroadcastChannel for zero-latency multi-window updates
+  try {
+    const storeChannel = new BroadcastChannel('nachiyar_store_channel');
+    storeChannel.onmessage = (event) => {
+      if (event.data && (event.data.type === 'PRODUCTS_UPDATED' || event.data.type === 'SETTINGS_UPDATED')) {
+        reloadLiveProducts();
+      }
+    };
+  } catch (e) {}
+
+  // Fetch live products & settings from REST API (cache-busting enabled)
   try {
     const [pRes, sRes] = await Promise.all([
-      fetch('/api/products').then(r => r.json()).catch(() => ({ success: false })),
-      fetch('/api/settings/public').then(r => r.json()).catch(() => ({ success: false }))
+      fetch('/api/products?_t=' + Date.now(), { cache: 'no-store' }).then(r => r.json()).catch(() => ({ success: false })),
+      fetch('/api/settings/public?_t=' + Date.now(), { cache: 'no-store' }).then(r => r.json()).catch(() => ({ success: false }))
     ]);
 
     if (pRes.success && pRes.data && pRes.data.length) {
-      // Map live API products into our dynamic frontend store
-      pRes.data.forEach(p => {
-        if (p.slug === 'herbal-hair-oil' || p.name.includes('Oil')) {
-          PRODUCTS.oil = { ...PRODUCTS.oil, ...p, title: p.name, image: p.images[0] };
-        } else if (p.slug === 'hibiscus-flower-shampoo' || p.name.includes('Shampoo')) {
-          PRODUCTS.shampoo = { ...PRODUCTS.shampoo, ...p, title: p.name, image: p.images[0] };
-        } else if (p.slug === 'royal-hair-ritual-duo' || p.name.includes('Ritual') || p.name.includes('Duo')) {
-          PRODUCTS.duo = { ...PRODUCTS.duo, ...p, title: p.name, image: p.images[0] };
-        }
-      });
+      try {
+        localStorage.setItem('nachiyar_store_products', JSON.stringify(pRes.data));
+      } catch (e) {}
+
+      applyLiveProductsToDOM(pRes.data);
     }
 
     if (sRes.success && sRes.data) {
@@ -369,11 +664,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!cartUpsellModule) return;
     const hasOil = cart.some(i => i.name.includes('Oil'));
     const hasShampoo = cart.some(i => i.name.includes('Shampoo'));
+    const upsellPriceEl = cartUpsellModule.querySelector('.upsell-price');
 
     if (hasOil && !hasShampoo) {
       cartUpsellModule.style.display = 'block';
       upsellImg.src = PRODUCTS.shampoo.image;
       upsellTitle.textContent = PRODUCTS.shampoo.title;
+      if (upsellPriceEl) upsellPriceEl.innerHTML = `₹${PRODUCTS.shampoo.price} <small> • 250ml</small>`;
       btnUpsellAdd.onclick = () => {
         addToCart({
           id: PRODUCTS.shampoo.id,
@@ -388,6 +685,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       cartUpsellModule.style.display = 'block';
       upsellImg.src = PRODUCTS.oil.image;
       upsellTitle.textContent = PRODUCTS.oil.title;
+      if (upsellPriceEl) upsellPriceEl.innerHTML = `₹${PRODUCTS.oil.price} <small> • 200ml</small>`;
       btnUpsellAdd.onclick = () => {
         addToCart({
           id: PRODUCTS.oil.id,
@@ -517,11 +815,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     btn.onclick = (e) => {
       e.stopPropagation();
       e.preventDefault();
+      const id = btn.dataset.id;
+      const live = Object.values(PRODUCTS).find(p => p.id === id || p.slug === id);
+      const price = live ? Number(live.price) : parseInt(btn.dataset.price, 10);
+      const name = live ? (live.title || live.name) : btn.dataset.name;
+      const img = live ? (live.image || (live.images && live.images[0])) : btn.dataset.img;
       addToCart({
-        id: btn.dataset.id,
-        name: btn.dataset.name,
-        price: parseInt(btn.dataset.price, 10),
-        img: btn.dataset.img,
+        id: id,
+        name: name,
+        price: price,
+        img: img,
         size: btn.dataset.size || 'Standard Size',
         qty: 1
       }, e);
@@ -532,11 +835,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   const bundleAddBtn = document.querySelector('.btn-bundle-add');
   if (bundleAddBtn) {
     bundleAddBtn.onclick = (e) => {
+      const id = bundleAddBtn.dataset.id;
+      const live = Object.values(PRODUCTS).find(p => p.id === id || p.slug === id);
+      const price = live ? Number(live.price) : parseInt(bundleAddBtn.dataset.price, 10);
+      const name = live ? (live.title || live.name) : bundleAddBtn.dataset.name;
+      const img = live ? (live.image || (live.images && live.images[0])) : bundleAddBtn.dataset.img;
       addToCart({
-        id: bundleAddBtn.dataset.id,
-        name: bundleAddBtn.dataset.name,
-        price: parseInt(bundleAddBtn.dataset.price, 10),
-        img: bundleAddBtn.dataset.img,
+        id: id,
+        name: name,
+        price: price,
+        img: img,
         size: bundleAddBtn.dataset.size,
         qty: 1
       }, e);
@@ -1314,10 +1622,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         e.stopPropagation();
         e.preventDefault();
         addToCart({
-          id: 'prod_oil_01',
-          name: 'Herbal Hair Oil',
-          price: 599,
-          img: 'assets/new-oil-bottle-card.jpg',
+          id: PRODUCTS.oil.id || 'prod_oil_01',
+          name: PRODUCTS.oil.title || 'Herbal Hair Oil',
+          price: Number(PRODUCTS.oil.price) || 599,
+          img: PRODUCTS.oil.image || 'assets/new-oil-bottle-card.jpg',
           size: '200ml Glass Bottle',
           qty: 1
         }, e);
@@ -1330,10 +1638,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         e.stopPropagation();
         e.preventDefault();
         addToCart({
-          id: 'prod_shampoo_02',
-          name: 'Hibiscus Flower Shampoo',
-          price: 549,
-          img: 'assets/new-shampoo-bottle-card.jpg',
+          id: PRODUCTS.shampoo.id || 'prod_shampoo_02',
+          name: PRODUCTS.shampoo.title || 'Hibiscus Flower Shampoo',
+          price: Number(PRODUCTS.shampoo.price) || 549,
+          img: PRODUCTS.shampoo.image || 'assets/new-shampoo-bottle-card.jpg',
           size: '250ml Pump Bottle',
           qty: 1
         }, e);
@@ -1372,8 +1680,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   handleMobileHeroLifecycle();
 
   updateCartUI();
+}
 
-});
+// Robust execution lifecycle: initialize immediately if DOM already loaded, or on DOMContentLoaded
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initStorefrontApp);
+} else {
+  initStorefrontApp();
+}
 
 
 
