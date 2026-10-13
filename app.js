@@ -924,17 +924,27 @@ async function initStorefrontApp() {
   function openCartDrawer() {
     if (cartOverlay) {
       cartOverlay.classList.add('is-active');
+      document.body.classList.add('cart-open');
       document.body.style.overflow = 'hidden';
+      const scrollBody = document.getElementById('cartDrawerScrollBody');
+      if (scrollBody) scrollBody.scrollTop = 0;
     }
   }
 
   function closeCartDrawer() {
     if (cartOverlay) {
       cartOverlay.classList.remove('is-active');
+      document.body.classList.remove('cart-open');
       document.body.style.overflow = '';
     }
   }
 
+  
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && cartOverlay && cartOverlay.classList.contains('is-active')) {
+      closeCartDrawer();
+    }
+  });
   if (cartTriggerBtn) cartTriggerBtn.onclick = openCartDrawer;
   if (cartCloseBtn) cartCloseBtn.onclick = closeCartDrawer;
   if (cartOverlay) {
