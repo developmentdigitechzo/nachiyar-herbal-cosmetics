@@ -4,19 +4,13 @@
  *
  * Automatically detects the runtime environment (Local Development vs. Production)
  * and loads the appropriate configuration (.env.development or .env.production).
- *
- * Rules:
- * - Local Development: uses local PostgreSQL and local file storage.
- * - Production: uses production PostgreSQL and cPanel file storage.
- * - Local resources are never used in production.
- * - Production resources are never used in local development.
  */
 
 const fs = require('fs');
 const path = require('path');
 const dotenv = require('dotenv');
 
-// Project root directory (g:\nachiyar-herbal-cosmetics)
+// Project root directory
 const projectRoot = path.resolve(__dirname, '..', '..', '..');
 const serverRoot = path.resolve(__dirname, '..', '..');
 
@@ -50,7 +44,6 @@ function detectEnvironment() {
     return 'production';
   }
 
-  // Default to local development
   return 'development';
 }
 
@@ -62,9 +55,6 @@ process.env.NODE_ENV = currentEnv;
  * 1. .env.{environment} (e.g. .env.development or .env.production)
  * 2. .env.local (optional developer overrides)
  * 3. .env (general fallback)
- *
- * Note: Existing system environment variables (e.g. set in cPanel UI or host OS)
- * are NEVER overwritten by dotenv.
  */
 function loadEnvFiles(env) {
   const candidatePaths = [
@@ -99,7 +89,7 @@ const isDevelopment = currentEnv === 'development';
 const isTest = currentEnv === 'test';
 
 // Port configuration
-const port = parseInt(process.env.PORT, 10) || (isProduction ? 5000 : 5000);
+const port = parseInt(process.env.PORT, 10) || 5000;
 
 // Database configuration
 function getDatabaseConfig() {
@@ -110,14 +100,19 @@ function getDatabaseConfig() {
   const password = process.env.DB_PASSWORD || '';
   const database = process.env.DB_NAME || '';
 
-  // Determine SSL requirement
+  // On cPanel or local servers, if database host is localhost / 127.0.0.1, default SSL to false
+  const isLocalHost = (connectionString && (connectionString.includes('localhost') || connectionString.includes('127.0.0.1'))) ||
+                      host === 'localhost' || host === '127.0.0.1';
+
   let ssl = false;
   if (process.env.DB_SSL === 'true') {
     ssl = { rejectUnauthorized: false };
   } else if (process.env.DB_SSL === 'false') {
     ssl = false;
-  } else if (isProduction) {
+  } else if (isProduction && !isLocalHost) {
     ssl = { rejectUnauthorized: false };
+  } else {
+    ssl = false;
   }
 
   return {
@@ -127,7 +122,8 @@ function getDatabaseConfig() {
     user,
     password,
     database,
-    ssl
+    ssl,
+    isConfigured: Boolean(connectionString || (host && database))
   };
 }
 
@@ -143,68 +139,25 @@ function getStorageConfig() {
     : path.join(projectRoot, localDirName);
 
   // cPanel storage directory
-  // In cPanel, public files typically live in ~/public_html/uploads
   const defaultCpanelPath = process.env.HOME
     ? path.join(process.env.HOME, 'public_html', 'uploads')
     : path.join(projectRoot, 'uploads');
   const cpanelDirPath = process.env.CPANEL_STORAGE_PATH || defaultCpanelPath;
 
-  // Active storage directory based on current driver
   const resolvedUploadDir = storageType === 'cpanel' ? cpanelDirPath : localDirPath;
-
-  // Public URL base for serving images
   const baseUrl = process.env.STORAGE_BASE_URL || '/uploads';
 
   return {
-    type: storageType, // 'local' | 'cpanel'
+    type: storageType,
     localDir: localDirPath,
     cpanelPath: cpanelDirPath,
     resolvedUploadDir,
-    baseUrl: baseUrl.replace(/\/+$/, '') // strip trailing slash
+    baseUrl: baseUrl.replace(/\/+$/, '')
   };
 }
 
 const databaseConfig = getDatabaseConfig();
 const storageConfig = getStorageConfig();
-
-/**
- * Strict Environment Isolation Guards:
- * - Local Development must not use production storage or remote production DB
- * - Production must not connect to localhost DB or use local storage
- */
-function validateEnvironmentGuards() {
-  if (isProduction) {
-    // Check if database URL or host incorrectly points to localhost
-    const isLocalDb = (
-      (databaseConfig.connectionString && (
-        databaseConfig.connectionString.includes('localhost') ||
-        databaseConfig.connectionString.includes('127.0.0.1')
-      )) ||
-      (databaseConfig.host && (
-        databaseConfig.host === 'localhost' ||
-        databaseConfig.host === '127.0.0.1'
-      ))
-    );
-
-    if (isLocalDb) {
-      console.warn('⚠️ [ENVIRONMENT WARNING] Running in PRODUCTION mode, but database points to localhost.');
-      console.warn('   Ensure DATABASE_URL or DB_HOST points to your production PostgreSQL database.');
-    }
-
-    if (storageConfig.type === 'local') {
-      console.warn('⚠️ [ENVIRONMENT WARNING] Running in PRODUCTION mode, but storage is set to "local".');
-      console.warn('   Production should use "cpanel" storage (STORAGE_TYPE=cpanel).');
-    }
-  }
-
-  if (isDevelopment) {
-    if (storageConfig.type === 'cpanel' && !process.env.ALLOW_CPANEL_IN_DEV) {
-      console.warn('ℹ️ [ENVIRONMENT NOTICE] Local development detected. Defaulting storage to local.');
-    }
-  }
-}
-
-validateEnvironmentGuards();
 
 const config = {
   env: currentEnv,

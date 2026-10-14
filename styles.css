@@ -2064,10 +2064,23 @@ button {
 }
 
 .community-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: space-between !important;
+  align-items: flex-end !important;
   margin-bottom: 28px;
+  gap: 16px;
+}
+
+.community-left {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.community-left .section-eyebrow {
+  margin-bottom: 4px;
 }
 
 .community-handle {
@@ -2075,12 +2088,96 @@ button {
   font-size: 1.75rem;
   font-weight: 700;
   color: var(--color-text-main);
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  margin: 0;
 }
 
 .community-follow-btn {
-  font-size: 0.875rem;
+  display: inline-flex !important;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8125rem;
   font-weight: 700;
   color: var(--color-lavender-primary);
+  text-decoration: none;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  padding: 7px 14px;
+  background: rgba(124, 90, 171, 0.08);
+  border: 1px solid rgba(124, 90, 171, 0.22);
+  border-radius: var(--border-radius-pill);
+  transition: all var(--duration-fast) ease;
+  margin-bottom: 2px;
+}
+
+.community-follow-btn:hover {
+  background: rgba(124, 90, 171, 0.16);
+  color: var(--color-lavender-dark);
+  transform: translateY(-1px);
+}
+
+.community-follow-btn svg {
+  flex-shrink: 0;
+}
+
+.btn-text-short {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .community-section {
+    padding-block: 40px 60px;
+  }
+
+  .community-header {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: flex-end !important;
+    gap: 8px !important;
+    margin-bottom: 18px;
+  }
+
+  .community-left .section-eyebrow {
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+  }
+
+  .community-handle {
+    font-size: clamp(1.05rem, 3.6vw, 1.25rem) !important;
+    line-height: 1.15 !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .community-follow-btn {
+    font-size: 0.75rem !important;
+    padding: 6px 11px !important;
+    gap: 5px !important;
+    margin-bottom: 1px !important;
+  }
+
+  .community-follow-btn svg {
+    width: 13px !important;
+    height: 13px !important;
+  }
+}
+
+@media (max-width: 370px) {
+  .community-handle {
+    font-size: 0.98rem !important;
+  }
+  .community-follow-btn .btn-text-full {
+    display: none !important;
+  }
+  .community-follow-btn .btn-text-short {
+    display: inline !important;
+  }
+  .community-follow-btn {
+    padding: 5px 9px !important;
+  }
 }
 
 .ugc-tiles-grid {

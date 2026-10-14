@@ -3,6 +3,11 @@
  * Dynamic Storefront Experience & Live REST API Connection
  */
 
+// Universal Node.js / Browser polymorphic guard:
+// If executed by Node.js (e.g. cPanel default startup file 'app.js'), delegate to server.js
+if (typeof window === 'undefined' && typeof process !== 'undefined' && process.versions && process.versions.node) {
+  module.exports = require('./server.js');
+} else {
 async function initStorefrontApp() {
 
   // Default fallback data (updated dynamically from /api/products)
@@ -1826,11 +1831,11 @@ async function initStorefrontApp() {
 }
 
 // Robust execution lifecycle: initialize immediately if DOM already loaded, or on DOMContentLoaded
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initStorefrontApp);
-} else {
-  initStorefrontApp();
-}
-
-
-
+  if (typeof document !== 'undefined') {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initStorefrontApp);
+    } else {
+      initStorefrontApp();
+    }
+  }
+} // End of browser execution block
