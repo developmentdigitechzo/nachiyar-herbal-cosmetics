@@ -18,7 +18,7 @@ const serverRoot = path.resolve(__dirname, '..', '..');
  * Automatically detect current execution environment.
  * Order of evaluation:
  * 1. process.env.NODE_ENV if explicitly set
- * 2. cPanel / Production indicators (CPANEL_USER, PASSENGER_APP_ENV, etc.)
+ * 2. cPanel / Production indicators (CPANEL_USER, PASSENGER_APP_ENV, Linux /home/ path, etc.)
  * 3. Default to 'development' for local workstation
  */
 function detectEnvironment() {
@@ -30,14 +30,16 @@ function detectEnvironment() {
     return env;
   }
 
-  // Detect cPanel hosting / CloudLinux / Phusion Passenger environment indicators
+  // Detect cPanel hosting / CloudLinux / Phusion Passenger / Linux hosting
   const isCpanel = Boolean(
     process.env.CPANEL_USER ||
     process.env.CPANEL_ENV ||
     process.env.CPANEL_HOST ||
     (process.env.PASSENGER_APP_ENV && process.env.PASSENGER_APP_ENV.toLowerCase() === 'production') ||
     (process.env.SERVER_SOFTWARE && process.env.SERVER_SOFTWARE.toLowerCase().includes('cpanel')) ||
-    (process.env.HOME && process.env.HOME.includes('/home/') && !process.env.HOME.includes('\\Users\\'))
+    (process.env.HOME && process.env.HOME.includes('/home/')) ||
+    (process.env.PWD && process.env.PWD.includes('/home/')) ||
+    (process.platform === 'linux' && process.env.USER && process.env.USER.includes('nachiyar'))
   );
 
   if (isCpanel) {
@@ -93,12 +95,19 @@ const port = parseInt(process.env.PORT, 10) || 5000;
 
 // Database configuration
 function getDatabaseConfig() {
-  const connectionString = process.env.DATABASE_URL || '';
-  const host = process.env.DB_HOST || '';
+  let connectionString = process.env.DATABASE_URL || '';
+  const host = process.env.DB_HOST || (isProduction ? 'localhost' : 'localhost');
   const dbPort = parseInt(process.env.DB_PORT, 10) || 5432;
   const user = process.env.DB_USER || '';
   const password = process.env.DB_PASSWORD || '';
   const database = process.env.DB_NAME || '';
+
+  // Auto-compose connection string if individual credentials are provided
+  if (!connectionString && user && password && database) {
+    const encUser = encodeURIComponent(user);
+    const encPass = encodeURIComponent(password);
+    connectionString = `postgresql://${encUser}:${encPass}@${host || 'localhost'}:${dbPort}/${database}`;
+  }
 
   // On cPanel or local servers, if database host is localhost / 127.0.0.1, default SSL to false
   const isLocalHost = (connectionString && (connectionString.includes('localhost') || connectionString.includes('127.0.0.1'))) ||
@@ -123,7 +132,7 @@ function getDatabaseConfig() {
     password,
     database,
     ssl,
-    isConfigured: Boolean(connectionString || (host && database))
+    isConfigured: Boolean(connectionString || (host && database && user))
   };
 }
 
