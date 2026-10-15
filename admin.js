@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const storedUserJson = localStorage.getItem('nachiyar_admin_user');
 
   if (!adminToken) {
-    window.location.replace('/admin-login.html');
+    window.location.replace('/nimda-login/');
     return;
   }
 
@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
       localStorage.removeItem('nachiyar_admin_user');
       localStorage.removeItem('nachiyar_admin_active_tab');
       document.cookie = 'nachiyar_admin_token=; path=/; max-age=0; SameSite=Lax';
-      window.location.replace('/admin-login.html');
+      window.location.replace('/nimda-login/');
       throw new Error('Unauthorized');
     }
     return res;
@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const currentRoleBadge = document.getElementById('currentRoleBadge');
 
   if (loggedInUser) {
-    if (currentUserName) currentUserName.textContent = loggedInUser.name || 'Super Administrator';
+    if (currentUserName) currentUserName.textContent = loggedInUser.name || 'Super Nimda';
     if (userAvatar) userAvatar.textContent = (loggedInUser.name || 'SA').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
     if (roleSelect) roleSelect.value = currentRole;
   }
@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
       localStorage.removeItem('nachiyar_admin_token');
       localStorage.removeItem('nachiyar_admin_user');
       document.cookie = 'nachiyar_admin_token=; path=/; max-age=0; SameSite=Lax';
-      window.location.replace('/admin-login.html');
+      window.location.replace('/nimda-login/');
     });
   }
 
@@ -3323,7 +3323,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function applyRolePermissions(role) {
     if (userAvatar) userAvatar.textContent = 'SA';
-    if (currentUserName) currentUserName.textContent = 'Super Administrator';
+    if (currentUserName) currentUserName.textContent = 'Super Nimda';
     if (currentRoleBadge) currentRoleBadge.textContent = 'SUPER ADMIN';
     navTabs.forEach(t => t.style.display = 'flex');
   }
@@ -4286,7 +4286,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const defaultAdminAccounts = [
     {
       id: 'admin_master',
-      name: 'Super Administrator',
+      name: 'Super Nimda',
       username: 'admin',
       phone: '9876543210',
       email: 'admin@nachiyarherbals.com',
@@ -4360,7 +4360,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!tbody) return;
 
     if (staffAccounts.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 36px; color: var(--admin-text-muted);"><div style="font-size: 2rem; margin-bottom: 8px;">👑</div><strong>No active admin accounts found.</strong><br><small>Click "Add New Admin" to create an administrator.</small></td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 36px; color: var(--admin-text-muted);"><div style="font-size: 2rem; margin-bottom: 8px;">👑</div><strong>No active nimda accounts found.</strong><br><small>Click "Add New Nimda" to create a nimda member.</small></td></tr>';
       return;
     }
 
@@ -4387,7 +4387,7 @@ document.addEventListener('DOMContentLoaded', () => {
           '</code>' +
         '</td>' +
         '<td>' +
-          '<span class="badge-tag paid" style="font-weight: 700; font-size: 0.74rem;">👑 Administrator</span>' +
+          '<span class="badge-tag paid" style="font-weight: 700; font-size: 0.74rem;">👑 Super Nimda</span>' +
         '</td>' +
         '<td>' +
           '<div style="display: flex; align-items: center; gap: 6px;">' +
@@ -4510,7 +4510,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (btn) {
       btn.disabled = true;
-      btn.innerHTML = '<span>⏳ Creating Administrator...</span>';
+      btn.innerHTML = '<span>⏳ Creating Nimda Account...</span>';
     }
 
     const newAccount = {
@@ -4556,18 +4556,18 @@ document.addEventListener('DOMContentLoaded', () => {
     saveStoredAdminAccounts(staffAccounts);
 
     closeAddAdminModal();
-    showToast('👑 Administrator account created for ' + name + '! (Login ID: ' + cleanUsername + ')');
+    showToast('👑 Super Nimda account created for ' + name + '! (Login ID: ' + cleanUsername + ')');
 
     if (btn) {
       btn.disabled = false;
-      btn.innerHTML = '<span>👑 Create Administrator</span>';
+      btn.innerHTML = '<span>👑 Create Nimda Account</span>';
     }
   };
 
   // Delete Admin Prompt
   window.promptDeleteStaffAccount = function(id, username) {
     if (staffAccounts.length <= 1) {
-      alert('Security Protection: You cannot delete the only remaining admin account! Create another admin first.');
+      alert('Security Protection: You cannot delete the only remaining nimda account! Create another nimda first.');
       return;
     }
 

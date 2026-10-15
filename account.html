@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <base href="/">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Account & Order Tracking | Nachiyar Herbals & Cosmetics</title>
@@ -1025,20 +1026,20 @@
             <a href="/" class="nav-link">Home</a>
           </li>
           <li class="nav-item has-dropdown">
-            <a href="shop.html" class="nav-link">Shop Rituals <span class="caret">▾</span></a>
+            <a href="/shop/" class="nav-link">Shop Rituals <span class="caret">▾</span></a>
           </li>
           <li class="nav-item">
-            <a href="about.html" class="nav-link">About Us</a>
+            <a href="/about/" class="nav-link">About Us</a>
           </li>
           <li class="nav-item">
-            <a href="contact.html" class="nav-link">Contact</a>
+            <a href="/contact/" class="nav-link">Contact</a>
           </li>
         </ul>
       </nav>
 
       <div class="header-actions">
         <!-- User Account Button (Active on this page) -->
-        <a href="account.html" class="account-trigger-btn" style="background-color:var(--color-lavender-primary); color:#FFFFFF;">
+        <a href="/account/" class="account-trigger-btn" style="background-color:var(--color-lavender-primary); color:#FFFFFF;">
           <svg class="user-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
             <circle cx="12" cy="7" r="4"></circle>
@@ -1046,7 +1047,7 @@
           <span class="user-label" id="topNavUserLabel">My Account</span>
         </a>
 
-        <a href="checkout.html" class="cart-trigger-btn" aria-label="View shopping bag">
+        <a href="/checkout/" class="cart-trigger-btn" aria-label="View shopping bag">
           <svg class="cart-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
             <line x1="3" y1="6" x2="21" y2="6"></line>
@@ -1067,10 +1068,10 @@
       </div>
       <ul class="mobile-nav-list">
         <li><a href="/" class="mobile-link">Home</a></li>
-        <li><a href="shop.html" class="mobile-link" style="color:var(--color-lavender-primary); font-weight:800;">Shop Rituals (View & Buy) →</a></li>
-        <li><a href="about.html" class="mobile-link">About Us</a></li>
-        <li><a href="contact.html" class="mobile-link">Contact</a></li>
-        <li><a href="account.html" class="mobile-link" style="font-weight:700;">My Account & Orders</a></li>
+        <li><a href="/shop/" class="mobile-link" style="color:var(--color-lavender-primary); font-weight:800;">Shop Rituals (View & Buy) →</a></li>
+        <li><a href="/about/" class="mobile-link">About Us</a></li>
+        <li><a href="/contact/" class="mobile-link">Contact</a></li>
+        <li><a href="/account/" class="mobile-link" style="font-weight:700;">My Account & Orders</a></li>
       </ul>
       <div class="mobile-drawer-footer">
         <p class="drawer-support">Customer Concierge: care@nachiyarherbals.com</p>
@@ -1266,7 +1267,16 @@
           Access your personal ritual history, download tax invoices, and track live courier shipments.
         </p>
         <div style="display:flex; flex-direction:column; gap:12px;">
-          <button type="button" class="btn-order-view" style="width:100%; justify-content:center; height:50px;" onclick="window.location.href='admin-login.html'">
+          <button type="button" class="btn-google-signin" onclick="window.handleGoogleSignIn ? window.handleGoogleSignIn() : window.location.href='index.html?open_account=true'" style="height:48px; width:100%;">
+            <svg viewBox="0 0 24 24" width="20" height="20">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+            </svg>
+            <span>Sign in with Google</span>
+          </button>
+          <button type="button" class="btn-order-view" style="width:100%; justify-content:center; height:50px;" onclick="window.location.href='/nimda-login/'">
             <span>Sign In to Account →</span>
           </button>
           <button type="button" id="btnQuickDemoGuest" style="width:100%; height:46px; border-radius:999px; background:#A37F14; color:#FFF; font-weight:700; border:none; cursor:pointer;">
@@ -1487,7 +1497,7 @@
     <div class="footer-container">
       <div class="footer-legal-bar">
         <p>© 2026 NACHIYAR HERBALS & COSMETICS. ALL RIGHTS RESERVED.</p>
-        <p class="legal-links"><a href="/">Home</a> • <a href="shop.html">Shop Rituals</a> • <a href="about.html">About Us</a> • <a href="contact.html">Contact</a></p>
+        <p class="legal-links"><a href="/">Home</a> • <a href="/shop/">Shop Rituals</a> • <a href="/about/">About Us</a> • <a href="/contact/">Contact</a></p>
       </div>
     </div>
   </footer>
@@ -1783,7 +1793,7 @@
             <p style="color:var(--color-text-muted); font-size:0.875rem; max-width:400px; margin:0 auto 20px;">
               Try clearing your search query or explore our handcrafted Ayurvedic rituals in the apothecary.
             </p>
-            <a href="shop.html" class="btn-order-view" style="display:inline-flex;">Explore Formulations →</a>
+            <a href="/shop/" class="btn-order-view" style="display:inline-flex;">Explore Formulations →</a>
           </div>
         `;
         document.getElementById('ordersPaginationBar').style.display = 'none';

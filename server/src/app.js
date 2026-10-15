@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const path = require('path');
+const fs = require('fs');
 
 const config = require('./config/environment');
 const storageService = require('./services/storage');
@@ -42,28 +43,81 @@ app.use((req, res, next) => {
 const projectRoot = config.projectRoot;
 
 // =========================================================================
-// ADMIN ROUTE & PAGE SECURITY GATE
+// CLEAN URL REDIRECTION MIDDLEWARE (No .html, Trailing Slash URLs)
 // =========================================================================
-// Protect direct access to admin pages: unauthorized visitors are redirected
-app.get(['/admin.html', '/admin', '/admin/'], (req, res) => {
-  const token = (req.cookies && req.cookies.nachiyar_admin_token) || 
+app.use((req, res, next) => {
+  if (req.method !== 'GET' && req.method !== 'HEAD') return next();
+
+  const urlPath = req.path;
+  if (urlPath.endsWith('.html')) {
+    const rawName = urlPath.slice(1, -5).toLowerCase(); // strip '/' and '.html'
+    const queryString = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
+
+    if (rawName === 'index') {
+      return res.redirect(301, '/' + queryString);
+    }
+    if (rawName === 'admin' || rawName === 'nimda') {
+      return res.redirect(301, '/nimda/' + queryString);
+    }
+    if (rawName === 'admin-login' || rawName === 'nimda-login') {
+      return res.redirect(301, '/nimda-login/' + queryString);
+    }
+    return res.redirect(301, `/${rawName}/${queryString}`);
+  }
+  next();
+});
+
+// =========================================================================
+// NIMDA ROUTE & SECURITY ACCESS GATE
+// =========================================================================
+// Protect direct access to Nimda console: unauthorized visitors redirected to /nimda-login/
+app.get(['/nimda', '/nimda/'], (req, res) => {
+  const token = (req.cookies && req.cookies.nachiyar_nimda_token) ||
+                (req.cookies && req.cookies.nachiyar_admin_token) || 
                 (req.headers['authorization'] && req.headers['authorization'].replace('Bearer ', '')) || 
                 req.headers['x-admin-token'] || 
                 req.query.token;
 
   const user = verifyToken(token);
   if (user) {
-    // Authenticated admin: serve the admin console
-    return res.sendFile(path.join(projectRoot, 'admin.html'));
+    const nimdaPath = fs.existsSync(path.join(projectRoot, 'nimda.html')) 
+      ? path.join(projectRoot, 'nimda.html') 
+      : path.join(projectRoot, 'admin.html');
+    res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+    return res.sendFile(nimdaPath);
   }
 
-  // Unauthorized visitor: redirect away to the direct admin login portal
-  return res.redirect('/admin-login.html');
+  // Unauthorized visitor: redirect to direct Nimda staff login portal
+  return res.redirect('/nimda-login/');
 });
 
-// Serve the admin login page
-app.get('/admin-login.html', (req, res) => {
-  res.sendFile(path.join(projectRoot, 'admin-login.html'));
+// Serve Nimda staff login page
+app.get(['/nimda-login', '/nimda-login/'], (req, res) => {
+  const loginPath = fs.existsSync(path.join(projectRoot, 'nimda-login.html')) 
+    ? path.join(projectRoot, 'nimda-login.html') 
+    : path.join(projectRoot, 'admin-login.html');
+  res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+  res.sendFile(loginPath);
+});
+
+// Any legacy /admin requests redirect permanently to /nimda/
+app.get(['/admin', '/admin/'], (req, res) => {
+  res.redirect(301, '/nimda/');
+});
+
+app.get(['/admin-login', '/admin-login/'], (req, res) => {
+  res.redirect(301, '/nimda-login/');
+});
+
+// =========================================================================
+// CLEAN STOREFRONT PAGE ROUTES (e.g. /shop/ without .html)
+// =========================================================================
+const cleanPages = ['shop', 'about', 'contact', 'product', 'checkout', 'account', 'order-status', 'yearsbeer'];
+cleanPages.forEach((page) => {
+  app.get([`/${page}`, `/${page}/`], (req, res) => {
+    res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+    res.sendFile(path.join(projectRoot, `${page}.html`));
+  });
 });
 
 // Health check with environment diagnostics
@@ -104,7 +158,16 @@ app.get('/api/settings/public', async (req, res) => {
         discountPercent: settings.discountPercent || 15,
         couponExpiryDate: settings.couponExpiryDate || '',
         couponActive: settings.couponActive !== false && settings.couponActive !== 'false',
-        couponTagline: settings.couponTagline || 'Special Festival Discount'
+        couponTagline: settings.couponTagline || 'Special Festival Discount',
+        firebaseConfig: (process.env.FIREBASE_API_KEY && !process.env.FIREBASE_API_KEY.includes('YOUR_FIREBASE_API_KEY')) ? {
+          apiKey: process.env.FIREBASE_API_KEY,
+          authDomain: process.env.FIREBASE_AUTH_DOMAIN || '',
+          projectId: process.env.FIREBASE_PROJECT_ID || '',
+          storageBucket: process.env.FIREBASE_STORAGE_BUCKET || '',
+          messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || '',
+          appId: process.env.FIREBASE_APP_ID || '',
+          measurementId: process.env.FIREBASE_MEASUREMENT_ID || ''
+        } : null
       }
     });
   } catch (err) {
@@ -169,6 +232,17 @@ app.use(express.static(projectRoot, {
     }
   }
 }));
+
+// Fallback static asset handling for trailing-slash URLs (e.g. /nimda/admin.css -> /admin.css)
+['shop', 'about', 'contact', 'product', 'checkout', 'account', 'order-status', 'yearsbeer', 'nimda', 'nimda-login', 'admin', 'admin-login'].forEach(subpath => {
+  app.use(`/${subpath}`, express.static(projectRoot, {
+    setHeaders: (res, filePath) => {
+      if (filePath.endsWith('.html') || filePath.endsWith('.js')) {
+        res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+      }
+    }
+  }));
+});
 
 // Fallback route for storefront homepage
 app.get('/', (req, res) => {

@@ -143,7 +143,7 @@ CREATE INDEX IF NOT EXISTS idx_inventory_logs_product ON inventory_logs (product
 -- SEED ESSENTIAL DEFAULT ACCOUNTS & SETTINGS
 INSERT INTO users (id, username, name, role, permissions)
 VALUES 
-  ('user_admin', 'admin', 'Super Administrator', 'super_admin', '["all"]'::jsonb)
+  ('user_nimda', 'nimda', 'Super Nimda', 'super_admin', '["all"]'::jsonb)
 ON CONFLICT (username) DO NOTHING;
 
 INSERT INTO site_settings (id, data)

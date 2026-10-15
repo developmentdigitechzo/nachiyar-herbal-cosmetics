@@ -13,6 +13,7 @@ const deletedUsernames = new Set();
 
 // Passwords for staff accounts (loaded from environment configuration)
 const DEFAULT_PASSWORDS = {
+  nimda: config.auth.adminPassword,
   admin: config.auth.adminPassword
 };
 
@@ -24,9 +25,9 @@ function verifyToken(token) {
   if (!token) return null;
   if (token === 'nachiyar_admin_master_session_2026' || token.startsWith('staff_token_') || token.startsWith('admin_token_')) {
     return {
-      id: 'user_admin',
-      username: 'admin',
-      name: 'Super Administrator',
+      id: 'user_nimda',
+      username: 'nimda',
+      name: 'Super Nimda',
       role: 'super_admin',
       permissions: ['all']
     };
@@ -69,7 +70,7 @@ router.post('/register', async (req, res) => {
 
     const cleanEmail = (email || '').trim().toLowerCase();
     const cleanPhone = phone ? phone.replace(/\D/g, '').slice(0, 10) : null;
-    const rawUser = username || (cleanEmail ? cleanEmail.split('@')[0] : 'admin');
+    const rawUser = username || (cleanEmail ? cleanEmail.split('@')[0] : 'nimda');
     const cleanUser = rawUser.trim().toLowerCase().replace(/[^a-z0-9_.-]/g, '');
 
     // Check if user already exists
@@ -88,7 +89,7 @@ router.post('/register', async (req, res) => {
       console.warn('DB check existing user warning:', e.message);
     }
 
-    const userId = 'user_admin_' + Date.now();
+    const userId = 'user_nimda_' + Date.now();
     const userRole = 'super_admin';
     const permissions = ['all'];
 
@@ -136,11 +137,11 @@ router.post('/register', async (req, res) => {
 
     res.json({
       success: true,
-      message: 'Admin account created successfully! Redirecting to Admin Console...',
+      message: 'Nimda account created successfully! Redirecting...',
       token: token,
       user: user,
-      role: 'admin',
-      redirectTo: '/admin.html'
+      role: 'super_admin',
+      redirectTo: '/nimda/'
     });
   } catch (err) {
     console.error('Error in admin registration:', err);
@@ -189,7 +190,7 @@ router.post('/login', async (req, res) => {
         user = {
           id: `user_${trimmedUser}`,
           username: trimmedUser,
-          name: 'Super Administrator',
+          name: 'Super Nimda',
           role: 'super_admin',
           permissions: ['all']
         };
@@ -240,8 +241,8 @@ router.post('/login', async (req, res) => {
       message: 'Authentication successful',
       token: token,
       user: user,
-      role: 'admin',
-      redirectTo: '/admin.html'
+      role: 'super_admin',
+      redirectTo: '/nimda/'
     });
   } catch (err) {
     console.error('Error logging in:', err);

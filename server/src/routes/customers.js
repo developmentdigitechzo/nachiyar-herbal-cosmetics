@@ -124,6 +124,154 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// GET /api/customer/firebase-config
+router.get('/firebase-config', (req, res) => {
+  const apiKey = (process.env.FIREBASE_API_KEY || '').trim();
+  const authDomain = (process.env.FIREBASE_AUTH_DOMAIN || '').trim();
+  const projectId = (process.env.FIREBASE_PROJECT_ID || '').trim();
+  const storageBucket = (process.env.FIREBASE_STORAGE_BUCKET || '').trim();
+  const messagingSenderId = (process.env.FIREBASE_MESSAGING_SENDER_ID || '').trim();
+  const appId = (process.env.FIREBASE_APP_ID || '').trim();
+  const measurementId = (process.env.FIREBASE_MEASUREMENT_ID || '').trim();
+
+  const isConfigured = Boolean(apiKey && projectId && !apiKey.includes('YOUR_FIREBASE_API_KEY'));
+
+  res.json({
+    success: true,
+    configured: isConfigured,
+    config: isConfigured ? {
+      apiKey,
+      authDomain,
+      projectId,
+      storageBucket,
+      messagingSenderId,
+      appId,
+      measurementId
+    } : null
+  });
+});
+
+// POST /api/customer/google-auth
+router.post('/google-auth', async (req, res) => {
+  try {
+    const { credential, email, name, picture, googleId, firebaseUid } = req.body;
+
+    let userEmail = email;
+    let userName = name;
+    let userPicture = picture;
+    let userGoogleId = firebaseUid || googleId;
+
+    // If Google ID token credential passed (standard Google Identity Services JWT)
+    if (credential) {
+      try {
+        const parts = credential.split('.');
+        if (parts.length === 3) {
+          const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString('utf8'));
+          userEmail = payload.email || userEmail;
+          userName = payload.name || userName;
+          userPicture = payload.picture || userPicture;
+          userGoogleId = payload.sub || userGoogleId;
+        }
+      } catch (jwtErr) {
+        console.warn('Could not decode Google credential JWT:', jwtErr.message);
+      }
+    }
+
+    if (!userEmail) {
+      return res.status(400).json({ success: false, message: 'Google account email is required.' });
+    }
+
+    const cleanEmail = userEmail.trim().toLowerCase();
+    const cleanName = (userName || cleanEmail.split('@')[0]).trim();
+
+    // Ensure columns exist safely
+    try {
+      await query(`ALTER TABLE customers ADD COLUMN IF NOT EXISTS avatar TEXT;`);
+      await query(`ALTER TABLE customers ADD COLUMN IF NOT EXISTS google_id VARCHAR(255);`);
+      await query(`ALTER TABLE customers ADD COLUMN IF NOT EXISTS auth_provider VARCHAR(50) DEFAULT 'local';`);
+    } catch (colErr) {
+      // Columns may already exist
+    }
+
+    // Check if customer already exists by Firebase UID or email
+    const existing = await query('SELECT * FROM customers WHERE id = $1 OR LOWER(email) = $2', [userGoogleId || '', cleanEmail]);
+
+    let customer;
+    if (existing.rows.length > 0) {
+      const row = existing.rows[0];
+      if (userPicture || userGoogleId) {
+        await query(`
+          UPDATE customers 
+          SET avatar = COALESCE($1, avatar),
+              google_id = COALESCE($2, google_id),
+              auth_provider = 'google'
+          WHERE id = $3 OR LOWER(email) = $4
+        `, [userPicture, userGoogleId, row.id, cleanEmail]);
+      }
+
+      customer = {
+        id: row.id,
+        name: row.name || cleanName,
+        email: row.email,
+        phone: row.phone || '',
+        address: row.address || '',
+        city: row.city || '',
+        state: row.state || 'Tamil Nadu',
+        pincode: row.pincode || '',
+        avatar: userPicture || row.avatar || '',
+        authProvider: 'google'
+      };
+    } else {
+      // Create new customer with Firebase UID as the unique user ID
+      const customerId = firebaseUid || userGoogleId || ('cust_g_' + Date.now() + '_' + Math.floor(Math.random() * 1000));
+      const generatedPass = 'FIREBASE_AUTH_' + crypto.randomBytes(8).toString('hex');
+
+      await query(`
+        INSERT INTO customers (id, name, email, phone, password, address, city, state, pincode, avatar, google_id, auth_provider)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'google')
+      `, [
+        customerId,
+        cleanName,
+        cleanEmail,
+        '',
+        generatedPass,
+        '',
+        '',
+        'Tamil Nadu',
+        '',
+        userPicture || '',
+        userGoogleId || ''
+      ]);
+
+      customer = {
+        id: customerId,
+        name: cleanName,
+        email: cleanEmail,
+        phone: '',
+        address: '',
+        city: '',
+        state: 'Tamil Nadu',
+        pincode: '',
+        avatar: userPicture || '',
+        authProvider: 'google'
+      };
+    }
+
+    const token = generateToken();
+    customerSessions.set(token, { customer, expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000 });
+
+    res.json({
+      success: true,
+      message: `Signed in successfully with Google as ${customer.name}`,
+      customer,
+      token
+    });
+  } catch (err) {
+    console.error('Customer Google auth error:', err);
+    res.status(500).json({ success: false, message: 'Google sign in failed: ' + err.message });
+  }
+});
+
 // GET /api/customer/orders
 router.get('/orders', async (req, res) => {
   try {

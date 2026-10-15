@@ -1,0 +1,30 @@
+# ==============================================================================
+# NACHIYAR HERBALS & COSMETICS - APACHE / CPANEL REWRITE CONFIGURATION
+# ==============================================================================
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # 1. Strip .html extension and redirect with trailing slash (e.g. /shop.html -> /shop/)
+  RewriteCond %{THE_REQUEST} \s/+(.+?)\.html[\s?] [NC]
+  RewriteRule ^ %1/ [R=301,L]
+
+  # 2. Redirect legacy /admin/ requests to /nimda/
+  RewriteRule ^admin/?$ /nimda/ [R=301,L]
+  RewriteRule ^admin-login/?$ /nimda-login/ [R=301,L]
+
+  # 3. Clean URL routing for static HTML files
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{DOCUMENT_ROOT}/$1.html -f
+  RewriteRule ^(.*)/?$ $1.html [L]
+</IfModule>
+
+# Security Headers
+<IfModule mod_headers.c>
+  Header set X-Content-Type-Options "nosniff"
+  Header set X-XSS-Protection "1; mode=block"
+  Header set X-Frame-Options "SAMEORIGIN"
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>

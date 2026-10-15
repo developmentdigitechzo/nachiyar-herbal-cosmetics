@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <base href="/">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Royal Checkout | Nachiyar Herbals & Cosmetics</title>
@@ -682,7 +683,7 @@
 
       function renderCheckout() {
         if (cart.length === 0) {
-          itemsList.innerHTML = '<p style="color:var(--color-text-muted); padding:20px; text-align:center;">Your bag is empty. <a href="shop.html">Shop Rituals</a></p>';
+          itemsList.innerHTML = '<p style="color:var(--color-text-muted); padding:20px; text-align:center;">Your bag is empty. <a href="/shop/">Shop Rituals</a></p>';
           subtotalVal.textContent = '₹0';
           totalVal.textContent = '₹0';
           btnPlaceOrder.disabled = true;
