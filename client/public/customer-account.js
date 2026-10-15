@@ -420,7 +420,7 @@
           <form id="drawerRegisterForm" onsubmit="event.preventDefault(); window.handleDrawerRegister();">
             <input type="text" id="regName" class="drawer-auth-input" placeholder="Your Full Name *" required autocomplete="name">
             <input type="email" id="regEmail" class="drawer-auth-input" placeholder="Email Address *" required autocomplete="email">
-            <input type="tel" id="regPhone" class="drawer-auth-input" placeholder="Mobile Number (+91) *" required autocomplete="tel">
+            <input type="tel" id="regPhone" class="drawer-auth-input" placeholder="Mobile Number (10 digits) *" required autocomplete="tel" maxlength="10" pattern="[0-9]{10}" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);">
             <input type="password" id="regPassword" class="drawer-auth-input" placeholder="Create Password *" required autocomplete="new-password">
             <input type="text" id="regAddress" class="drawer-auth-input" placeholder="Street Delivery Address" autocomplete="street-address">
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
@@ -669,10 +669,18 @@
   };
 
   window.handleDrawerRegister = async function() {
+    const rawPhone = (document.getElementById('regPhone')?.value || '').trim();
+    const cleanPhone = rawPhone.replace(/\D/g, '').slice(0, 10);
+
+    if (cleanPhone.length !== 10) {
+      alert('Please enter a valid 10-digit mobile number.');
+      return;
+    }
+
     const payload = {
       name: document.getElementById('regName').value.trim(),
       email: document.getElementById('regEmail').value.trim(),
-      phone: document.getElementById('regPhone').value.trim(),
+      phone: cleanPhone,
       password: document.getElementById('regPassword').value,
       address: document.getElementById('regAddress').value.trim(),
       city: document.getElementById('regCity').value.trim(),

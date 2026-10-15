@@ -68,6 +68,16 @@ async function checkDatabase() {
     `);
     console.table(revRes.rows);
 
+    // 6. Registered Admin Accounts (Users Table)
+    console.log('\n👑 [6] AUTHORIZED ADMIN ACCOUNTS (USERS TABLE):');
+    console.log('--------------------------------------------------------');
+    const usersRes = await pool.query(`
+      SELECT id, username, name, email, phone, role, to_char(created_at, 'DD-Mon-YYYY HH12:MI AM') as created_at
+      FROM users 
+      ORDER BY created_at DESC
+    `);
+    console.table(usersRes.rows);
+
     console.log('\n========================================================');
     console.log('  STATUS: All Database Tables are Healthy and Connected! ');
     console.log('========================================================\n');

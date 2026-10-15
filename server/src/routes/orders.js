@@ -120,15 +120,15 @@ router.post('/', async (req, res) => {
       paymentStatus = 'pending';
     } else if (/upi|gpay|phonepe|paytm/i.test(rawMethod)) {
       normalizedCategory = 'upi';
-      displayMethod = body.paymentDetails?.upiProvider ? `UPI (${body.paymentDetails.upiProvider})` : (rawMethod || 'UPI');
+      displayMethod = (body.paymentDetails && body.paymentDetails.upiProvider) ? `UPI (${body.paymentDetails.upiProvider})` : (rawMethod || 'UPI');
       paymentStatus = 'paid';
     } else if (/card|visa|master|rupay/i.test(rawMethod)) {
       normalizedCategory = 'card';
-      displayMethod = body.paymentDetails?.cardBrand ? `Card (${body.paymentDetails.cardBrand})` : (rawMethod || 'Credit / Debit Card');
+      displayMethod = (body.paymentDetails && body.paymentDetails.cardBrand) ? `Card (${body.paymentDetails.cardBrand})` : (rawMethod || 'Credit / Debit Card');
       paymentStatus = 'paid';
     } else if (/net banking|netbanking/i.test(rawMethod)) {
       normalizedCategory = 'netbanking';
-      displayMethod = body.paymentDetails?.bankName ? `Net Banking (${body.paymentDetails.bankName})` : (rawMethod || 'Net Banking');
+      displayMethod = (body.paymentDetails && body.paymentDetails.bankName) ? `Net Banking (${body.paymentDetails.bankName})` : (rawMethod || 'Net Banking');
       paymentStatus = 'paid';
     } else {
       normalizedCategory = 'other';

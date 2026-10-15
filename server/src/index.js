@@ -6,13 +6,15 @@ const storageService = require('./services/storage');
 const PORT = config.port;
 
 // Test DB connection before listening
-pool.query('SELECT NOW()', (err, res) => {
-  if (err) {
-    console.error(`❌ [${config.env.toUpperCase()}] PostgreSQL connection failed:`, err.message);
-  } else {
-    console.log(`✅ [${config.env.toUpperCase()}] PostgreSQL connected successfully at:`, res.rows[0].now);
-  }
-});
+if (pool && typeof pool.query === 'function') {
+  pool.query('SELECT NOW()', (err, res) => {
+    if (err) {
+      console.error(`❌ [${config.env.toUpperCase()}] PostgreSQL connection failed:`, err.message);
+    } else {
+      console.log(`✅ [${config.env.toUpperCase()}] PostgreSQL connected successfully at:`, res.rows[0].now);
+    }
+  });
+}
 
 const server = app.listen(PORT, () => {
   console.log(`==================================================================`);

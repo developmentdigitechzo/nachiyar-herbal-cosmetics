@@ -4,12 +4,12 @@
   "description": "Nachiyar Herbals & Cosmetics - Full-Stack Modern Platform (Next.js, Node.js + Express.js, PostgreSQL)",
   "main": "server.js",
   "scripts": {
-    "start": "node server/src/index.js",
-    "dev": "node server/src/index.js",
-    "start:prod": "node -e \"process.env.NODE_ENV='production'; require('./server/src/index.js')\"",
-    "server": "node server/src/index.js",
+    "start": "node --disable-wasm-trap-handler server/src/index.js",
+    "dev": "node --disable-wasm-trap-handler server/src/index.js",
+    "start:prod": "node --disable-wasm-trap-handler -e \"process.env.NODE_ENV='production'; require('./server/src/index.js')\"",
+    "server": "node --disable-wasm-trap-handler server/src/index.js",
     "client": "npm run dev --prefix client",
-    "db:migrate": "node server/src/db/migrate.js",
+    "db:migrate": "node --disable-wasm-trap-handler server/src/db/migrate.js",
     "test:env": "node test-environments.js"
   },
   "dependencies": {
@@ -17,7 +17,6 @@
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "morgan": "^1.10.0",
-    "pg": "^8.12.0",
-    "sharp": "^0.35.5"
+    "pg": "^8.12.0"
   }
 }

@@ -20,6 +20,7 @@ router.post('/register', async (req, res) => {
     }
 
     const cleanEmail = email.trim().toLowerCase();
+    const cleanPhone = phone ? phone.replace(/\D/g, '').slice(0, 10) : '';
 
     // Check if customer email already exists
     const existing = await query('SELECT id FROM customers WHERE email = $1', [cleanEmail]);
@@ -36,7 +37,7 @@ router.post('/register', async (req, res) => {
       customerId,
       name.trim(),
       cleanEmail,
-      phone ? phone.trim() : '',
+      cleanPhone,
       password,
       address ? address.trim() : '',
       city ? city.trim() : '',

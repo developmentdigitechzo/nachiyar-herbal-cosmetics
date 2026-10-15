@@ -30,6 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (res.status === 401) {
       localStorage.removeItem('nachiyar_admin_token');
       localStorage.removeItem('nachiyar_admin_user');
+      localStorage.removeItem('nachiyar_admin_active_tab');
       document.cookie = 'nachiyar_admin_token=; path=/; max-age=0; SameSite=Lax';
       window.location.replace('/admin-login.html');
       throw new Error('Unauthorized');
@@ -4274,6 +4275,406 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Initial Boot
+  
+  // =========================================================================
+  // 11. ADMIN & STAFF ACCESS MANAGEMENT MODULE
+  // =========================================================================
+  let staffAccounts = [];
+  let deleteTargetAccount = null;
+
+  // Only Administrator accounts exist on the platform
+  const defaultAdminAccounts = [
+    {
+      id: 'admin_master',
+      name: 'Super Administrator',
+      username: 'admin',
+      phone: '9876543210',
+      email: 'admin@nachiyarherbals.com',
+      role: 'super_admin',
+      password: '••••••••',
+      createdAt: '2026-10-15'
+    }
+  ];
+
+  function getStoredAdminAccounts() {
+    const raw = localStorage.getItem('nachiyar_admin_accounts');
+    const deletedList = JSON.parse(localStorage.getItem('nachiyar_deleted_admins') || '[]');
+
+    if (!raw) {
+      const initial = defaultAdminAccounts.filter(acc => !deletedList.includes(acc.username.toLowerCase()));
+      localStorage.setItem('nachiyar_admin_accounts', JSON.stringify(initial));
+      return initial;
+    }
+
+    try {
+      const parsed = JSON.parse(raw);
+      // Filter out deleted accounts and any legacy non-admin roles (inventory, billing)
+      return parsed
+        .filter(acc => !deletedList.includes(acc.username.toLowerCase()))
+        .filter(acc => acc.username.toLowerCase() !== 'inventory' && acc.username.toLowerCase() !== 'billing')
+        .map(acc => ({ ...acc, role: 'super_admin' }));
+    } catch (e) {
+      return defaultAdminAccounts;
+    }
+  }
+
+  function saveStoredAdminAccounts(list) {
+    staffAccounts = list;
+    localStorage.setItem('nachiyar_admin_accounts', JSON.stringify(list));
+    renderStaffAccountsTable();
+    updateStaffBadges();
+  }
+
+  function updateStaffBadges() {
+    const totalCount = staffAccounts.length;
+    const deletedList = JSON.parse(localStorage.getItem('nachiyar_deleted_admins') || '[]');
+    
+    const badgeStaffCount = document.getElementById('badgeStaffCount');
+    const kpiTotalAdmins = document.getElementById('kpiTotalAdmins');
+    const kpiRevokedAdmins = document.getElementById('kpiRevokedAdmins');
+    const activeBadge = document.getElementById('activeAccountsBadgeCount');
+
+    if (badgeStaffCount) badgeStaffCount.textContent = totalCount;
+    if (kpiTotalAdmins) kpiTotalAdmins.textContent = totalCount;
+    if (kpiRevokedAdmins) kpiRevokedAdmins.textContent = deletedList.length;
+    if (activeBadge) activeBadge.textContent = totalCount + (totalCount === 1 ? ' Account' : ' Accounts');
+  }
+
+  function updateAdminGreeting() {
+    const storedUserJson = localStorage.getItem('nachiyar_admin_user');
+    let adminName = 'Admin';
+    if (storedUserJson) {
+      try {
+        const u = JSON.parse(storedUserJson);
+        adminName = u.name || u.username || 'Admin';
+      } catch (e) {}
+    }
+    const headingAdminName = document.getElementById('headingAdminName');
+    if (headingAdminName) headingAdminName.textContent = adminName;
+    const topbarAdminName = document.getElementById('topbarAdminName');
+    if (topbarAdminName) topbarAdminName.textContent = adminName;
+  }
+
+  function renderStaffAccountsTable() {
+    const tbody = document.getElementById('staffAccountsTableBody');
+    if (!tbody) return;
+
+    if (staffAccounts.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 36px; color: var(--admin-text-muted);"><div style="font-size: 2rem; margin-bottom: 8px;">👑</div><strong>No active admin accounts found.</strong><br><small>Click "Add New Admin" to create an administrator.</small></td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = staffAccounts.map(acc => {
+      const createdDate = acc.createdAt || new Date().toISOString().split('T')[0];
+      const pwdId = 'pwd_' + (acc.id || 'id').replace(/[^a-zA-Z0-9]/g, '');
+      const initials = (acc.name || acc.username || 'A').split(' ').map(n => n.charAt(0)).join('').substring(0, 2).toUpperCase();
+
+      return '<tr>' +
+        '<td>' +
+          '<div style="display: flex; align-items: center; gap: 12px;">' +
+            '<div style="width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #2D1A3B 0%, #7C5AAB 100%); color: #FFF; font-weight: 800; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; box-shadow: 0 2px 6px rgba(124, 90, 171, 0.3);">' +
+              initials +
+            '</div>' +
+            '<div>' +
+              '<strong style="color: #1E293B; font-size: 0.88rem; display: block;">' + escapeHtml(acc.name || acc.username) + '</strong>' +
+              '<small style="color: var(--admin-text-muted); font-size: 0.72rem;">' + escapeHtml(acc.phone ? '📱 ' + acc.phone : (acc.email || '')) + '</small>' +
+            '</div>' +
+          '</div>' +
+        '</td>' +
+        '<td>' +
+          '<code style="background: #F1F5F9; padding: 4px 8px; border-radius: 6px; font-weight: 700; color: #0F172A; font-size: 0.8125rem;">' +
+            escapeHtml(acc.username) +
+          '</code>' +
+        '</td>' +
+        '<td>' +
+          '<span class="badge-tag paid" style="font-weight: 700; font-size: 0.74rem;">👑 Administrator</span>' +
+        '</td>' +
+        '<td>' +
+          '<div style="display: flex; align-items: center; gap: 6px;">' +
+            '<span id="' + pwdId + '" style="font-family: monospace; font-size: 0.85rem; letter-spacing: 2px; color: #475569;">••••••••</span>' +
+            '<button type="button" class="btn-icon" title="View/Hide Password" data-pwd-id="' + pwdId + '" data-actual-pwd="' + escapeHtml(acc.password || 'admin123') + '" onclick="togglePasswordDisplay(this.getAttribute(\'data-pwd-id\'), this.getAttribute(\'data-actual-pwd\'))" style="background: none; border: none; cursor: pointer; font-size: 0.95rem; opacity: 0.7;">' +
+              '👁️' +
+            '</button>' +
+          '</div>' +
+        '</td>' +
+        '<td>' +
+          '<small style="color: #64748B; font-size: 0.75rem;">' + createdDate + '</small>' +
+        '</td>' +
+        '<td style="text-align: right;">' +
+          '<button type="button" class="btn-danger btn-sm" data-acc-id="' + escapeHtml(acc.id) + '" data-acc-user="' + escapeHtml(acc.username) + '" onclick="promptDeleteStaffAccount(this.getAttribute(\'data-acc-id\'), this.getAttribute(\'data-acc-user\'))" title="Revoke and delete this admin login ID" style="background:#FEE2E2; color:#DC2626; border:1px solid #FECACA; padding:6px 14px; border-radius:8px; font-size:0.75rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">' +
+            '<span>🗑️ Delete</span>' +
+          '</button>' +
+        '</td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  window.togglePasswordDisplay = function(elementId, actualPwd) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    if (el.textContent === '••••••••') {
+      el.textContent = actualPwd;
+      el.style.letterSpacing = 'normal';
+      el.style.fontWeight = '700';
+      el.style.color = '#7C5AAB';
+    } else {
+      el.textContent = '••••••••';
+      el.style.letterSpacing = '2px';
+      el.style.fontWeight = 'normal';
+      el.style.color = '#475569';
+    }
+  };
+
+  // Modal Open/Close for Add Admin
+  window.openAddAdminModal = function() {
+    const modal = document.getElementById('modalAddAdmin');
+    const form = document.getElementById('formAddAdminModal');
+    const alertBox = document.getElementById('modalAdminErrorAlert');
+    if (form) form.reset();
+    if (alertBox) {
+      alertBox.style.display = 'none';
+      alertBox.textContent = '';
+    }
+    if (modal) {
+      modal.classList.add('is-active', 'is-visible', 'active');
+      modal.style.display = 'flex';
+    }
+    const nameInput = document.getElementById('inputModalAdminName');
+    if (nameInput) setTimeout(() => nameInput.focus(), 100);
+  };
+
+  window.closeAddAdminModal = function() {
+    const modal = document.getElementById('modalAddAdmin');
+    if (modal) {
+      modal.classList.remove('is-active', 'is-visible', 'active');
+      modal.style.display = 'none';
+    }
+  };
+
+  window.toggleModalPwd = function(inputId, btn) {
+    const inp = document.getElementById(inputId);
+    if (!inp) return;
+    const isPwd = inp.type === 'password';
+    inp.type = isPwd ? 'text' : 'password';
+    if (btn) btn.textContent = isPwd ? '🙈' : '👁️';
+  };
+
+  // Add Admin Modal Submission Handler
+  window.handleCreateAdminModalSubmit = async function(e) {
+    if (e) e.preventDefault();
+
+    const name = (document.getElementById('inputModalAdminName')?.value || '').trim();
+    const phone = (document.getElementById('inputModalAdminPhone')?.value || '').trim();
+    const email = (document.getElementById('inputModalAdminEmail')?.value || '').trim();
+    const rawUsername = (document.getElementById('inputModalAdminUsername')?.value || '').trim();
+    const cleanUsername = rawUsername.toLowerCase().replace(/[^a-z0-9_.-]/g, '');
+    const password = document.getElementById('inputModalAdminPassword')?.value || '';
+    const confirmPassword = document.getElementById('inputModalAdminConfirmPassword')?.value || '';
+    const alertBox = document.getElementById('modalAdminErrorAlert');
+    const btn = document.getElementById('btnSubmitAddAdminModal');
+
+    function showError(msg) {
+      if (alertBox) {
+        alertBox.textContent = msg;
+        alertBox.style.display = 'block';
+      } else {
+        alert(msg);
+      }
+    }
+
+    if (!name || !phone || !cleanUsername || !password || !confirmPassword) {
+      showError('Please fill in all required fields marked with *');
+      return;
+    }
+
+    const cleanPhone = phone.replace(/\D/g, '').slice(0, 10);
+    if (cleanPhone.length !== 10) {
+      showError('Mobile number must be exactly 10 digits.');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      showError('Passwords do not match! Please check and re-enter the matching password.');
+      return;
+    }
+
+    if (password.length < 6) {
+      showError('Password must be at least 6 characters long.');
+      return;
+    }
+
+    if (staffAccounts.some(acc => acc.username.toLowerCase() === cleanUsername)) {
+      showError('Admin ID "' + cleanUsername + '" is already taken. Please choose a different login ID.');
+      return;
+    }
+
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<span>⏳ Creating Administrator...</span>';
+    }
+
+    const newAccount = {
+      id: 'admin_' + Date.now(),
+      name: name,
+      phone: cleanPhone,
+      email: email || (cleanUsername + '@nachiyarherbals.com'),
+      username: cleanUsername,
+      role: 'super_admin',
+      password: password,
+      createdAt: new Date().toISOString().split('T')[0]
+    };
+
+    // Remove from deleted list if present
+    let deletedList = JSON.parse(localStorage.getItem('nachiyar_deleted_admins') || '[]');
+    deletedList = deletedList.filter(u => u !== cleanUsername);
+    localStorage.setItem('nachiyar_deleted_admins', JSON.stringify(deletedList));
+
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name,
+          phone: cleanPhone,
+          username: cleanUsername,
+          email: newAccount.email,
+          password: password,
+          role: 'super_admin'
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.user && data.user.id) {
+          newAccount.id = data.user.id;
+        }
+      }
+    } catch (err) {
+      console.warn('Backend admin sync note:', err.message);
+    }
+
+    staffAccounts.unshift(newAccount);
+    saveStoredAdminAccounts(staffAccounts);
+
+    closeAddAdminModal();
+    showToast('👑 Administrator account created for ' + name + '! (Login ID: ' + cleanUsername + ')');
+
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<span>👑 Create Administrator</span>';
+    }
+  };
+
+  // Delete Admin Prompt
+  window.promptDeleteStaffAccount = function(id, username) {
+    if (staffAccounts.length <= 1) {
+      alert('Security Protection: You cannot delete the only remaining admin account! Create another admin first.');
+      return;
+    }
+
+    deleteTargetAccount = { id: id, username: username };
+    const modal = document.getElementById('modalDeleteStaffConfirm');
+    const label = document.getElementById('deleteTargetUsername');
+    if (label) label.textContent = '"' + username + '"';
+    if (modal) {
+      modal.classList.add('is-active', 'is-visible', 'active');
+      modal.style.display = 'flex';
+    }
+  };
+
+  window.closeDeleteStaffModal = function() {
+    const modal = document.getElementById('modalDeleteStaffConfirm');
+    if (modal) {
+      modal.classList.remove('is-active', 'is-visible', 'active');
+      modal.style.display = 'none';
+    }
+    deleteTargetAccount = null;
+  };
+
+  window.executeDeleteStaffAccount = async function() {
+    if (!deleteTargetAccount) return;
+
+    const id = deleteTargetAccount.id;
+    const username = deleteTargetAccount.username;
+    const cleanUser = username.toLowerCase();
+
+    // Blacklist permanently in localStorage
+    const deletedList = JSON.parse(localStorage.getItem('nachiyar_deleted_admins') || '[]');
+    if (!deletedList.includes(cleanUser)) {
+      deletedList.push(cleanUser);
+      localStorage.setItem('nachiyar_deleted_admins', JSON.stringify(deletedList));
+    }
+
+    // Remove from active staff accounts list
+    staffAccounts = staffAccounts.filter(acc => acc.id !== id && acc.username.toLowerCase() !== cleanUser);
+    saveStoredAdminAccounts(staffAccounts);
+
+    // Call server to delete user & invalidate active sessions
+    try {
+      await fetch('/api/auth/users/' + encodeURIComponent(id) + '?username=' + encodeURIComponent(cleanUser), {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-token': localStorage.getItem('nachiyar_admin_token') || ''
+        }
+      });
+    } catch (err) {
+      console.warn('Backend delete sync note:', err.message);
+    }
+
+    closeDeleteStaffModal();
+    showToast('Admin ID "' + username + '" permanently deleted and revoked.');
+  };
+
+  // Backdrop click listeners for modals
+  const modalAddAdminEl = document.getElementById('modalAddAdmin');
+  if (modalAddAdminEl) {
+    modalAddAdminEl.addEventListener('click', (e) => {
+      if (e.target === modalAddAdminEl) closeAddAdminModal();
+    });
+  }
+
+  const modalDeleteConfirmEl = document.getElementById('modalDeleteStaffConfirm');
+  if (modalDeleteConfirmEl) {
+    modalDeleteConfirmEl.addEventListener('click', (e) => {
+      if (e.target === modalDeleteConfirmEl) closeDeleteStaffModal();
+    });
+  }
+
+  function initStaffManagement() {
+    staffAccounts = getStoredAdminAccounts();
+    renderStaffAccountsTable();
+    updateStaffBadges();
+    updateAdminGreeting();
+
+    fetch('/api/auth/users', {
+      headers: { 'x-admin-token': localStorage.getItem('nachiyar_admin_token') || '' }
+    })
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data && data.success && Array.isArray(data.users)) {
+          const deletedList = JSON.parse(localStorage.getItem('nachiyar_deleted_admins') || '[]');
+          data.users.forEach(dbUser => {
+            const cleanU = (dbUser.username || '').toLowerCase();
+            if (cleanU && !deletedList.includes(cleanU) && cleanU !== 'inventory' && cleanU !== 'billing' && !staffAccounts.some(a => a.username.toLowerCase() === cleanU)) {
+              staffAccounts.push({
+                id: dbUser.id,
+                name: dbUser.name || dbUser.username,
+                username: dbUser.username,
+                email: dbUser.email || '',
+                phone: dbUser.phone || '',
+                role: 'super_admin',
+                password: '••••••••',
+                createdAt: (dbUser.created_at || '').split('T')[0] || '2026-10-15'
+              });
+            }
+          });
+          saveStoredAdminAccounts(staffAccounts);
+        }
+      })
+      .catch(() => {});
+  }
+
+  initStaffManagement();
   restoreActiveTab();
   loadAllData();
 

@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Account & Order Tracking | Nachiyar Herbals & Cosmetics</title>
+  <!-- Nachiyar Royal Brand Favicon -->
+  <link rel="icon" type="image/png" href="assets/nachiyar-logo.png">
+  <link rel="shortcut icon" type="image/png" href="assets/nachiyar-logo.png">
+  <link rel="apple-touch-icon" href="assets/nachiyar-logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -1219,7 +1223,7 @@
                 </div>
                 <div style="margin-bottom:24px;">
                   <label style="display:block; font-size:0.75rem; font-weight:700; text-transform:uppercase; margin-bottom:6px;">Mobile Number</label>
-                  <input type="tel" id="profPhoneInput" class="orders-search-input" style="max-width:100%;">
+                  <input type="tel" id="profPhoneInput" class="orders-search-input" maxlength="10" pattern="[0-9]{10}" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);" placeholder="10-digit mobile number" style="max-width:100%;">
                 </div>
                 <button type="submit" class="btn-order-view" style="height:46px;">Save Changes</button>
               </form>

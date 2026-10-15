@@ -116,9 +116,13 @@ CREATE TABLE IF NOT EXISTS inventory_logs (
 CREATE TABLE IF NOT EXISTS users (
   id VARCHAR(100) PRIMARY KEY,
   username VARCHAR(100) UNIQUE NOT NULL,
+  email VARCHAR(255),
+  phone VARCHAR(50),
+  password VARCHAR(255),
   name VARCHAR(255) NOT NULL,
-  role VARCHAR(100) NOT NULL,
-  permissions JSONB DEFAULT '[]'::jsonb
+  role VARCHAR(100) NOT NULL DEFAULT 'super_admin',
+  permissions JSONB DEFAULT '["all"]'::jsonb,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 8. SITE SETTINGS
@@ -139,9 +143,7 @@ CREATE INDEX IF NOT EXISTS idx_inventory_logs_product ON inventory_logs (product
 -- SEED ESSENTIAL DEFAULT ACCOUNTS & SETTINGS
 INSERT INTO users (id, username, name, role, permissions)
 VALUES 
-  ('user_admin', 'admin', 'Super Administrator', 'super_admin', '["all"]'::jsonb),
-  ('user_inventory', 'inventory', 'Inventory Lead', 'inventory_manager', '["inventory", "orders"]'::jsonb),
-  ('user_billing', 'billing', 'Sales Cashier', 'sales_manager', '["pos", "billing"]'::jsonb)
+  ('user_admin', 'admin', 'Super Administrator', 'super_admin', '["all"]'::jsonb)
 ON CONFLICT (username) DO NOTHING;
 
 INSERT INTO site_settings (id, data)

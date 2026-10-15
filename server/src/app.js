@@ -46,8 +46,8 @@ const projectRoot = config.projectRoot;
 // =========================================================================
 // Protect direct access to admin pages: unauthorized visitors are redirected
 app.get(['/admin.html', '/admin', '/admin/'], (req, res) => {
-  const token = req.cookies?.nachiyar_admin_token || 
-                req.headers['authorization']?.replace('Bearer ', '') || 
+  const token = (req.cookies && req.cookies.nachiyar_admin_token) || 
+                (req.headers['authorization'] && req.headers['authorization'].replace('Bearer ', '')) || 
                 req.headers['x-admin-token'] || 
                 req.query.token;
 
