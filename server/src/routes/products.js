@@ -2,6 +2,16 @@ const express = require('express');
 const router = express.Router();
 const { query } = require('../config/db');
 
+function slugify(text) {
+  return (text || '')
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/[\s_-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
 // Map DB row to camelCase format expected by frontends
 function mapProduct(row) {
   return {
@@ -69,12 +79,22 @@ router.get('/:idOrSlug', async (req, res) => {
   try {
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     const { idOrSlug } = req.params;
+    const cleanParam = decodeURIComponent(idOrSlug || '').trim().toLowerCase();
+    const slugVariant = slugify(cleanParam);
+
     const result = await query(
-      'SELECT * FROM products WHERE id = $1 OR slug = $1 LIMIT 1',
-      [idOrSlug]
+      'SELECT * FROM products WHERE LOWER(id) = $1 OR LOWER(slug) = $1 OR LOWER(slug) = $2 LIMIT 1',
+      [cleanParam, slugVariant]
     );
 
     if (result.rows.length === 0) {
+      const fallbackResult = await query(
+        'SELECT * FROM products WHERE slug LIKE $1 LIMIT 1',
+        ['%' + slugVariant + '%']
+      );
+      if (fallbackResult.rows.length > 0) {
+        return res.json({ success: true, data: mapProduct(fallbackResult.rows[0]) });
+      }
       return res.status(404).json({ success: false, message: 'Product not found' });
     }
 
@@ -94,7 +114,12 @@ router.post('/', async (req, res) => {
     }
 
     const id = body.id || `prod_${Date.now()}`;
-    const slug = body.slug || body.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const rawSlug = (body.slug || '').trim() || (body.name || '').trim();
+    let slug = slugify(rawSlug) || `prod-${Date.now()}`;
+    const existingSlug = await query('SELECT id FROM products WHERE slug = $1 LIMIT 1', [slug]);
+    if (existingSlug.rows.length > 0) {
+      slug = `${slug}-${Date.now().toString().slice(-4)}`;
+    }
     const price = Number(body.price);
     const mrp = Number(body.mrp) || Math.round(price * 1.2);
     const stock = Number(body.stock) || 0;
@@ -216,8 +241,9 @@ router.put('/:id', async (req, res) => {
         how_to_use = COALESCE($17, how_to_use),
         variants = COALESCE($18, variants),
         status = COALESCE($19, status),
+        slug = COALESCE($20, slug),
         updated_at = NOW()
-      WHERE id = $20
+      WHERE id = $21
       RETURNING *;
     `;
 
@@ -264,6 +290,7 @@ router.put('/:id', async (req, res) => {
       body.howToUse || null,
       finalVariants,
       body.status || null,
+      (body.slug || body.name) ? slugify((body.slug || body.name).trim()) : null,
       id
     ];
 

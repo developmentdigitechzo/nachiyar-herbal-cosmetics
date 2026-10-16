@@ -87,13 +87,13 @@
 
       <div class="header-actions">
         <!-- Customer Account Trigger -->
-        <button class="account-trigger-btn" id="accountTriggerBtn" aria-label="Customer Account">
+        <a href="/account/" class="account-trigger-btn" id="accountTriggerBtn" aria-label="Customer Account">
           <svg class="user-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
             <circle cx="12" cy="7" r="4"></circle>
           </svg>
           <span class="user-label" id="navAccountLabel">Sign In</span>
-        </button>
+        </a>
 
         <a href="/checkout/" class="cart-trigger-btn" id="shopCartTriggerBtn" aria-label="View shopping bag">
           <svg class="cart-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -148,6 +148,7 @@
           <button class="filter-btn" data-cat="Hair Care">Hair Care</button>
           <button class="filter-btn" data-cat="Scalp & Cleansing">Scalp & Cleansing</button>
           <button class="filter-btn" data-cat="Ritual Sets">Ritual Sets & Combos</button>
+          <button class="filter-btn" data-cat="Royal Gifting">Royal Gifting</button>
         </div>
 
         <!-- Products Grid Loaded from API -->
@@ -163,7 +164,7 @@
     <div class="footer-container">
       <div class="footer-legal-bar">
         <p>© 2026 NACHIYAR HERBALS & COSMETICS. ALL RIGHTS RESERVED.</p>
-        <p class="legal-links"><a href="/">Home</a> • <a href="/shop/">Shop</a> • <a href="/contact/">Contact</a></p>
+        <p class="legal-links"><a href="/">Home</a> • <a href="/shop/">Shop</a> • <a href="/contact/">Contact</a> • <a href="/privacy/">Privacy Policy</a> • <a href="/terms/">Terms of Service</a> • <a href="/shipping-policy/">Shipping & Returns</a></p>
       </div>
     </div>
   </footer>
@@ -246,7 +247,7 @@
       async function loadShopProducts() {
         try {
           const res = await fetch('/api/products?_t=' + Date.now(), { cache: 'no-store' }).then(r => r.json());
-          if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
+          if (res && res.success && Array.isArray(res.data)) {
             allProducts = res.data;
           } else {
             allProducts = DEFAULT_PRODUCTS;
@@ -271,6 +272,17 @@
         catalogGrid.innerHTML = '';
         const list = filter === 'all' ? allProducts : allProducts.filter(p => p.category === filter);
 
+        if (list.length === 0) {
+          catalogGrid.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: var(--color-text-muted, #71717A);">
+              <div style="font-size: 2.5rem; margin-bottom: 12px; opacity: 0.8;">🌿</div>
+              <h3 style="font-family: var(--font-heading, 'Playfair Display', serif); font-size: 1.5rem; color: var(--color-primary-dark, #2E1065); margin-bottom: 8px;">No Formulations Found</h3>
+              <p style="font-size: 0.95rem; max-width: 420px; margin: 0 auto; line-height: 1.6;">There are currently no active formulations in this category. New botanical creations will appear here as they are published.</p>
+            </div>
+          `;
+          return;
+        }
+
         list.forEach(p => {
           const card = document.createElement('article');
           card.className = 'product-card';
@@ -291,6 +303,9 @@
             badgeUnit = rawBadge.substring(lastSpaceIdx + 1);
           }
 
+          const pImg = (p.images && p.images[0]) || 'assets/herbal-hair-oil.jpg';
+          const pDesc = p.shortDescription || (p.description ? p.description.slice(0, 140) + '...' : 'Traditional botanical formulation handcrafted with earth-born Ayurvedic ingredients.');
+
           card.innerHTML = `
             <div class="card-inner">
               <div class="card-top-bar">
@@ -301,7 +316,7 @@
                 </div>
               </div>
               <div class="card-image-wrap">
-                <img src="${p.images[0]}" alt="${p.name}" class="card-product-img">
+                <img src="${pImg}" alt="${p.name}" class="card-product-img">
                 <a href="/product/?slug=${p.slug}" class="quick-view-badge">View Formulation ↗</a>
               </div>
               <div class="card-details">
@@ -313,13 +328,13 @@
                   <h3 class="product-card-title">${p.name}</h3>
                 </a>
                 <p class="product-card-subtitle">${p.subtitle || ''}</p>
-                <p class="product-card-desc">${p.shortDescription || p.description.slice(0, 140) + '...'}</p>
+                <p class="product-card-desc">${pDesc}</p>
                 <div class="card-action-bar">
                   <div class="card-pricing">
                     <span class="price-current">₹${p.price}</span>
                     <span class="price-mrp">₹${p.mrp}</span>
                   </div>
-                  <button class="btn-quick-add btn-catalog-add" data-id="${p.id}" data-name="${p.name}" data-price="${p.price}" data-img="${p.images[0]}" data-size="${p.subtitle || 'Standard Edition'}">
+                  <button class="btn-quick-add btn-catalog-add" data-id="${p.id}" data-name="${p.name}" data-price="${p.price}" data-img="${pImg}" data-size="${p.subtitle || 'Standard Edition'}">
                     <span>Add To Bag</span>
                     <span>+</span>
                   </button>

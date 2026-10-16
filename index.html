@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=5.0">
+  <link rel="stylesheet" href="styles.css?v=5.1">
   <link rel="stylesheet" href="hero-lifestyle.css">
   <link rel="stylesheet" href="customer-account.css">
 </head>
@@ -76,7 +76,7 @@
                   <div class="mega-card-info">
                     <span class="mega-tag">Ayurvedic Hair Vitalizer</span>
                     <h4>Herbal Hair Oil</h4>
-                    <p class="mega-price">₹599 • 200ml</p>
+                    <p class="mega-price">₹299 • 200ml</p>
                     <span class="mega-cta">View & Buy →</span>
                   </div>
                 </a>
@@ -87,7 +87,7 @@
                   <div class="mega-card-info">
                     <span class="mega-tag">Gentle Scalp Cleanser</span>
                     <h4>Hibiscus Flower Shampoo</h4>
-                    <p class="mega-price">₹549 • 250ml</p>
+                    <p class="mega-price">₹249 • 250ml</p>
                     <span class="mega-cta">View & Buy →</span>
                   </div>
                 </a>
@@ -98,7 +98,7 @@
                   <div class="mega-card-info">
                     <span class="mega-tag">Complete 2-Step Routine</span>
                     <h4>The Royal Ritual (Duo)</h4>
-                    <p class="mega-price">₹999 <s class="old-price">₹1,148</s> (Save 15%)</p>
+                    <p class="mega-price">₹499 <s class="old-price">₹548</s> (Save ₹49)</p>
                     <span class="mega-cta">View & Buy →</span>
                   </div>
                 </a>
@@ -123,13 +123,13 @@
       <!-- Right Header Actions -->
       <div class="header-actions">
         <!-- Customer Account Trigger (Amazon/Flipkart style) -->
-        <button class="account-trigger-btn" id="accountTriggerBtn" aria-label="Customer Account">
+        <a href="/account/" class="account-trigger-btn" id="accountTriggerBtn" aria-label="Customer Account">
           <svg class="user-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
             <circle cx="12" cy="7" r="4"></circle>
           </svg>
           <span class="user-label" id="navAccountLabel">Sign In</span>
-        </button>
+        </a>
 
         <!-- Cart Trigger -->
         <button class="cart-trigger-btn" id="cartTriggerBtn" aria-label="View shopping bag">
@@ -1191,7 +1191,7 @@
           <p class="footer-newsletter-sub">Subscribe for limited small-batch release notifications, scalp wellness guides, and exclusive private discounts.</p>
         </div>
         <div class="newsletter-form-col">
-          <form class="footer-form" id="newsletterForm" onsubmit="event.preventDefault(); alert('Welcome to the Royal Circle! Code ROYAL10 has been applied.');">
+          <form class="footer-form" id="newsletterForm" onsubmit="event.preventDefault(); showSideToast({ title: 'Welcome to the Royal Circle! ✨', body: 'Privilege Code ROYAL10 has been applied for your order.', type: 'info' }); this.reset();">
             <div class="form-input-group">
               <input type="email" placeholder="Enter your email address" required aria-label="Email Address">
               <button type="submit" class="newsletter-submit-btn" aria-label="Submit email">
@@ -1283,7 +1283,7 @@
       <div class="footer-legal-bar">
         <p>© 2026 NACHIYAR HERBALS & COSMETICS. ALL RIGHTS RESERVED.</p>
         <p class="legal-links">
-          <a href="#">Privacy Policy</a> • <a href="#">Terms of Service</a> • <a href="#">Shipping Policy</a>
+          <a href="/privacy/">Privacy Policy</a> • <a href="/terms/">Terms of Service</a> • <a href="/shipping-policy/">Shipping &amp; Returns</a>
         </p>
       </div>
 
@@ -1437,7 +1437,7 @@
 
   <div class="cart-toast" id="cartToast" aria-live="polite"></div>
 
-  <script src="app.js?v=5.0"></script>
+  <script src="app.js?v=5.1"></script>
   <script src="customer-account.js"></script>
 </body>
 </html>

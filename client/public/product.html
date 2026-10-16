@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <base href="/">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Product Details | Nachiyar Herbals & Cosmetics</title>
@@ -104,23 +105,23 @@
       <nav class="desktop-nav">
         <ul class="nav-links">
           <li><a href="/" class="nav-link">Home</a></li>
-          <li><a href="shop.html" class="nav-link">Shop Rituals</a></li>
-          <li><a href="about.html" class="nav-link">About Us</a></li>
-          <li><a href="contact.html" class="nav-link">Contact</a></li>
+          <li><a href="/shop/" class="nav-link">Shop Rituals</a></li>
+          <li><a href="/about/" class="nav-link">About Us</a></li>
+          <li><a href="/contact/" class="nav-link">Contact</a></li>
         </ul>
       </nav>
 
       <div class="header-actions">
         <!-- Customer Account Trigger -->
-        <button class="account-trigger-btn" id="accountTriggerBtn" aria-label="Customer Account">
+        <a href="/account/" class="account-trigger-btn" id="accountTriggerBtn" aria-label="Customer Account">
           <svg class="user-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
             <circle cx="12" cy="7" r="4"></circle>
           </svg>
           <span class="user-label" id="navAccountLabel">Sign In</span>
-        </button>
+        </a>
 
-        <a href="checkout.html" class="cart-trigger-btn" aria-label="View shopping bag">
+        <a href="/checkout/" class="cart-trigger-btn" aria-label="View shopping bag">
           <svg class="cart-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
             <line x1="3" y1="6" x2="21" y2="6"></line>
@@ -142,10 +143,10 @@
       </div>
       <ul class="mobile-nav-list">
         <li><a href="/" class="mobile-link">Home</a></li>
-        <li><a href="shop.html" class="mobile-link" style="color:var(--color-lavender-primary); font-weight:800;">Shop Rituals (View & Buy) →</a></li>
-        <li><a href="about.html" class="mobile-link">About Us</a></li>
-        <li><a href="contact.html" class="mobile-link">Contact</a></li>
-        <li><a href="account.html" class="mobile-link">My Account & Orders</a></li>
+        <li><a href="/shop/" class="mobile-link" style="color:var(--color-lavender-primary); font-weight:800;">Shop Rituals (View & Buy) →</a></li>
+        <li><a href="/about/" class="mobile-link">About Us</a></li>
+        <li><a href="/contact/" class="mobile-link">Contact</a></li>
+        <li><a href="/account/" class="mobile-link">My Account & Orders</a></li>
       </ul>
       <div class="mobile-drawer-footer">
         <p class="drawer-support">Customer Concierge: care@nachiyarherbals.com</p>
@@ -158,7 +159,7 @@
       
       <div class="pdp-view-header">
         <span class="pdp-nav-breadcrumb">
-          <a href="/">Home</a> / <a href="shop.html">Formulations</a> / <span id="dynBreadcrumb">Product</span>
+          <a href="/">Home</a> / <a href="/shop/">Formulations</a> / <span id="dynBreadcrumb">Product</span>
         </span>
         <span class="pdp-view-badge" id="dynBadge">👑 Royal Botanical Formulated</span>
       </div>
@@ -186,7 +187,7 @@
           
           <div class="pdp-review-row">
             <span class="pdp-stars">★★★★★</span>
-            <span class="pdp-rating-text">(4.9 stars) · 420+ Verified Reviews</span>
+            <span class="pdp-rating-text" id="pdpReviewRatingCount">(5.0 stars) · Verified Patron Reviews</span>
           </div>
 
           <h1 class="pdp-product-title" id="dynTitle">Loading Product...</h1>
@@ -523,7 +524,7 @@
     <div class="footer-container">
       <div class="footer-legal-bar">
         <p>© 2026 NACHIYAR HERBALS & COSMETICS. ALL RIGHTS RESERVED.</p>
-        <p class="legal-links"><a href="/">Home</a> • <a href="shop.html">Shop</a> • <a href="contact.html">Contact</a></p>
+        <p class="legal-links"><a href="/">Home</a> • <a href="/shop/">Shop</a> • <a href="/contact/">Contact</a> • <a href="/privacy/">Privacy Policy</a> • <a href="/terms/">Terms of Service</a> • <a href="/shipping-policy/">Shipping & Returns</a></p>
       </div>
     </div>
   </footer>
@@ -533,7 +534,14 @@
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       const urlParams = new URLSearchParams(window.location.search);
-      const slug = urlParams.get('slug') || 'herbal-hair-oil';
+      let slug = urlParams.get('slug');
+      if (!slug) {
+        const pathParts = window.location.pathname.split('/').filter(Boolean);
+        if (pathParts[0] === 'product' && pathParts[1]) {
+          slug = decodeURIComponent(pathParts[1]);
+        }
+      }
+      slug = slug ? slug.trim() : 'herbal-hair-oil';
       const cartBadge = document.getElementById('pdpCartBadge');
 
       let currentProduct = null;
@@ -683,12 +691,13 @@
         document.getElementById('dynMediaCard').style.setProperty('--pdp-theme-bg', p.themeColor || '#6B4E9B');
         document.getElementById('dynTaglinePill').textContent = p.tagline || '100% Pure Botanical';
         document.getElementById('dynMetricBadge').innerHTML = `${p.metricBadge || '100%'}`;
-        document.getElementById('dynMainImg').src = p.images[0];
+        const mainImg = (p.images && p.images[0]) || 'assets/herbal-hair-oil.jpg';
+        document.getElementById('dynMainImg').src = mainImg;
         document.getElementById('dynTitle').textContent = p.name;
         document.getElementById('dynSubtitle').textContent = p.subtitle || '';
-        document.getElementById('dynDesc').textContent = p.description;
+        document.getElementById('dynDesc').textContent = p.description || p.shortDescription || 'Crafted in small batches according to classical Ayurvedic texts with 100% pure botanical infusions.';
         document.getElementById('dynPrice').textContent = `₹${p.price}`;
-        document.getElementById('dynBtnLabel').textContent = `Add To Bag • ₹${p.price}`;
+        document.getElementById('dynBtnLabel').textContent = `Add To Bag • ₹${p.price * qty}`;
         if (p.ingredients && p.ingredients !== 'Cold-pressed oils, fresh botanical extracts.') {
           const sumEl = document.getElementById('dynCustomIngredientsSummary');
           if (sumEl) sumEl.textContent = `${p.name}: ${p.ingredients} — 21-Day Solar Steeping with 17 Sacred Earth-Born Botanicals:`;
@@ -720,7 +729,9 @@
         // Variants
         const variantContainer = document.getElementById('dynVariantPills');
         variantContainer.innerHTML = '';
-        if (p.variants && p.variants.length) {
+        const variantHeader = document.querySelector('.variant-header-row');
+        if (p.variants && p.variants.length > 0) {
+          if (variantHeader) variantHeader.style.display = 'flex';
           const stdIdx = p.variants.findIndex(v => 
             v.price === p.price || 
             (v.id && (v.id.includes('200') || v.id.includes('250') || v.id.includes('standard') || v.id.includes('std'))) ||
@@ -748,6 +759,9 @@
             };
             variantContainer.appendChild(btn);
           });
+        } else {
+          if (variantHeader) variantHeader.style.display = 'none';
+          selectedVariant = null;
         }
 
         // Thumbnails

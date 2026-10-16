@@ -1,0 +1,1898 @@
+{
+  "products": [
+    {
+      "id": "prod_oil_01",
+      "slug": "herbal-hair-oil",
+      "name": "Herbal Hair Oil",
+      "subtitle": "Lavender Glass Dropper Bottle • 100% Cold-Pressed",
+      "category": "Hair Care",
+      "category_id": "cat_hair_care",
+      "price": "299.00",
+      "mrp": "699.00",
+      "stock": 61,
+      "initial_stock": 100,
+      "online_sold": 26,
+      "offline_sold": 14,
+      "sku": "NH-OIL-200ML",
+      "images": [
+        "assets/new-oil-bottle-card.jpg"
+      ],
+      "theme_color": "#6b4e9b",
+      "tagline": "Cold-Pressed • 18 Rare Herbs • Root Activating",
+      "metric_badge": "100% PURE",
+      "badge": "Bestseller",
+      "short_description": "Traditional 21-day solar-infused oil in pure lavender essence to stimulate roots and banish hair fall.",
+      "description": "Crafted in small batches according to classical Ayurvedic texts. Nachiyar Herbal Hair Oil features deep-steeped cold-pressed oils enriched with Bhringraj, Amla, Brahmi, and delicate lavender blossom essence. Calms scalp inflammation, repairs dry split ends, and delivers noticeable root strength within two weeks of regular application.",
+      "benefits": [
+        "Clinically proven hair fall reduction in 14 days",
+        "Soothes irritated, dry scalp with calming lavender aromatherapy",
+        "Deeply bioavailable: absorbs without heavy mineral grease",
+        "Encourages dense follicle growth and strand thickness"
+      ],
+      "ingredients": "Cold-Pressed Black Sesame Oil, Virgin Coconut Oil, Pure French Lavender Oil (Lavandula Angustifolia), Bhringraj, Amla, Brahmi, Hibiscus Blossom, Fenugreek, Rosemary, Indian Nardostachys (Jatamansi).",
+      "how_to_use": "Dispense 1-2 droppers directly across scalp partings. Gently massage using circular fingertip motions for 5-10 minutes. Leave on for a minimum of 1 hour or overnight before cleansing.",
+      "variants": [
+        {
+          "id": "v_oil_100",
+          "mrp": 399,
+          "sku": "NH-OIL-100",
+          "name": "100ml Travel Edition",
+          "price": 349,
+          "stock": 45
+        },
+        {
+          "id": "v_oil_200",
+          "mrp": 699,
+          "sku": "NH-OIL-200",
+          "name": "200ml Glass Dropper Bottle",
+          "price": 299,
+          "stock": 85
+        },
+        {
+          "id": "v_oil_500",
+          "mrp": 1399,
+          "sku": "NH-OIL-500",
+          "name": "500ml Luxury Value Refill",
+          "price": 1199,
+          "stock": 25
+        }
+      ],
+      "seo": {
+        "slug": "herbal-hair-oil",
+        "keywords": "herbal hair oil, lavender hair oil, nachiyar herbals, cold pressed hair oil, ayurvedic scalp care, bhringraj oil",
+        "metaTitle": "Nachiyar Herbal Hair Oil | 100% Cold-Pressed Lavender Ayurvedic Elixir",
+        "metaDescription": "Discover Nachiyar Herbal Hair Oil in its signature lavender bottle. 18 rare Ayurvedic herbs infused over 21 days for follicle strength, shine, and hair fall prevention."
+      },
+      "status": "active",
+      "created_at": "2026-10-08T06:21:02.241Z",
+      "updated_at": "2026-10-16T12:23:45.798Z"
+    },
+    {
+      "id": "prod_shampoo_02",
+      "slug": "hibiscus-flower-shampoo",
+      "name": "Hibiscus Flower Shampoo",
+      "subtitle": "Crimson Botanical Pump Bottle • Sulfate-Free pH 5.5",
+      "category": "Scalp & Cleansing",
+      "category_id": "cat_scalp",
+      "price": "249.00",
+      "mrp": "649.00",
+      "stock": 67,
+      "initial_stock": 90,
+      "online_sold": 8,
+      "offline_sold": 15,
+      "sku": "NH-SHAMP-250ML",
+      "images": [
+        "assets/new-shampoo-bottle-card.jpg"
+      ],
+      "theme_color": "#822234",
+      "tagline": "Sulfate-Free • Fresh Petal Infusion • pH 5.5",
+      "metric_badge": "pH 5.5 BALANCED",
+      "badge": "Customer Favorite",
+      "short_description": "Petal-rich lather that cleanses without stripping natural moisture, restoring scalp microbiome balance.",
+      "description": "Formulated with handpicked South Indian hibiscus blossoms and gentle plant-derived saponins. Gently cleanses without stripping natural oils, enhancing softness, promoting follicle vitality, and restoring hair's natural radiant shine.",
+      "benefits": [
+        "0% Sulfates, Silicones, Parabens, or Synthetic Dyes",
+        "pH 5.5 balanced to protect the delicate scalp acid mantle",
+        "Natural hibiscus mucilage locks in moisture and mirrors conditioning shine",
+        "Safe for color-treated, chemically straightened, or sensitive hair"
+      ],
+      "ingredients": "Aqua, Fresh Hibiscus Rosa-Sinensis Flower Extract, Decyl Glucoside (Coconut derived), Shikakai Extract, Reetha (Soapnut), Aloe Vera Leaf Juice, Vegetable Glycerin, Vitamin E, Sweet Orange Peel Oil.",
+      "how_to_use": "Pump 2-3 pumps into wet palms and work into a rich lather. Massage thoroughly into damp scalp and lengths. Rinse with cool water. Pair with Nachiyar Herbal Hair Oil for maximum results.",
+      "variants": [
+        {
+          "id": "v_shamp_250",
+          "mrp": 649,
+          "sku": "NH-SHAMP-250",
+          "name": "250ml Botanical Pump Bottle",
+          "price": 249,
+          "stock": 68
+        },
+        {
+          "id": "v_shamp_500",
+          "mrp": 1099,
+          "sku": "NH-SHAMP-500",
+          "name": "500ml Family Pump Bottle",
+          "price": 949,
+          "stock": 30
+        }
+      ],
+      "seo": {
+        "slug": "hibiscus-flower-shampoo",
+        "keywords": "hibiscus shampoo, sulfate free shampoo, nachiyar herbals, natural hair cleanser, ayurvedic shampoo, ph balanced shampoo",
+        "metaTitle": "Nachiyar Hibiscus Flower Shampoo | Sulfate-Free Scalp Cleanser pH 5.5",
+        "metaDescription": "Infused with fresh hibiscus petals, Nachiyar's gentle sulfate-free shampoo restores natural shine, calms the scalp, and strengthens roots."
+      },
+      "status": "active",
+      "created_at": "2026-10-08T06:21:02.255Z",
+      "updated_at": "2026-10-13T11:00:06.475Z"
+    },
+    {
+      "id": "prod_duo_03",
+      "slug": "royal-hair-ritual-duo",
+      "name": "The Royal Hair Ritual (Duo Set)",
+      "subtitle": "Oil (200ml) + Shampoo (250ml) + Silk Travel Pouch",
+      "category": "Ritual Sets",
+      "category_id": "cat_sets",
+      "price": "499.00",
+      "mrp": "1148.00",
+      "stock": 42,
+      "initial_stock": 55,
+      "online_sold": 7,
+      "offline_sold": 6,
+      "sku": "NH-DUO-SET",
+      "images": [
+        "assets/duo-ritual-new.jpg"
+      ],
+      "theme_color": "#271434",
+      "tagline": "Complete 2-Step Routine • Save 15%",
+      "metric_badge": "15% OFF",
+      "badge": "Royal Special Value",
+      "short_description": "The ultimate Ayurvedic duo: Pre-wash deep oil nourishment + restorative gentle petal cleansing.",
+      "description": "Experience complete follicular revitalisation. Step 1: Pre-wash deep scalp nourishment with the Lavender Herbal Hair Oil. Step 2: Gentle balancing wash with the Hibiscus Flower Shampoo. Includes a complimentary gold silk travel pouch and free Pan-India Express Delivery.",
+      "benefits": [
+        "Comprehensive 2-step solution: nourishment + gentle cleansing",
+        "Saves 15% compared to purchasing individual bottles",
+        "Includes limited-edition gold silk storage pouch",
+        "Complimentary Pan-India Express Delivery on all orders"
+      ],
+      "ingredients": "Includes full formulation of Herbal Hair Oil (200ml) and Hibiscus Flower Shampoo (250ml).",
+      "how_to_use": "Apply Herbal Hair Oil 2-3 hours before bath. Cleanse gently using Hibiscus Flower Shampoo. Repeat ritual 2-3 times weekly.",
+      "variants": [
+        {
+          "id": "v_duo_standard",
+          "mrp": 1148,
+          "sku": "NH-DUO-STD",
+          "name": "Full Ritual Duo (200ml Oil + 250ml Shampoo)",
+          "price": 499,
+          "stock": 42
+        }
+      ],
+      "seo": {
+        "slug": "royal-hair-ritual-duo",
+        "keywords": "hair care routine combo, nachiyar hair care duo, hair oil and shampoo set, ayurvedic hair set",
+        "metaTitle": "The Royal Hair Ritual Duo | Nachiyar Herbal Oil & Hibiscus Shampoo",
+        "metaDescription": "Get the complete 2-step Ayurvedic hair ritual by Nachiyar Herbals. 15% off combo pack with free shipping and silk travel pouch."
+      },
+      "status": "active",
+      "created_at": "2026-10-08T06:21:02.257Z",
+      "updated_at": "2026-10-13T11:52:03.975Z"
+    }
+  ],
+  "orders": [
+    {
+      "id": "ord_1001",
+      "order_number": "NH-ON-1001",
+      "channel": "online",
+      "customer": {
+        "city": "Chennai",
+        "name": "Pooja Madhavan",
+        "email": "pooja.m@example.com",
+        "phone": "+91 98401 23456",
+        "state": "Tamil Nadu",
+        "address": "42, Besant Avenue, Adyar",
+        "pincode": "600020"
+      },
+      "items": [
+        {
+          "img": "assets/herbal-hair-oil.jpg",
+          "qty": 1,
+          "name": "Herbal Hair Oil",
+          "size": "200ml Glass Dropper Bottle",
+          "price": 599,
+          "productId": "prod_oil_01"
+        },
+        {
+          "img": "assets/hibiscus-shampoo.jpg",
+          "qty": 1,
+          "name": "Hibiscus Flower Shampoo",
+          "size": "250ml Botanical Pump Bottle",
+          "price": 549,
+          "productId": "prod_shampoo_02"
+        }
+      ],
+      "subtotal": "1148.00",
+      "discount": "149.00",
+      "shipping": "0.00",
+      "total": "999.00",
+      "payment_method": "UPI (GPay)",
+      "payment_status": "paid",
+      "status": "shipped",
+      "created_at": "2026-10-06T14:32:00.000Z",
+      "cancellation_details": null
+    },
+    {
+      "id": "ord_1002",
+      "order_number": "NH-ON-1002",
+      "channel": "online",
+      "customer": {
+        "city": "Mumbai",
+        "name": "Ananya Sharma",
+        "email": "ananya.s@example.com",
+        "phone": "+91 98200 98765",
+        "state": "Maharashtra",
+        "address": "Flat 804, Oberoi Springs, Andheri West",
+        "pincode": "400053"
+      },
+      "items": [
+        {
+          "img": "assets/duo-ritual.jpg",
+          "qty": 1,
+          "name": "The Royal Hair Ritual (Duo Set)",
+          "size": "Full Ritual Duo",
+          "price": 999,
+          "productId": "prod_duo_03"
+        }
+      ],
+      "subtotal": "999.00",
+      "discount": "0.00",
+      "shipping": "0.00",
+      "total": "999.00",
+      "payment_method": "Credit Card",
+      "payment_status": "paid",
+      "status": "processing",
+      "created_at": "2026-10-07T11:15:00.000Z",
+      "cancellation_details": null
+    },
+    {
+      "id": "ord_1791387291524",
+      "order_number": "NH-ON-1003",
+      "channel": "online",
+      "customer": {
+        "name": "Test Online Customer",
+        "email": "test@nachiyar.com",
+        "phone": "9888888888",
+        "address": "12 Temple St"
+      },
+      "items": [
+        {
+          "img": "assets/herbal-hair-oil.jpg",
+          "qty": 3,
+          "name": "Herbal Hair Oil",
+          "price": 599,
+          "productId": "prod_oil_01"
+        }
+      ],
+      "subtotal": "1797.00",
+      "discount": "0.00",
+      "shipping": "0.00",
+      "total": "1797.00",
+      "payment_method": "UPI / Online Payment",
+      "payment_status": "paid",
+      "status": "placed",
+      "created_at": "2026-10-07T15:34:51.524Z",
+      "cancellation_details": null
+    },
+    {
+      "id": "ord_1791457173717",
+      "order_number": "NH-ON-1004",
+      "channel": "online",
+      "customer": {
+        "city": "Madurai",
+        "name": "Bharathi p",
+        "email": "mv80567135@gmail.com",
+        "phone": "+918056713589",
+        "state": "Tamil Nadu",
+        "address": "78,Ramakrishna colony, kaithari nagar,madurai - 625005",
+        "pincode": "625005"
+      },
+      "items": [
+        {
+          "img": "assets/herbal-hair-oil.jpg",
+          "qty": 1,
+          "name": "Herbal Hair Oil",
+          "size": "200ml",
+          "price": 599,
+          "productId": "prod_oil_01"
+        }
+      ],
+      "subtotal": "599.00",
+      "discount": "0.00",
+      "shipping": "0.00",
+      "total": "599.00",
+      "payment_method": "UPI / Online Payment",
+      "payment_status": "paid",
+      "status": "placed",
+      "created_at": "2026-10-08T10:59:33.685Z",
+      "cancellation_details": null
+    },
+    {
+      "id": "ord_sample_02",
+      "order_number": "NH-ON-0984",
+      "channel": "online",
+      "customer": {
+        "city": "Chennai",
+        "name": "Pooja Madhavan",
+        "email": "pooja.m@example.com",
+        "phone": "+91 98401 23456",
+        "state": "Tamil Nadu",
+        "address": "42, Besant Avenue, Adyar",
+        "pincode": "600020"
+      },
+      "items": [
+        {
+          "img": "assets/hero-bottle-oil-transparent.png",
+          "qty": 2,
+          "name": "Herbal Hair Oil",
+          "size": "200ml Glass Dropper Bottle",
+          "price": 599,
+          "productId": "prod_oil_01"
+        }
+      ],
+      "subtotal": "1198.00",
+      "discount": "199.00",
+      "shipping": "0.00",
+      "total": "999.00",
+      "payment_method": "UPI / Google Pay",
+      "payment_status": "paid",
+      "status": "delivered",
+      "created_at": "2026-09-18T10:14:00.000Z",
+      "cancellation_details": null
+    },
+    {
+      "id": "ord_sample_03",
+      "order_number": "NH-ON-0952",
+      "channel": "online",
+      "customer": {
+        "city": "Chennai",
+        "name": "Pooja Madhavan",
+        "email": "pooja.m@example.com",
+        "phone": "+91 98401 23456",
+        "state": "Tamil Nadu",
+        "address": "42, Besant Avenue, Adyar",
+        "pincode": "600020"
+      },
+      "items": [
+        {
+          "img": "assets/hero-bottle-shampoo-transparent.png",
+          "qty": 1,
+          "name": "Hibiscus Flower Shampoo",
+          "size": "250ml Botanical Pump Bottle",
+          "price": 549,
+          "productId": "prod_shampoo_02"
+        },
+        {
+          "img": "assets/duo-ritual-new.jpg",
+          "qty": 1,
+          "name": "The Royal Hair Ritual (Duo Set)",
+          "size": "Full Ritual Duo",
+          "price": 999,
+          "productId": "prod_duo_03"
+        }
+      ],
+      "subtotal": "1548.00",
+      "discount": "200.00",
+      "shipping": "0.00",
+      "total": "1348.00",
+      "payment_method": "Credit Card / Visa",
+      "payment_status": "paid",
+      "status": "delivered",
+      "created_at": "2026-08-04T16:20:00.000Z",
+      "cancellation_details": null
+    },
+    {
+      "id": "ord_sample_04",
+      "order_number": "NH-ON-1005",
+      "channel": "online",
+      "customer": {
+        "city": "Chennai",
+        "name": "Pooja Madhavan",
+        "email": "pooja.m@example.com",
+        "phone": "+91 98401 23456",
+        "state": "Tamil Nadu",
+        "address": "42, Besant Avenue, Adyar",
+        "pincode": "600020"
+      },
+      "items": [
+        {
+          "img": "assets/duo-ritual-new.jpg",
+          "qty": 1,
+          "name": "The Royal Hair Ritual (Duo Set)",
+          "size": "Full Ritual Duo Set (Oil + Shampoo)",
+          "price": 999,
+          "productId": "prod_duo_03"
+        }
+      ],
+      "subtotal": "999.00",
+      "discount": "0.00",
+      "shipping": "0.00",
+      "total": "999.00",
+      "payment_method": "UPI / PhonePe",
+      "payment_status": "paid",
+      "status": "processing",
+      "created_at": "2026-10-08T09:30:00.000Z",
+      "cancellation_details": null
+    },
+    {
+      "id": "ord_1791463836940",
+      "order_number": "NH-ON-1008",
+      "channel": "online",
+      "customer": {
+        "city": "Madurai",
+        "name": "Muralitharan T S",
+        "email": "muraliii@gmail.com",
+        "phone": "+918056713589",
+        "state": "TamilNadu",
+        "address": "Madurai , Tamil Nadu",
+        "pincode": "625005"
+      },
+      "items": [
+        {
+          "img": "assets/herbal-hair-oil.jpg",
+          "qty": 1,
+          "name": "Herbal Hair Oil",
+          "size": "200ml",
+          "price": 599,
+          "productId": "prod_oil_01"
+        },
+        {
+          "img": "assets/new-oil-bottle-card.jpg",
+          "qty": 1,
+          "name": "Herbal Hair Oil",
+          "size": "100ml Travel Edition",
+          "price": 349,
+          "productId": "prod_oil_01"
+        }
+      ],
+      "subtotal": "948.00",
+      "discount": "0.00",
+      "shipping": "0.00",
+      "total": "948.00",
+      "payment_method": "Cash On Delivery (COD)",
+      "payment_status": "paid",
+      "status": "processing",
+      "created_at": "2026-10-08T12:50:36.922Z",
+      "cancellation_details": null
+    },
+    {
+      "id": "ord_1791530947072",
+      "order_number": "NH-ON-1009",
+      "channel": "online",
+      "customer": {
+        "city": "madura",
+        "name": "guru vishwa",
+        "email": "gv@gmail.com",
+        "phone": "6379554975",
+        "state": "Tamil Nadu",
+        "address": "villapuram",
+        "pincode": "625005"
+      },
+      "items": [
+        {
+          "img": "assets/new-oil-bottle-card.jpg",
+          "qty": 2,
+          "name": "Herbal Hair Oil",
+          "size": "200ml",
+          "price": 599,
+          "productId": "prod_oil_01"
+        }
+      ],
+      "subtotal": "1198.00",
+      "discount": "0.00",
+      "shipping": "0.00",
+      "total": "1198.00",
+      "payment_method": "UPI / Online Payment",
+      "payment_status": "paid",
+      "status": "placed",
+      "created_at": "2026-10-09T07:29:07.056Z",
+      "cancellation_details": null
+    },
+    {
+      "id": "ord_1791542045345",
+      "order_number": "NH-ON-1010",
+      "channel": "online",
+      "customer": {
+        "city": "Madurai",
+        "name": "Smt. Meenakshi Sundaram",
+        "email": "meenakshi@example.com",
+        "phone": "+91 90928 55565",
+        "state": "Tamil Nadu",
+        "address": "Plot No-51, Thiyagi Kandhan Servai Nagar",
+        "pincode": "625003"
+      },
+      "items": [
+        {
+          "qty": 1,
+          "name": "Herbal Hair Oil",
+          "size": "200ml",
+          "price": 449,
+          "productId": "prod_oil_01"
+        }
+      ],
+      "subtotal": "449.00",
+      "discount": "0.00",
+      "shipping": "70.00",
+      "total": "519.00",
+      "payment_method": "Cash on Delivery (COD)",
+      "payment_status": "pending",
+      "status": "placed",
+      "created_at": "2026-10-09T10:34:05.320Z",
+      "cancellation_details": null
+    },
+    {
+      "id": "ord_1791542311317",
+      "order_number": "NH-ON-1011",
+      "channel": "online",
+      "customer": {
+        "city": "Madurai",
+        "email": "test@nachiyarherbals.com",
+        "phone": "9876543210",
+        "state": "Tamil Nadu",
+        "country": "India",
+        "fullName": "Test Customer upi",
+        "postalCode": "625003",
+        "addressLine1": "Plot 51, Thiyagi Kandhan Servai Nagar"
+      },
+      "items": [
+        {
+          "id": "prod_oil_01",
+          "name": "Nachiyar Herbal Hair Oil (200ml)",
+          "image": "/images/products/hair-oil.png",
+          "price": 499,
+          "quantity": 1,
+          "productId": "prod_oil_01"
+        }
+      ],
+      "subtotal": "499.00",
+      "discount": "0.00",
+      "shipping": "50.00",
+      "total": "549.00",
+      "payment_method": "upi",
+      "payment_status": "paid",
+      "status": "placed",
+      "created_at": "2026-10-09T10:38:31.297Z",
+      "cancellation_details": null
+    },
+    {
+      "id": "ord_1791542311343",
+      "order_number": "NH-ON-1012",
+      "channel": "online",
+      "customer": {
+        "city": "Madurai",
+        "email": "test@nachiyarherbals.com",
+        "phone": "9876543210",
+        "state": "Tamil Nadu",
+        "country": "India",
+        "fullName": "Test Customer card",
+        "postalCode": "625003",
+        "addressLine1": "Plot 51, Thiyagi Kandhan Servai Nagar"
+      },
+      "items": [
+        {
+          "id": "prod_oil_01",
+          "name": "Nachiyar Herbal Hair Oil (200ml)",
+          "image": "/images/products/hair-oil.png",
+          "price": 499,
+          "quantity": 1,
+          "productId": "prod_oil_01"
+        }
+      ],
+      "subtotal": "499.00",
+      "discount": "0.00",
+      "shipping": "50.00",
+      "total": "549.00",
+      "payment_method": "Card (Visa)",
+      "payment_status": "paid",
+      "status": "placed",
+      "created_at": "2026-10-09T10:38:31.341Z",
+      "cancellation_details": null
+    },
+    {
+      "id": "ord_1791542311358",
+      "order_number": "NH-ON-1013",
+      "channel": "online",
+      "customer": {
+        "city": "Madurai",
+        "email": "test@nachiyarherbals.com",
+        "phone": "9876543210",
+        "state": "Tamil Nadu",
+        "country": "India",
+        "fullName": "Test Customer netbanking",
+        "postalCode": "625003",
+        "addressLine1": "Plot 51, Thiyagi Kandhan Servai Nagar"
+      },
+      "items": [
+        {
+          "id": "prod_oil_01",
+          "name": "Nachiyar Herbal Hair Oil (200ml)",
+          "image": "/images/products/hair-oil.png",
+          "price": 499,
+          "quantity": 1,
+          "productId": "prod_oil_01"
+        }
+      ],
+      "subtotal": "499.00",
+      "discount": "0.00",
+      "shipping": "50.00",
+      "total": "549.00",
+      "payment_method": "Net Banking (HDFC Bank)",
+      "payment_status": "paid",
+      "status": "placed",
+      "created_at": "2026-10-09T10:38:31.356Z",
+      "cancellation_details": null
+    },
+    {
+      "id": "ord_1791542389986",
+      "order_number": "NH-ON-1014",
+      "channel": "online",
+      "customer": {
+        "city": "Madurai",
+        "name": "Priya Sharma",
+        "email": "priya@example.com",
+        "phone": "9840123456",
+        "state": "Tamil Nadu",
+        "address": "14, Cross Street, KK Nagar",
+        "pincode": "625020"
+      },
+      "items": [
+        {
+          "img": "/images/products/hair-oil.png",
+          "qty": 1,
+          "name": "Nachiyar Herbal Hair Oil (200ml)",
+          "size": "200ml",
+          "price": 499,
+          "productId": "prod_oil_01"
+        }
+      ],
+      "subtotal": "499.00",
+      "discount": "0.00",
+      "shipping": "70.00",
+      "total": "569.00",
+      "payment_method": "Cash on Delivery (COD)",
+      "payment_status": "pending",
+      "status": "placed",
+      "created_at": "2026-10-09T10:39:49.967Z",
+      "cancellation_details": null
+    },
+    {
+      "id": "ord_1791785714749",
+      "order_number": "NH-ON-1015",
+      "channel": "online",
+      "customer": {
+        "city": "Madurai",
+        "name": "Muralitharan T S",
+        "email": "muraliii@gmail.com",
+        "phone": "+918056713589",
+        "state": "TamilNadu",
+        "address": "Madurai , Tamil Nadu",
+        "pincode": "625005"
+      },
+      "items": [
+        {
+          "img": "assets/new-oil-bottle-card.jpg",
+          "qty": 3,
+          "name": "Herbal Hair Oil",
+          "size": "100ml Travel Edition",
+          "price": 349,
+          "productId": "prod_oil_01"
+        }
+      ],
+      "subtotal": "1047.00",
+      "discount": "0.00",
+      "shipping": "0.00",
+      "total": "1047.00",
+      "payment_method": "UPI (Google Pay)",
+      "payment_status": "paid",
+      "status": "placed",
+      "created_at": "2026-10-12T06:15:14.738Z",
+      "cancellation_details": null
+    },
+    {
+      "id": "ord_1791787706237",
+      "order_number": "NH-ON-1016",
+      "channel": "online",
+      "customer": {
+        "city": "Madurai",
+        "name": "Bharathi Kumar",
+        "email": "Bharathi@gmail.com",
+        "phone": "0987654321",
+        "state": "TamilNadu",
+        "address": "Madurai , Tamil Nadu",
+        "pincode": "625005"
+      },
+      "items": [
+        {
+          "img": "assets/new-oil-bottle-card.jpg",
+          "qty": 2,
+          "name": "Herbal Hair Oil",
+          "size": "100ml Travel Edition",
+          "price": 349,
+          "productId": "prod_oil_01"
+        }
+      ],
+      "subtotal": "698.00",
+      "discount": "0.00",
+      "shipping": "0.00",
+      "total": "698.00",
+      "payment_method": "Cash on Delivery (COD)",
+      "payment_status": "pending",
+      "status": "cancelled",
+      "created_at": "2026-10-12T06:48:26.221Z",
+      "cancellation_details": null
+    },
+    {
+      "id": "ord_1791803556120",
+      "order_number": "NH-ON-1018",
+      "channel": "online",
+      "customer": {
+        "city": "Madurai",
+        "name": "Bharathi Kumar",
+        "email": "Bharathi@gmail.com",
+        "phone": "0987654321",
+        "state": "TamilNadu",
+        "address": "Madurai , Tamil Nadu",
+        "pincode": "625005"
+      },
+      "items": [
+        {
+          "img": "assets/new-oil-bottle-card.jpg",
+          "qty": 1,
+          "name": "Herbal Hair Oil",
+          "size": "100ml Travel Edition",
+          "price": 349,
+          "productId": "prod_oil_01"
+        }
+      ],
+      "subtotal": "349.00",
+      "discount": "0.00",
+      "shipping": "70.00",
+      "total": "419.00",
+      "payment_method": "UPI (Google Pay)",
+      "payment_status": "paid",
+      "status": "cancelled",
+      "created_at": "2026-10-12T11:12:36.108Z",
+      "cancellation_details": null
+    },
+    {
+      "id": "ord_1791802982105",
+      "order_number": "NH-ON-1017",
+      "channel": "online",
+      "customer": {
+        "city": "Madurai",
+        "name": "Muralitharan T S",
+        "email": "muraliii@gmail.com",
+        "phone": "+918056713589",
+        "state": "TamilNadu",
+        "address": "Madurai , Tamil Nadu",
+        "pincode": "625005"
+      },
+      "items": [
+        {
+          "img": "assets/new-oil-bottle-card.jpg",
+          "qty": 1,
+          "name": "Herbal Hair Oil",
+          "size": "200ml",
+          "price": 599,
+          "productId": "prod_oil_01"
+        }
+      ],
+      "subtotal": "599.00",
+      "discount": "0.00",
+      "shipping": "0.00",
+      "total": "599.00",
+      "payment_method": "UPI (Google Pay)",
+      "payment_status": "paid",
+      "status": "shipped",
+      "created_at": "2026-10-12T11:03:02.092Z",
+      "cancellation_details": null
+    },
+    {
+      "id": "ord_1791889064880",
+      "order_number": "NH-ON-1019",
+      "channel": "online",
+      "customer": {
+        "city": "Madurai",
+        "name": "Bharathi Kumar",
+        "email": "Bharathi@gmail.com",
+        "phone": "9876543456",
+        "state": "TamilNadu",
+        "address": "Madurai , Tamil Nadu",
+        "pincode": "625005"
+      },
+      "items": [
+        {
+          "img": "assets/new-oil-bottle-card.jpg",
+          "qty": 18,
+          "name": "Herbal Hair Oil",
+          "size": "200ml",
+          "price": 299,
+          "productId": "prod_oil_01"
+        },
+        {
+          "img": "assets/new-shampoo-bottle-card.jpg",
+          "qty": 9,
+          "name": "Hibiscus Flower Shampoo",
+          "size": "250ml",
+          "price": 249,
+          "productId": "prod_shampoo_02"
+        },
+        {
+          "img": "assets/new-oil-bottle-card.jpg",
+          "qty": 1,
+          "name": "Herbal Hair Oil",
+          "size": "200ml Glass Dropper Bottle",
+          "price": 299,
+          "productId": "prod_oil_01"
+        },
+        {
+          "img": "assets/duo-ritual-new.jpg",
+          "qty": 1,
+          "name": "The Royal Hair Ritual (Duo Set)",
+          "size": "Oil (200ml) + Shampoo (250ml) + Silk Travel Pouch",
+          "price": 999,
+          "productId": "prod_duo_03"
+        }
+      ],
+      "subtotal": "8921.00",
+      "discount": "0.00",
+      "shipping": "0.00",
+      "total": "8921.00",
+      "payment_method": "UPI (Google Pay)",
+      "payment_status": "refunded",
+      "status": "cancelled",
+      "created_at": "2026-10-13T10:57:44.859Z",
+      "cancellation_details": {
+        "reason": "Order created by mistake / Placed duplicate order",
+        "status": "approved",
+        "comments": "",
+        "refundUtr": "REF-89204467",
+        "approvedAt": "2026-10-13T11:00:06.512Z",
+        "refundMode": "UPI (Google Pay)",
+        "refundNotes": "Full refund initiated to customer account",
+        "requestedAt": "2026-10-13T10:59:54.503Z",
+        "refundAmount": 8921,
+        "refundPreference": "original_source"
+      }
+    },
+    {
+      "id": "ord_1792153425809",
+      "order_number": "NH-ON-1020",
+      "channel": "online",
+      "customer": {
+        "city": "Madurai",
+        "name": "Muralitharan T S",
+        "email": "muraliii@gmail.com",
+        "phone": "8056713589",
+        "state": "TamilNadu",
+        "address": "Madurai , Tamil Nadu",
+        "pincode": "625005"
+      },
+      "items": [
+        {
+          "img": "assets/new-oil-bottle-card.jpg",
+          "qty": 1,
+          "name": "Herbal Hair Oil",
+          "size": "200ml",
+          "price": 299,
+          "productId": "prod_oil_01"
+        }
+      ],
+      "subtotal": "299.00",
+      "discount": "0.00",
+      "shipping": "70.00",
+      "total": "369.00",
+      "payment_method": "UPI (Google Pay)",
+      "payment_status": "paid",
+      "status": "placed",
+      "created_at": "2026-10-16T12:23:45.798Z",
+      "cancellation_details": null
+    }
+  ],
+  "invoices": [
+    {
+      "id": "inv_2001",
+      "invoice_number": "NH-INV-2026-001",
+      "channel": "offline",
+      "customer": {
+        "name": "Smt. Meenakshi Sundaram",
+        "email": "meenakshi.s@gmail.com",
+        "gstin": "",
+        "phone": "+91 94440 11223",
+        "address": "Store Walk-in, T. Nagar Retail Counter, Chennai"
+      },
+      "items": [
+        {
+          "qty": 2,
+          "name": "Herbal Hair Oil (200ml)",
+          "price": 599,
+          "subtotal": 1198,
+          "productId": "prod_oil_01"
+        },
+        {
+          "qty": 1,
+          "name": "Hibiscus Flower Shampoo (250ml)",
+          "price": 549,
+          "subtotal": 549,
+          "productId": "prod_shampoo_02"
+        }
+      ],
+      "subtotal": "1747.00",
+      "discount": "150.00",
+      "tax": "80.00",
+      "total": "1677.00",
+      "payment_status": "paid",
+      "payment_mode": "UPI (Store QR)",
+      "notes": "Direct walk-in purchase at Chennai boutique counter",
+      "created_by": "Karthik R. (Billing Manager)",
+      "created_at": "2026-10-05T16:20:00.000Z"
+    },
+    {
+      "id": "inv_2002",
+      "invoice_number": "NH-INV-2026-002",
+      "channel": "offline",
+      "customer": {
+        "name": "Dr. Radhika Krishnan",
+        "email": "dr.radhika@ayurclinic.in",
+        "gstin": "33AAACH1234F1Z8",
+        "phone": "+91 98840 55443",
+        "address": "Ayur Wellness Centre, Coimbatore"
+      },
+      "items": [
+        {
+          "qty": 5,
+          "name": "Herbal Hair Oil (200ml)",
+          "price": 599,
+          "subtotal": 2995,
+          "productId": "prod_oil_01"
+        },
+        {
+          "qty": 5,
+          "name": "Hibiscus Flower Shampoo (250ml)",
+          "price": 549,
+          "subtotal": 2745,
+          "productId": "prod_shampoo_02"
+        }
+      ],
+      "subtotal": "5740.00",
+      "discount": "574.00",
+      "tax": "258.00",
+      "total": "5424.00",
+      "payment_status": "paid",
+      "payment_mode": "Card / POS Terminal",
+      "notes": "B2B Clinic clinic order - Bulk discount applied",
+      "created_by": "Super Admin",
+      "created_at": "2026-10-07T12:00:00.000Z"
+    },
+    {
+      "id": "inv_1791387291515",
+      "invoice_number": "NH-INV-2026-003",
+      "channel": "offline",
+      "customer": {
+        "name": "Test Walk-in",
+        "phone": "9999999999"
+      },
+      "items": [
+        {
+          "qty": 2,
+          "name": "Herbal Hair Oil",
+          "price": 599,
+          "subtotal": 1198,
+          "productId": "prod_oil_01"
+        }
+      ],
+      "subtotal": "1198.00",
+      "discount": "0.00",
+      "tax": "60.00",
+      "total": "1258.00",
+      "payment_status": "paid",
+      "payment_mode": "Cash",
+      "notes": "In-store retail billing",
+      "created_by": "Sales Staff",
+      "created_at": "2026-10-07T15:34:51.515Z"
+    },
+    {
+      "id": "inv_1791791112349",
+      "invoice_number": "NH-INV-2026-004",
+      "channel": "offline",
+      "customer": {
+        "name": "Dr. Meenakshi Sundaram",
+        "email": "meenakshi@example.com",
+        "gstin": "",
+        "phone": "9840123456",
+        "address": "74, West Tower Street, Madurai"
+      },
+      "items": [
+        {
+          "qty": 1,
+          "name": "Herbal Hair Oil",
+          "price": 599,
+          "subtotal": 599,
+          "productId": "prod_oil_01"
+        }
+      ],
+      "subtotal": "599.00",
+      "discount": "50.00",
+      "tax": "27.00",
+      "total": "576.00",
+      "payment_status": "paid",
+      "payment_mode": "UPI (Store QR - Confirmed)",
+      "notes": "Counter POS Tax Invoice • UPI",
+      "created_by": "Super Administrator (SUPER ADMIN)",
+      "created_at": "2026-10-12T07:45:12.339Z"
+    },
+    {
+      "id": "inv_1791791184468",
+      "invoice_number": "NH-INV-2026-005",
+      "channel": "offline",
+      "customer": {
+        "name": "Bharathi Kumar",
+        "email": "Bharathi@gmail.com",
+        "gstin": "",
+        "phone": "09876543212",
+        "address": "Madurai , Tamil Nadu"
+      },
+      "items": [
+        {
+          "qty": 1,
+          "name": "Herbal Hair Oil",
+          "price": 599,
+          "subtotal": 599,
+          "productId": "prod_oil_01"
+        },
+        {
+          "qty": 1,
+          "name": "Hibiscus Flower Shampoo",
+          "price": 549,
+          "subtotal": 549,
+          "productId": "prod_shampoo_02"
+        }
+      ],
+      "subtotal": "1148.00",
+      "discount": "0.00",
+      "tax": "57.00",
+      "total": "1205.00",
+      "payment_status": "paid",
+      "payment_mode": "Cash Tendered ₹1210",
+      "notes": "Counter POS Tax Invoice • Cash Tendered ₹1210",
+      "created_by": "Super Administrator (SUPER ADMIN)",
+      "created_at": "2026-10-12T07:46:24.454Z"
+    }
+  ],
+  "reviews": [
+    {
+      "id": "rev_06",
+      "name": "Karthikeyan V",
+      "email": "karthik.v@example.com",
+      "product_name": "Herbal Hair Oil",
+      "rating": 5,
+      "title": "Scalp itching completely vanished",
+      "comment": "Started using after a friend recommended it. In just five uses, dandruff flakes and dry scalp irritation completely vanished.",
+      "status": "pending",
+      "created_at": "2026-10-08T11:30:53.476Z",
+      "updated_at": "2026-10-08T13:30:53.476Z"
+    },
+    {
+      "id": "rev_07",
+      "name": "Divya Ramesh",
+      "email": "divya.r@example.com",
+      "product_name": "Hibiscus Flower Shampoo",
+      "rating": 4,
+      "title": "Very mild lather and pleasant aroma",
+      "comment": "Very gentle on color-treated hair. Subtle botanical fragrance lasts throughout the day.",
+      "status": "pending",
+      "created_at": "2026-10-08T08:30:53.476Z",
+      "updated_at": "2026-10-08T13:30:53.476Z"
+    },
+    {
+      "id": "rev_01",
+      "name": "Pooja Madhavan",
+      "email": "pooja.m@example.com",
+      "product_name": "Herbal Hair Oil",
+      "rating": 5,
+      "title": "Monsoon hair fall stopped completely",
+      "comment": "The authentic lavender aroma and 18-herb Ayurvedic infusion restored my hair density within 3 weeks. Absolutely crown-worthy!",
+      "status": "rejected",
+      "created_at": "2026-10-05T13:30:53.476Z",
+      "updated_at": "2026-10-09T06:58:51.339Z"
+    },
+    {
+      "id": "rev_02",
+      "name": "Dr. Radhika Krishnan",
+      "email": "radhika.k@example.com",
+      "product_name": "The Royal Hair Ritual (Duo Set)",
+      "rating": 5,
+      "title": "Dermatologist verified clean care",
+      "comment": "As a clinician, I truly appreciate the pure solar steeping without sulfates or mineral oil. Noticeable improvement in strand resilience and shine.",
+      "status": "rejected",
+      "created_at": "2026-10-03T13:30:53.476Z",
+      "updated_at": "2026-10-09T06:58:52.975Z"
+    },
+    {
+      "id": "rev_05",
+      "name": "Kavitha Sundar",
+      "email": "kavitha.test@example.com",
+      "product_name": "The Royal Hair Ritual (Duo Set)",
+      "rating": 5,
+      "title": "Transformed dry frizzy hair",
+      "comment": "The ritual combo worked wonders on my rough ends. Both formulations complement each other flawlessly. Will repurchase forever!",
+      "status": "approved",
+      "created_at": "2026-09-26T13:30:53.476Z",
+      "updated_at": "2026-10-09T06:59:06.475Z"
+    },
+    {
+      "id": "rev_04",
+      "name": "Smt. Meenakshi Sundaram",
+      "email": "meenakshi@example.com",
+      "product_name": "Herbal Hair Oil",
+      "rating": 5,
+      "title": "Traditional apothecary at its finest",
+      "comment": "Sacred South Indian herbal wisdom in a modern glass dropper. Absorbs smoothly overnight with zero greasy residue on pillows.",
+      "status": "approved",
+      "created_at": "2026-09-28T13:30:53.476Z",
+      "updated_at": "2026-10-09T06:59:07.618Z"
+    },
+    {
+      "id": "rev_03",
+      "name": "Ananya Sharma",
+      "email": "ananya.s@example.com",
+      "product_name": "Hibiscus Flower Shampoo",
+      "rating": 5,
+      "title": "Gentle on scalp, incredible natural gloss",
+      "comment": "A genuine sulfate-free cleanser that purifies without stripping moisture. The fresh hibiscus petal infusion leaves hair silky and light.",
+      "status": "approved",
+      "created_at": "2026-10-01T13:30:53.476Z",
+      "updated_at": "2026-10-09T06:59:08.685Z"
+    },
+    {
+      "id": "rev_1791529220342_947",
+      "name": "Bharathi",
+      "email": "bharathii@gmail.com",
+      "product_name": "Hibiscus Flower Shampoo",
+      "rating": 5,
+      "title": "Nachiyar Hair oil",
+      "comment": "This product is very good",
+      "status": "approved",
+      "created_at": "2026-10-09T07:00:20.561Z",
+      "updated_at": "2026-10-09T07:00:33.226Z"
+    },
+    {
+      "id": "rev_1791530796570_446",
+      "name": "guru",
+      "email": "gv@gmail.com",
+      "product_name": "Hibiscus Flower Shampoo",
+      "rating": 5,
+      "title": "good",
+      "comment": "rtvnievciun3f giqernvq",
+      "status": "pending",
+      "created_at": "2026-10-09T07:26:36.668Z",
+      "updated_at": "2026-10-09T07:26:36.668Z"
+    },
+    {
+      "id": "rev_1791867410573_887",
+      "name": "Bharathi Kumar",
+      "email": "bharthikumar@gmail.com",
+      "product_name": "The Royal Hair Ritual (Duo Set)",
+      "rating": 4,
+      "title": "Nachiyar herblas Sampo",
+      "comment": "This sampo is very good product and perfect to daily using",
+      "status": "approved",
+      "created_at": "2026-10-13T04:56:50.659Z",
+      "updated_at": "2026-10-13T04:57:07.553Z"
+    }
+  ],
+  "contact_messages": [
+    {
+      "id": "msg_1791810786159_i8obk",
+      "name": "Priya Raman",
+      "email": "priya.test@example.com",
+      "phone": "9876543210",
+      "subject": "Hair Care Consultation",
+      "message": "Hello, I have dry scalp and hair fall issues. Can you recommend the best oil or shampoo ritual for me?",
+      "status": "unread",
+      "admin_notes": null,
+      "created_at": "2026-10-12T13:13:06.345Z",
+      "updated_at": "2026-10-12T13:13:06.345Z"
+    },
+    {
+      "id": "msg_1791811357832_vivu1",
+      "name": "Ananya Sharma",
+      "email": "ananya@example.com",
+      "phone": "9840123456",
+      "subject": "Hair Care Consultation",
+      "message": "Hello! I want to know if Nachiyar Hair Oil helps with hair regrowth?",
+      "status": "unread",
+      "admin_notes": null,
+      "created_at": "2026-10-12T13:22:37.874Z",
+      "updated_at": "2026-10-12T13:22:37.874Z"
+    },
+    {
+      "id": "msg_1791811782679_trnby",
+      "name": "Kavitha S.",
+      "email": "kavitha.s@gmail.com",
+      "phone": "9443219876",
+      "subject": "Wholesale & Clinic Inquiry",
+      "message": "We run an Ayurvedic wellness salon in Coimbatore and want to order 50 bottles of Royal Hair Oil.",
+      "status": "resolved",
+      "admin_notes": "",
+      "created_at": "2026-10-12T13:29:42.732Z",
+      "updated_at": "2026-10-16T05:02:18.342Z"
+    },
+    {
+      "id": "msg_1792126976099_da92o",
+      "name": "Murali",
+      "email": "mv03092005@gmail.com",
+      "phone": "87654345678",
+      "subject": "Hair Care Consultation",
+      "message": "hiii",
+      "status": "read",
+      "admin_notes": "",
+      "created_at": "2026-10-16T05:02:56.170Z",
+      "updated_at": "2026-10-16T05:05:45.152Z"
+    }
+  ],
+  "customers": [
+    {
+      "id": "cust_01",
+      "name": "Pooja Madhavan",
+      "email": "pooja.m@example.com",
+      "phone": "+91 98401 23456",
+      "password": "pooja123",
+      "address": "42, Besant Avenue, Adyar",
+      "city": "Chennai",
+      "state": "Tamil Nadu",
+      "pincode": "600020",
+      "created_at": "2026-10-08T12:21:27.436Z",
+      "avatar": null,
+      "google_id": null,
+      "auth_provider": "local"
+    },
+    {
+      "id": "cust_02",
+      "name": "Ananya Sharma",
+      "email": "ananya.s@example.com",
+      "phone": "+91 98200 98765",
+      "password": "ananya123",
+      "address": "Flat 804, Oberoi Springs, Andheri West",
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "pincode": "400053",
+      "created_at": "2026-10-08T12:21:27.436Z",
+      "avatar": null,
+      "google_id": null,
+      "auth_provider": "local"
+    },
+    {
+      "id": "cust_1791462660594_571",
+      "name": "Kavitha Sundar",
+      "email": "kavitha.test@example.com",
+      "phone": "+91 94440 12345",
+      "password": "password123",
+      "address": "15 Temple Tower, Anna Nagar",
+      "city": "Madurai",
+      "state": "",
+      "pincode": "625020",
+      "created_at": "2026-10-08T12:31:00.595Z",
+      "avatar": null,
+      "google_id": null,
+      "auth_provider": "local"
+    },
+    {
+      "id": "cust_1791462770166_200",
+      "name": "Murali",
+      "email": "muralii@gmail.com",
+      "phone": "9876543212",
+      "password": "Murali1234",
+      "address": "78,Ramakrishna colony, kaithari nagar,madurai - 625005",
+      "city": "Madurai",
+      "state": "Tamil Nadu",
+      "pincode": "625005",
+      "created_at": "2026-10-08T12:32:50.168Z",
+      "avatar": null,
+      "google_id": null,
+      "auth_provider": "local"
+    },
+    {
+      "id": "cust_1791956996322_521",
+      "name": "BharathiKumar",
+      "email": "bharathi123@gmail.com",
+      "phone": "7895456321",
+      "password": "1234567890",
+      "address": "Madurai , Tamil Nadu",
+      "city": "Madurai",
+      "state": "Tamil Nadu",
+      "pincode": "625005",
+      "created_at": "2026-10-14T05:49:56.332Z",
+      "avatar": null,
+      "google_id": null,
+      "auth_provider": "local"
+    },
+    {
+      "id": "cust_1791965780431_863",
+      "name": "user",
+      "email": "user@gmail.com",
+      "phone": "9876543212",
+      "password": "1234567890",
+      "address": "Madurai , Tamil Nadu",
+      "city": "Madurai",
+      "state": "Tamil Nadu",
+      "pincode": "625005",
+      "created_at": "2026-10-14T08:16:20.434Z",
+      "avatar": null,
+      "google_id": null,
+      "auth_provider": "local"
+    },
+    {
+      "id": "cust_1791785650835_293",
+      "name": "Bharathi",
+      "email": "bharathi@gmail.com",
+      "phone": "9876543212",
+      "password": "Bharathi@123",
+      "address": "Bharathi@123",
+      "city": "Madurai",
+      "state": "Tamil Nadu",
+      "pincode": "625005",
+      "created_at": "2026-10-12T06:14:10.841Z",
+      "avatar": "https://lh3.googleusercontent.com/test-bharathi.png",
+      "google_id": "google_sub_12345",
+      "auth_provider": "google"
+    },
+    {
+      "id": "cust_g_1792067448777_37",
+      "name": "Priya Google Test",
+      "email": "testgoogle_1792067448772@gmail.com",
+      "phone": "",
+      "password": "GOOGLE_AUTH_a83fe0c1e5a92210",
+      "address": "",
+      "city": "",
+      "state": "Tamil Nadu",
+      "pincode": "",
+      "created_at": "2026-10-15T12:30:48.782Z",
+      "avatar": "https://lh3.googleusercontent.com/test-priya.png",
+      "google_id": "google_sub_1792067448772",
+      "auth_provider": "google"
+    },
+    {
+      "id": "firebase_verified_test_123",
+      "name": "Nachiyar Verified User",
+      "email": "firebase_verified_user@gmail.com",
+      "phone": "",
+      "password": "FIREBASE_AUTH_a1a60de4d1eacf84",
+      "address": "",
+      "city": "",
+      "state": "Tamil Nadu",
+      "pincode": "",
+      "created_at": "2026-10-15T13:36:22.420Z",
+      "avatar": "https://lh3.googleusercontent.com/test",
+      "google_id": "firebase_verified_test_123",
+      "auth_provider": "google"
+    },
+    {
+      "id": "cust_1792144272190_591",
+      "name": "Vimal",
+      "email": "vimal123@gmail.com",
+      "phone": "0987654321",
+      "password": "1234567890",
+      "address": "245/09",
+      "city": "Vadapalanji",
+      "state": "Tamil Nadu",
+      "pincode": "60020",
+      "created_at": "2026-10-16T09:51:12.192Z",
+      "avatar": null,
+      "google_id": null,
+      "auth_provider": "local"
+    },
+    {
+      "id": "cust_1792144568571_508",
+      "name": "Surya",
+      "email": "surya123@gmail.com",
+      "phone": "0987654321",
+      "password": "1234567890",
+      "address": "245/07",
+      "city": "Madurai",
+      "state": "Tamil Nadu",
+      "pincode": "600020",
+      "created_at": "2026-10-16T09:56:08.572Z",
+      "avatar": null,
+      "google_id": null,
+      "auth_provider": "local"
+    },
+    {
+      "id": "cust_1792144797154_601",
+      "name": "Dhanush",
+      "email": "d04494513@gmail.com",
+      "phone": "0987654321",
+      "password": "1234567890",
+      "address": "72/1",
+      "city": "Chennai",
+      "state": "Tamil Nadu",
+      "pincode": "600020",
+      "created_at": "2026-10-16T09:59:57.156Z",
+      "avatar": null,
+      "google_id": null,
+      "auth_provider": "local"
+    }
+  ],
+  "inventory_logs": [
+    {
+      "id": "log_01",
+      "product_id": "prod_oil_01",
+      "product_name": "Herbal Hair Oil",
+      "channel": "offline",
+      "reference": "NH-INV-2026-001",
+      "change": -2,
+      "prev_stock": 92,
+      "new_stock": 90,
+      "timestamp": "2026-10-05T16:20:00.000Z",
+      "reason": "Offline Billing counter sale"
+    },
+    {
+      "id": "log_02",
+      "product_id": "prod_oil_01",
+      "product_name": "Herbal Hair Oil",
+      "channel": "online",
+      "reference": "NH-ON-1001",
+      "change": -1,
+      "prev_stock": 90,
+      "new_stock": 89,
+      "timestamp": "2026-10-06T14:32:00.000Z",
+      "reason": "Online Website checkout order"
+    },
+    {
+      "id": "log_03",
+      "product_id": "prod_oil_01",
+      "product_name": "Herbal Hair Oil",
+      "channel": "offline",
+      "reference": "NH-INV-2026-002",
+      "change": -5,
+      "prev_stock": 89,
+      "new_stock": 84,
+      "timestamp": "2026-10-07T12:00:00.000Z",
+      "reason": "Clinic B2B Wholesale Invoice"
+    },
+    {
+      "id": "log_1791387291508_yw3p",
+      "product_id": "prod_oil_01",
+      "product_name": "Herbal Hair Oil",
+      "channel": "offline",
+      "reference": "NH-INV-2026-003",
+      "change": -2,
+      "prev_stock": 85,
+      "new_stock": 83,
+      "timestamp": "2026-10-07T15:34:51.513Z",
+      "reason": "Offline Invoice / Store Sale to Test Walk-in"
+    },
+    {
+      "id": "log_1791387291524_hre8",
+      "product_id": "prod_oil_01",
+      "product_name": "Herbal Hair Oil",
+      "channel": "online",
+      "reference": "NH-ON-1003",
+      "change": -3,
+      "prev_stock": 83,
+      "new_stock": 80,
+      "timestamp": "2026-10-07T15:34:51.524Z",
+      "reason": "Online Customer Checkout (Test Online Customer)"
+    },
+    {
+      "id": "log_1791457173732_hvq9",
+      "product_id": "prod_oil_01",
+      "product_name": "Herbal Hair Oil",
+      "channel": "online",
+      "reference": "NH-ON-1004",
+      "change": -1,
+      "prev_stock": 80,
+      "new_stock": 79,
+      "timestamp": "2026-10-08T10:59:33.685Z",
+      "reason": "Online Customer Checkout (Bharathi p)"
+    },
+    {
+      "id": "log_1791463836953_h7zn",
+      "product_id": "prod_oil_01",
+      "product_name": "Herbal Hair Oil",
+      "channel": "online",
+      "reference": "NH-ON-1008",
+      "change": -1,
+      "prev_stock": 79,
+      "new_stock": 78,
+      "timestamp": "2026-10-08T12:50:36.922Z",
+      "reason": "Online Customer Checkout (Muralitharan T S)"
+    },
+    {
+      "id": "log_1791463836956_gir9",
+      "product_id": "prod_oil_01",
+      "product_name": "Herbal Hair Oil",
+      "channel": "online",
+      "reference": "NH-ON-1008",
+      "change": -1,
+      "prev_stock": 78,
+      "new_stock": 77,
+      "timestamp": "2026-10-08T12:50:36.922Z",
+      "reason": "Online Customer Checkout (Muralitharan T S)"
+    },
+    {
+      "id": "log_1791530947076_slo8",
+      "product_id": "prod_oil_01",
+      "product_name": "Herbal Hair Oil",
+      "channel": "online",
+      "reference": "NH-ON-1009",
+      "change": -2,
+      "prev_stock": 77,
+      "new_stock": 75,
+      "timestamp": "2026-10-09T07:29:07.056Z",
+      "reason": "Online Customer Checkout (guru vishwa)"
+    },
+    {
+      "id": "log_1791542045365_xtbv",
+      "product_id": "prod_oil_01",
+      "product_name": "Herbal Hair Oil",
+      "channel": "online",
+      "reference": "NH-ON-1010",
+      "change": -1,
+      "prev_stock": 75,
+      "new_stock": 74,
+      "timestamp": "2026-10-09T10:34:05.320Z",
+      "reason": "Online Customer Checkout (Smt. Meenakshi Sundaram)"
+    },
+    {
+      "id": "log_1791542311319_lwg6",
+      "product_id": "prod_oil_01",
+      "product_name": "Herbal Hair Oil",
+      "channel": "online",
+      "reference": "NH-ON-1011",
+      "change": -1,
+      "prev_stock": 74,
+      "new_stock": 73,
+      "timestamp": "2026-10-09T10:38:31.297Z",
+      "reason": "Online Customer Checkout (Test Customer upi)"
+    },
+    {
+      "id": "log_1791542311345_zr0c",
+      "product_id": "prod_oil_01",
+      "product_name": "Herbal Hair Oil",
+      "channel": "online",
+      "reference": "NH-ON-1012",
+      "change": -1,
+      "prev_stock": 73,
+      "new_stock": 72,
+      "timestamp": "2026-10-09T10:38:31.341Z",
+      "reason": "Online Customer Checkout (Test Customer card)"
+    },
+    {
+      "id": "log_1791542311373_mjsw",
+      "product_id": "prod_oil_01",
+      "product_name": "Herbal Hair Oil",
+      "channel": "online",
+      "reference": "NH-ON-1013",
+      "change": -1,
+      "prev_stock": 72,
+      "new_stock": 71,
+      "timestamp": "2026-10-09T10:38:31.356Z",
+      "reason": "Online Customer Checkout (Test Customer netbanking)"
+    },
+    {
+      "id": "log_1791542389988_62w6",
+      "product_id": "prod_oil_01",
+      "product_name": "Herbal Hair Oil",
+      "channel": "online",
+      "reference": "NH-ON-1014",
+      "change": -1,
+      "prev_stock": 71,
+      "new_stock": 70,
+      "timestamp": "2026-10-09T10:39:49.967Z",
+      "reason": "Online Customer Checkout (Priya Sharma)"
+    },
+    {
+      "id": "log_1791785714760_l4nu",
+      "product_id": "prod_oil_01",
+      "product_name": "Herbal Hair Oil",
+      "channel": "online",
+      "reference": "NH-ON-1015",
+      "change": -3,
+      "prev_stock": 70,
+      "new_stock": 67,
+      "timestamp": "2026-10-12T06:15:14.738Z",
+      "reason": "Online Customer Checkout (Muralitharan T S)"
+    },
+    {
+      "id": "log_1791787706244_uccy",
+      "product_id": "prod_oil_01",
+      "product_name": "Herbal Hair Oil",
+      "channel": "online",
+      "reference": "NH-ON-1016",
+      "change": -2,
+      "prev_stock": 67,
+      "new_stock": 65,
+      "timestamp": "2026-10-12T06:48:26.221Z",
+      "reason": "Online Customer Checkout (Bharathi Kumar)"
+    },
+    {
+      "id": "log_1791791112368_9vfc",
+      "product_id": "prod_oil_01",
+      "product_name": "Herbal Hair Oil",
+      "channel": "offline",
+      "reference": "NH-INV-2026-004",
+      "change": -1,
+      "prev_stock": 65,
+      "new_stock": 64,
+      "timestamp": "2026-10-12T07:45:12.339Z",
+      "reason": "Offline Invoice / Store Sale to Dr. Meenakshi Sundaram"
+    },
+    {
+      "id": "log_1791791184471_q5u0",
+      "product_id": "prod_oil_01",
+      "product_name": "Herbal Hair Oil",
+      "channel": "offline",
+      "reference": "NH-INV-2026-005",
+      "change": -1,
+      "prev_stock": 64,
+      "new_stock": 63,
+      "timestamp": "2026-10-12T07:46:24.454Z",
+      "reason": "Offline Invoice / Store Sale to Bharathi Kumar"
+    },
+    {
+      "id": "log_1791791184475_ij0j",
+      "product_id": "prod_shampoo_02",
+      "product_name": "Hibiscus Flower Shampoo",
+      "channel": "offline",
+      "reference": "NH-INV-2026-005",
+      "change": -1,
+      "prev_stock": 68,
+      "new_stock": 67,
+      "timestamp": "2026-10-12T07:46:24.454Z",
+      "reason": "Offline Invoice / Store Sale to Bharathi Kumar"
+    },
+    {
+      "id": "log_1791802982114_eocv",
+      "product_id": "prod_oil_01",
+      "product_name": "Herbal Hair Oil",
+      "channel": "online",
+      "reference": "NH-ON-1017",
+      "change": -1,
+      "prev_stock": 63,
+      "new_stock": 62,
+      "timestamp": "2026-10-12T11:03:02.092Z",
+      "reason": "Online Customer Checkout (Muralitharan T S)"
+    },
+    {
+      "id": "log_1791803556123_ae6w",
+      "product_id": "prod_oil_01",
+      "product_name": "Herbal Hair Oil",
+      "channel": "online",
+      "reference": "NH-ON-1018",
+      "change": -1,
+      "prev_stock": 62,
+      "new_stock": 61,
+      "timestamp": "2026-10-12T11:12:36.108Z",
+      "reason": "Online Customer Checkout (Bharathi Kumar)"
+    },
+    {
+      "id": "log_1791803614103",
+      "product_id": "prod_oil_01",
+      "product_name": "Herbal Hair Oil",
+      "channel": "manual",
+      "reference": "Restock #NH-ON-1018",
+      "change": 1,
+      "prev_stock": 61,
+      "new_stock": 62,
+      "timestamp": "2026-10-12T11:13:34.108Z",
+      "reason": "Order Cancelled by Customer (Auto Restock)"
+    },
+    {
+      "id": "log_1791889064886_j322",
+      "product_id": "prod_oil_01",
+      "product_name": "Herbal Hair Oil",
+      "channel": "online",
+      "reference": "NH-ON-1019",
+      "change": -18,
+      "prev_stock": 62,
+      "new_stock": 44,
+      "timestamp": "2026-10-13T10:57:44.859Z",
+      "reason": "Online Customer Checkout (Bharathi Kumar)"
+    },
+    {
+      "id": "log_1791889064892_njyh",
+      "product_id": "prod_shampoo_02",
+      "product_name": "Hibiscus Flower Shampoo",
+      "channel": "online",
+      "reference": "NH-ON-1019",
+      "change": -9,
+      "prev_stock": 67,
+      "new_stock": 58,
+      "timestamp": "2026-10-13T10:57:44.859Z",
+      "reason": "Online Customer Checkout (Bharathi Kumar)"
+    },
+    {
+      "id": "log_1791889064894_izck",
+      "product_id": "prod_oil_01",
+      "product_name": "Herbal Hair Oil",
+      "channel": "online",
+      "reference": "NH-ON-1019",
+      "change": -1,
+      "prev_stock": 44,
+      "new_stock": 43,
+      "timestamp": "2026-10-13T10:57:44.859Z",
+      "reason": "Online Customer Checkout (Bharathi Kumar)"
+    },
+    {
+      "id": "log_1791889064896_tiev",
+      "product_id": "prod_duo_03",
+      "product_name": "The Royal Hair Ritual (Duo Set)",
+      "channel": "online",
+      "reference": "NH-ON-1019",
+      "change": -1,
+      "prev_stock": 42,
+      "new_stock": 41,
+      "timestamp": "2026-10-13T10:57:44.859Z",
+      "reason": "Online Customer Checkout (Bharathi Kumar)"
+    },
+    {
+      "id": "log_1791889206488_vr88",
+      "product_id": "prod_oil_01",
+      "product_name": "Herbal Hair Oil",
+      "channel": "online",
+      "reference": "NH-ON-1019",
+      "change": 18,
+      "prev_stock": 43,
+      "new_stock": 61,
+      "timestamp": "2026-10-13T11:00:06.475Z",
+      "reason": "Order #NH-ON-1019 Cancellation Accepted & Restocked (+18)"
+    },
+    {
+      "id": "log_1791889206505_dlop",
+      "product_id": "prod_shampoo_02",
+      "product_name": "Hibiscus Flower Shampoo",
+      "channel": "online",
+      "reference": "NH-ON-1019",
+      "change": 9,
+      "prev_stock": 58,
+      "new_stock": 67,
+      "timestamp": "2026-10-13T11:00:06.475Z",
+      "reason": "Order #NH-ON-1019 Cancellation Accepted & Restocked (+9)"
+    },
+    {
+      "id": "log_1791889206508_v6ig",
+      "product_id": "prod_oil_01",
+      "product_name": "Herbal Hair Oil",
+      "channel": "online",
+      "reference": "NH-ON-1019",
+      "change": 1,
+      "prev_stock": 61,
+      "new_stock": 62,
+      "timestamp": "2026-10-13T11:00:06.475Z",
+      "reason": "Order #NH-ON-1019 Cancellation Accepted & Restocked (+1)"
+    },
+    {
+      "id": "log_1791889206510_0eq4",
+      "product_id": "prod_duo_03",
+      "product_name": "The Royal Hair Ritual (Duo Set)",
+      "channel": "online",
+      "reference": "NH-ON-1019",
+      "change": 1,
+      "prev_stock": 41,
+      "new_stock": 42,
+      "timestamp": "2026-10-13T11:00:06.475Z",
+      "reason": "Order #NH-ON-1019 Cancellation Accepted & Restocked (+1)"
+    },
+    {
+      "id": "log_1792153425814_uxwj",
+      "product_id": "prod_oil_01",
+      "product_name": "Herbal Hair Oil",
+      "channel": "online",
+      "reference": "NH-ON-1020",
+      "change": -1,
+      "prev_stock": 62,
+      "new_stock": 61,
+      "timestamp": "2026-10-16T12:23:45.798Z",
+      "reason": "Online Customer Checkout (Muralitharan T S)"
+    }
+  ],
+  "users": [
+    {
+      "id": "user_admin_1792042667356",
+      "username": "murali",
+      "name": "Murali",
+      "role": "super_admin",
+      "permissions": [
+        "all"
+      ],
+      "email": "murali@nachiyarherbals.com",
+      "password": "Murali123",
+      "phone": null,
+      "created_at": "2026-10-15T06:04:54.139Z"
+    },
+    {
+      "id": "user_admin_1792045101271",
+      "username": "bharathi_07",
+      "name": "Bharathi",
+      "role": "super_admin",
+      "permissions": [
+        "all"
+      ],
+      "email": "bharathi@gmail.com",
+      "password": "1234567890",
+      "phone": null,
+      "created_at": "2026-10-15T06:18:21.273Z"
+    },
+    {
+      "id": "user_admin_1791988743708",
+      "username": "nimda0987",
+      "name": "nimda123",
+      "role": "super_admin",
+      "permissions": [
+        "all"
+      ],
+      "email": "nimda0987@gmail.com",
+      "password": "1234567890",
+      "phone": null,
+      "created_at": "2026-10-15T06:04:54.139Z"
+    },
+    {
+      "id": "user_nimda",
+      "username": "nimda",
+      "name": "Super Nimda",
+      "role": "super_admin",
+      "permissions": [
+        "all"
+      ],
+      "email": null,
+      "password": null,
+      "phone": null,
+      "created_at": "2026-10-16T11:06:13.364Z"
+    }
+  ],
+  "site_settings": [
+    {
+      "id": 1,
+      "data": {
+        "gstin": "33AAACH9876K1Z2",
+        "brandName": "Nachiyar Herbals & Cosmetics",
+        "couponCode": "NACHIYAR25",
+        "couponActive": false,
+        "storeAddress": "Nachiyar Botanical Heritage, No. 18 Temple Ring Road, Madurai, Tamil Nadu - 625001",
+        "storeTimings": "Mon - Sat: 9:30 AM - 8:30 PM",
+        "supportEmail": "care@nachiyarherbals.com",
+        "supportPhone": "+91 94440 88990",
+        "couponTagline": "Surprise Royal Privilege Voucher",
+        "paymentMethods": {
+          "cod": {
+            "label": "Cash on Delivery (COD)",
+            "enabled": false,
+            "description": "Pay cash to courier executive upon delivery"
+          },
+          "upi": {
+            "label": "UPI (Google Pay, PhonePe, Paytm, BHIM)",
+            "upiId": "nachiyarherbals18@okaxis",
+            "enabled": true,
+            "description": "Instant UPI payment with dynamic QR & VPA",
+            "merchantName": "Nachiyar Herbals & Cosmetics"
+          },
+          "card": {
+            "label": "Credit / Debit Card",
+            "enabled": true,
+            "description": "Visa, MasterCard, RuPay, Maestro"
+          },
+          "netbanking": {
+            "label": "Net Banking",
+            "enabled": true,
+            "description": "All major Indian banks supported"
+          }
+        },
+        "discountPercent": 25,
+        "announcementText": "ROYAL BOTANICAL CARE ✦ FREE PAN-INDIA SHIPPING OVER ₹599 ✦ COLD-PRESSED IN SMALL BATCHES",
+        "couponExpiryDate": "2026-10-13",
+        "mysteryCouponCode": "NACHIYAR25",
+        "mysteryDiscountPct": 15,
+        "freeShippingThreshold": 599
+      }
+    }
+  ]
+}

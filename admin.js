@@ -225,6 +225,7 @@ document.addEventListener('DOMContentLoaded', () => {
       loadAdminReviews();
       loadAdminMessages();
       renderMarketplaceHub();
+      updateNotificationBadges();
 
     } catch (e) {
       console.error('Failed to load admin data', e);
@@ -243,7 +244,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (kpiRevSplit) kpiRevSplit.textContent = `Online: ₹${(analytics.onlineRevenue || 0).toLocaleString()} | Offline: ₹${(analytics.offlineRevenue || 0).toLocaleString()}`;
     if (kpiTotalStock) kpiTotalStock.textContent = analytics.totalStock || 0;
     if (kpiStockStatus) {
-      if (analytics.lowStockItems > 0) {
+      if ((analytics.totalStock || 0) === 0) {
+        kpiStockStatus.textContent = 'No products in stock';
+        kpiStockStatus.className = 'kpi-sub';
+        kpiStockStatus.style.color = 'var(--admin-text-muted)';
+        kpiStockStatus.style.fontWeight = '500';
+      } else if (analytics.lowStockItems > 0) {
         kpiStockStatus.textContent = `⚠️ ${analytics.lowStockItems} formulations low in stock`;
         kpiStockStatus.className = 'kpi-sub';
         kpiStockStatus.style.color = '#DC2626';
@@ -279,10 +285,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (kpiNetBankingCount) kpiNetBankingCount.textContent = `${pb['Net Banking']?.count || 0} Transactions`;
 
     // 4. Stock Sync Display
-    const oil = products.find(p => p.slug === 'herbal-hair-oil' || p.name.includes('Oil'));
-    const shampoo = products.find(p => p.slug === 'hibiscus-flower-shampoo' || p.name.includes('Shampoo'));
-    if (oil && syncOilStock) syncOilStock.textContent = `${oil.stock} units`;
-    if (shampoo && syncShampooStock) syncShampooStock.textContent = `${shampoo.stock} units`;
+    const oil = products.find(p => p.slug === 'herbal-hair-oil' || (p.name && p.name.includes('Oil')));
+    const shampoo = products.find(p => p.slug === 'hibiscus-flower-shampoo' || (p.name && p.name.includes('Shampoo')));
+    if (syncOilStock) syncOilStock.textContent = oil ? `${oil.stock} units` : '0 units';
+    if (syncShampooStock) syncShampooStock.textContent = shampoo ? `${shampoo.stock} units` : '0 units';
 
     // 5. Revenue by Payment Method Visualizer
     renderPaymentBreakdown(pb, analytics.totalRevenue);
@@ -1009,9 +1015,28 @@ document.addEventListener('DOMContentLoaded', () => {
   // ==========================================
   function renderProductsTable() {
     productsTableBody.innerHTML = '';
-    document.getElementById('badgeProductCount').textContent = products.length;
+    const searchVal = (document.getElementById('productSearchInput')?.value || '').toLowerCase().trim();
+    const catVal = (document.getElementById('productCategoryFilter')?.value || '').trim();
 
-    products.forEach(p => {
+    const filtered = products.filter(p => {
+      const matchSearch = !searchVal || 
+        (p.name && p.name.toLowerCase().includes(searchVal)) ||
+        (p.sku && p.sku.toLowerCase().includes(searchVal)) ||
+        (p.category && p.category.toLowerCase().includes(searchVal)) ||
+        (p.slug && p.slug.toLowerCase().includes(searchVal));
+      const matchCat = !catVal || p.category === catVal;
+      return matchSearch && matchCat;
+    });
+
+    const bpc = document.getElementById('badgeProductCount');
+    if (bpc) bpc.style.display = 'none';
+
+    if (filtered.length === 0) {
+      productsTableBody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:32px; color:var(--admin-text-muted);">No products found matching your filter criteria.</td></tr>';
+      return;
+    }
+
+    filtered.forEach(p => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td>
@@ -1030,7 +1055,11 @@ document.addEventListener('DOMContentLoaded', () => {
           <strong style="color:${p.stock < 15 ? '#DC2626' : '#10B981'};">${p.stock} units</strong>
         </td>
         <td><span class="badge-tag active">${p.status || 'Active'}</span></td>
-        <td><small><code>/${p.slug}</code></small></td>
+        <td>
+          <a href="/product/?slug=${p.slug}" target="_blank" title="View live storefront formulation page" style="color:var(--admin-primary); font-weight:600; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
+            <code>/${p.slug}</code> <span style="font-size:11px;">↗</span>
+          </a>
+        </td>
         <td>
           <div style="display:flex; gap:6px;">
             <button class="btn-secondary btn-sm btn-edit-prod" data-id="${p.id}">Edit</button>
@@ -1092,9 +1121,16 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } else {
       modalProductTitle.textContent = 'Add New Formulation';
+      if (formProdSlug) delete formProdSlug.dataset.manual;
+      document.getElementById('formProdSlug').value = '';
       const defaultImg = 'assets/herbal-hair-oil.jpg';
       document.getElementById('formProdImage').value = defaultImg;
       if (imgPreview) imgPreview.src = defaultImg;
+    }
+
+    const catSelect = document.getElementById('formProdCategory');
+    if (catSelect && typeof catSelect._syncCustomSelect === 'function') {
+      catSelect._syncCustomSelect();
     }
 
     productModalOverlay.classList.add('is-active');
@@ -1165,6 +1201,39 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Live auto-slug generator
+  const formProdName = document.getElementById('formProdName');
+  const formProdSlug = document.getElementById('formProdSlug');
+
+  function toSlug(text) {
+    return (text || '')
+      .toString()
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/[\s_-]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+
+  if (formProdName && formProdSlug) {
+    formProdName.addEventListener('input', () => {
+      const isNew = !document.getElementById('formProductId').value;
+      if (isNew || !formProdSlug.dataset.manual) {
+        formProdSlug.value = toSlug(formProdName.value);
+      }
+    });
+
+    formProdSlug.addEventListener('input', () => {
+      formProdSlug.dataset.manual = 'true';
+    });
+
+    formProdSlug.addEventListener('blur', () => {
+      if (formProdSlug.value.trim()) {
+        formProdSlug.value = toSlug(formProdSlug.value);
+      }
+    });
+  }
+
   btnOpenNewProductModal.onclick = () => openProductModal();
   modalProductClose.onclick = () => productModalOverlay.classList.remove('is-active');
   btnCancelProductModal.onclick = () => productModalOverlay.classList.remove('is-active');
@@ -1205,13 +1274,13 @@ document.addEventListener('DOMContentLoaded', () => {
       tagline: document.getElementById('formProdTagline').value.trim(),
       description: document.getElementById('formProdDesc').value.trim(),
       ingredients: document.getElementById('formProdIngredients').value.trim(),
-      slug: document.getElementById('formProdSlug').value.trim(),
+      slug: toSlug(document.getElementById('formProdSlug').value.trim() || document.getElementById('formProdName').value.trim()),
       variants: variantsToSave,
       seo: {
         metaTitle: document.getElementById('formProdMetaTitle').value.trim(),
         metaDescription: document.getElementById('formProdMetaDesc').value.trim(),
         keywords: document.getElementById('formProdKeywords').value.trim(),
-        slug: document.getElementById('formProdSlug').value.trim()
+        slug: toSlug(document.getElementById('formProdSlug').value.trim() || document.getElementById('formProdName').value.trim())
       }
     };
 
@@ -1463,6 +1532,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (products.length > 0) {
       restockCurrentStock.value = `${products[0].stock} units`;
+    }
+
+    if (restockProductSelect && typeof restockProductSelect._syncCustomSelect === 'function') {
+      restockProductSelect._syncCustomSelect();
+    }
+    if (restockReasonSelect && typeof restockReasonSelect._syncCustomSelect === 'function') {
+      restockReasonSelect._syncCustomSelect();
     }
 
     if (restockCustomReasonGroup) restockCustomReasonGroup.style.display = 'none';
@@ -2097,12 +2173,117 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================================
+  // WHATSAPP-STYLE REAL-TIME NOTIFICATION BADGES
+  // Shows badge count ONLY when new unread/actionable items arrive.
+  // Once the admin visits/views that tab, the badge is immediately cleared/hidden.
+  // ==========================================
+  function getCurrentActiveTab() {
+    return localStorage.getItem('nachiyar_admin_active_tab') || 'dashboard';
+  }
+
+  function getSeenIds(key) {
+    try {
+      const data = localStorage.getItem(key);
+      return data ? JSON.parse(data) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function saveSeenIds(key, ids) {
+    try {
+      localStorage.setItem(key, JSON.stringify(ids || []));
+    } catch (e) {}
+  }
+
+  function updateNotificationBadges() {
+    const currentTab = getCurrentActiveTab();
+
+    // 1. ONLINE ORDERS BADGE
+    const badgeOrderCount = document.getElementById('badgeOrderCount');
+    if (badgeOrderCount) {
+      const currentOrderIds = (orders || []).map(o => String(o.id));
+      let seenOrderIds = getSeenIds('nachiyar_seen_order_ids');
+
+      if (seenOrderIds === null) {
+        // Initial setup: acknowledge existing orders so clean slate
+        saveSeenIds('nachiyar_seen_order_ids', currentOrderIds);
+        badgeOrderCount.style.display = 'none';
+      } else if (currentTab === 'orders') {
+        saveSeenIds('nachiyar_seen_order_ids', currentOrderIds);
+        badgeOrderCount.style.display = 'none';
+      } else {
+        const unseenOrders = (orders || []).filter(o => !seenOrderIds.includes(String(o.id)));
+        if (unseenOrders.length > 0) {
+          badgeOrderCount.textContent = unseenOrders.length;
+          badgeOrderCount.style.display = 'inline-block';
+        } else {
+          badgeOrderCount.style.display = 'none';
+        }
+      }
+    }
+
+    // 2. CUSTOMER REVIEWS BADGE
+    const badgePendingReviews = document.getElementById('badgePendingReviews');
+    if (badgePendingReviews) {
+      const currentReviewIds = (adminReviews || []).map(r => String(r.id));
+      let seenReviewIds = getSeenIds('nachiyar_seen_review_ids');
+
+      if (seenReviewIds === null) {
+        saveSeenIds('nachiyar_seen_review_ids', currentReviewIds);
+        badgePendingReviews.style.display = 'none';
+      } else if (currentTab === 'reviews') {
+        saveSeenIds('nachiyar_seen_review_ids', currentReviewIds);
+        badgePendingReviews.style.display = 'none';
+      } else {
+        const unseenReviews = (adminReviews || []).filter(r => r.status === 'pending' && !seenReviewIds.includes(String(r.id)));
+        if (unseenReviews.length > 0) {
+          badgePendingReviews.textContent = unseenReviews.length;
+          badgePendingReviews.style.display = 'inline-block';
+        } else {
+          badgePendingReviews.style.display = 'none';
+        }
+      }
+    }
+
+    // 3. CUSTOMER INQUIRIES BADGE
+    const badgeUnreadMessages = document.getElementById('badgeUnreadMessages');
+    if (badgeUnreadMessages) {
+      const currentMsgIds = (customerMessages || []).map(m => String(m.id));
+      let seenMsgIds = getSeenIds('nachiyar_seen_message_ids');
+
+      if (seenMsgIds === null) {
+        saveSeenIds('nachiyar_seen_message_ids', currentMsgIds);
+        badgeUnreadMessages.style.display = 'none';
+      } else if (currentTab === 'messages') {
+        saveSeenIds('nachiyar_seen_message_ids', currentMsgIds);
+        badgeUnreadMessages.style.display = 'none';
+      } else {
+        const unseenMsgs = (customerMessages || []).filter(m => m.status === 'unread' && !seenMsgIds.includes(String(m.id)));
+        if (unseenMsgs.length > 0) {
+          badgeUnreadMessages.textContent = unseenMsgs.length;
+          badgeUnreadMessages.style.display = 'inline-block';
+        } else {
+          badgeUnreadMessages.style.display = 'none';
+        }
+      }
+    }
+
+    // Non-notification tabs remain hidden
+    const bpc = document.getElementById('badgeProductCount');
+    if (bpc) bpc.style.display = 'none';
+    const bma = document.getElementById('badgeMarketplaceActive');
+    if (bma) bma.style.display = 'none';
+    const bsc = document.getElementById('badgeStaffCount');
+    if (bsc) bsc.style.display = 'none';
+  }
+
+  // ==========================================
   // 7. ONLINE ORDERS MANAGEMENT
   // ==========================================
   function renderOrdersTable() {
     allOrdersTableBody.innerHTML = '';
-    const badgeOrderCount = document.getElementById('badgeOrderCount');
-    if (badgeOrderCount) badgeOrderCount.textContent = orders.length;
+    updateNotificationBadges();
 
     if (orders.length === 0) {
       allOrdersTableBody.innerHTML = `
@@ -2232,6 +2413,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (tag) tag.textContent = newStatus.toUpperCase();
       };
     });
+
+    // Transform all order status selects into 100% mobile-safe custom dropdowns
+    if (typeof enhanceAllSelects === 'function') {
+      enhanceAllSelects(allOrdersTableBody);
+    }
 
     // Bind Approve Cancel & Refund trigger
     document.querySelectorAll('.btn-open-refund-modal').forEach(b => {
@@ -2462,10 +2648,16 @@ document.addEventListener('DOMContentLoaded', () => {
       const randomDisc = discounts[Math.floor(Math.random() * discounts.length)];
       const codeInput = document.getElementById('setCouponCode');
       const discInput = document.getElementById('setDiscountPercent');
+      const expInput = document.getElementById('setCouponExpiryDate');
       if (codeInput) codeInput.value = `${randomPrefix}${randomDisc}`;
       if (discInput) discInput.value = randomDisc;
+      if (expInput) {
+        const futureDate = new Date();
+        futureDate.setDate(futureDate.getDate() + 30);
+        expInput.value = futureDate.toISOString().split('T')[0];
+      }
       updateBannerLivePreview();
-      showToast(`Generated Coupon: ${randomPrefix}${randomDisc} (${randomDisc}%)`);
+      showToast(`Generated Coupon: ${randomPrefix}${randomDisc} (${randomDisc}%) valid for 30 days`);
     };
   }
 
@@ -2514,7 +2706,26 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('setDiscountPercent').value = storeSettings.discountPercent || 15;
     }
     if (document.getElementById('setCouponExpiryDate')) {
-      document.getElementById('setCouponExpiryDate').value = storeSettings.couponExpiryDate || '';
+      const expInput = document.getElementById('setCouponExpiryDate');
+      const todayStr = new Date().toISOString().split('T')[0];
+      expInput.min = todayStr;
+
+      let expVal = storeSettings.couponExpiryDate || '';
+      // If the saved date is already in the past, provide today + 30 days default so user doesn't publish an expired coupon
+      if (expVal) {
+        const expD = new Date(expVal);
+        expD.setHours(23, 59, 59, 999);
+        if (Date.now() > expD.getTime()) {
+          const futureDate = new Date();
+          futureDate.setDate(futureDate.getDate() + 30);
+          expVal = futureDate.toISOString().split('T')[0];
+        }
+      } else {
+        const futureDate = new Date();
+        futureDate.setDate(futureDate.getDate() + 30);
+        expVal = futureDate.toISOString().split('T')[0];
+      }
+      expInput.value = expVal;
     }
     if (document.getElementById('setCouponActive')) {
       document.getElementById('setCouponActive').checked = storeSettings.couponActive !== false;
@@ -2570,14 +2781,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 8.5. Universal Settings Save Function
   async function saveStoreSettingsData(notificationText = 'Store settings updated!') {
+    let couponExp = document.getElementById('setCouponExpiryDate')?.value || '';
+    const isCouponAct = document.getElementById('setCouponActive') ? document.getElementById('setCouponActive').checked : true;
+    if (isCouponAct && couponExp) {
+      const expD = new Date(couponExp);
+      expD.setHours(23, 59, 59, 999);
+      if (Date.now() > expD.getTime()) {
+        const futureDate = new Date();
+        futureDate.setDate(futureDate.getDate() + 30);
+        couponExp = futureDate.toISOString().split('T')[0];
+        if (document.getElementById('setCouponExpiryDate')) {
+          document.getElementById('setCouponExpiryDate').value = couponExp;
+        }
+        showToast('⚠️ Previous expiry date was expired! Automatically extended to 30 days ahead.');
+      }
+    }
+
     const payload = {
       announcementText: document.getElementById('setAnnouncementText')?.value || '',
       freeShippingThreshold: Number(document.getElementById('setFreeShipping')?.value) || 599,
       couponCode: (document.getElementById('setCouponCode')?.value || 'ROYAL15').trim().toUpperCase(),
       mysteryCouponCode: (document.getElementById('setCouponCode')?.value || 'ROYAL15').trim().toUpperCase(),
       discountPercent: Number(document.getElementById('setDiscountPercent')?.value) || 15,
-      couponExpiryDate: document.getElementById('setCouponExpiryDate')?.value || '',
-      couponActive: document.getElementById('setCouponActive') ? document.getElementById('setCouponActive').checked : true,
+      couponExpiryDate: couponExp,
+      couponActive: isCouponAct,
       couponTagline: document.getElementById('setCouponTagline')?.value || '',
       brandName: document.getElementById('setBrandName')?.value || 'Nachiyar Herbals & Cosmetics',
       gstin: document.getElementById('setGstin')?.value || '',
@@ -2690,14 +2917,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (countFilterRejected) countFilterRejected.textContent = counts.rejected || 0;
 
         // Update sidebar pending badge
-        if (badgePendingReviews) {
-          if (counts.pending > 0) {
-            badgePendingReviews.style.display = 'inline-block';
-            badgePendingReviews.textContent = counts.pending;
-          } else {
-            badgePendingReviews.style.display = 'none';
-          }
-        }
+        updateNotificationBadges();
 
         renderAdminReviews();
       }
@@ -2966,14 +3186,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (countMsgFilterRead) countMsgFilterRead.textContent = read;
     if (countMsgFilterResolved) countMsgFilterResolved.textContent = resolved;
 
-    if (badgeUnreadMessages) {
-      if (unread > 0) {
-        badgeUnreadMessages.style.display = 'inline-block';
-        badgeUnreadMessages.textContent = unread;
-      } else {
-        badgeUnreadMessages.style.display = 'none';
-      }
-    }
+    updateNotificationBadges();
   }
 
   function renderAdminMessages() {
@@ -3342,242 +3555,29 @@ document.addEventListener('DOMContentLoaded', () => {
       sellerId: 'FK_NACHIYAR_77',
       feePercent: 15,
       themeColor: '#2874F0',
-      activeListings: 3,
-      skus: {
-        'prod_oil_01': 'FK-NACH-OIL200',
-        'prod_shampoo_02': 'FK-NACH-SHP250',
-        'prod_duo_03': 'FK-NACH-DUO999'
-      },
-      orders: [
-        {
-          id: 'OD420918234812',
-          date: '2026-10-12T10:30:00Z',
-          customer: 'Deepika Sundaram',
-          city: 'Indiranagar, Bengaluru - 560038',
-          items: [{ name: 'Herbal Hair Oil (200ml)', qty: 2, price: 799 }],
-          gross: 1598,
-          commission: 240,
-          net: 1358,
-          status: 'DELIVERED',
-          awb: 'FMPC89230198'
-        },
-        {
-          id: 'OD420882193401',
-          date: '2026-10-11T14:15:00Z',
-          customer: 'Ananya Sharma',
-          city: 'Andheri West, Mumbai - 400053',
-          items: [{ name: 'Royal Hair Ritual Duo (Set)', qty: 1, price: 999 }],
-          gross: 999,
-          commission: 150,
-          net: 849,
-          status: 'SHIPPED',
-          awb: 'FMPC89218274'
-        },
-        {
-          id: 'OD420791029311',
-          date: '2026-10-10T09:40:00Z',
-          customer: 'Kavitha R.',
-          city: 'T. Nagar, Chennai - 600017',
-          items: [{ name: 'Hibiscus Flower Shampoo (250ml)', qty: 1, price: 549 }],
-          gross: 549,
-          commission: 82,
-          net: 467,
-          status: 'DELIVERED',
-          awb: 'FMPC89192847'
-        },
-        {
-          id: 'OD420612984712',
-          date: '2026-10-06T16:20:00Z',
-          customer: 'Pooja Hegde',
-          city: 'Banjara Hills, Hyderabad - 500034',
-          items: [
-            { name: 'Herbal Hair Oil (200ml)', qty: 1, price: 799 },
-            { name: 'Hibiscus Flower Shampoo (250ml)', qty: 1, price: 549 }
-          ],
-          gross: 1348,
-          commission: 202,
-          net: 1146,
-          status: 'DELIVERED',
-          awb: 'FMPC89162541'
-        },
-        {
-          id: 'OD420198273819',
-          date: '2026-09-24T11:10:00Z',
-          customer: 'Swetha Menon',
-          city: 'Panampilly Nagar, Kochi - 682036',
-          items: [{ name: 'Herbal Hair Oil (200ml)', qty: 3, price: 799 }],
-          gross: 2397,
-          commission: 360,
-          net: 2037,
-          status: 'DELIVERED',
-          awb: 'FMPC88927182'
-        },
-        {
-          id: 'OD419823901928',
-          date: '2026-08-15T18:05:00Z',
-          customer: 'Meenakshi Iyer',
-          city: 'KK Nagar, Madurai - 625020',
-          items: [{ name: 'Royal Hair Ritual Duo (Set)', qty: 2, price: 999 }],
-          gross: 1998,
-          commission: 300,
-          net: 1698,
-          status: 'DELIVERED',
-          awb: 'FMPC88719284'
-        }
-      ]
+      activeListings: 0,
+      skus: {},
+      orders: []
     },
     amazon: {
       id: 'amazon',
-      name: 'Amazon Seller Central',
-      sellerId: 'NACHIYAR_IN',
-      feePercent: 15,
+      name: 'Amazon India',
+      sellerId: 'AZ_NACH_IND_90',
+      feePercent: 17,
       themeColor: '#FF9900',
-      activeListings: 3,
-      skus: {
-        'prod_oil_01': 'AZ-NACH-OIL200',
-        'prod_shampoo_02': 'AZ-NACH-SHP250',
-        'prod_duo_03': 'AZ-NACH-DUO999'
-      },
-      orders: [
-        {
-          id: '404-9812739-1928301',
-          date: '2026-10-12T08:20:00Z',
-          customer: 'Divya Venkatesh',
-          city: 'Koramangala, Bengaluru - 560034',
-          items: [{ name: 'Royal Hair Ritual Duo (Set)', qty: 1, price: 999 }],
-          gross: 999,
-          commission: 150,
-          net: 849,
-          status: 'OUT FOR DELIVERY',
-          awb: 'AZIN40918234'
-        },
-        {
-          id: '403-1928472-8392019',
-          date: '2026-10-11T12:45:00Z',
-          customer: 'Sneha Mukherjee',
-          city: 'Salt Lake, Kolkata - 700091',
-          items: [{ name: 'Herbal Hair Oil (200ml)', qty: 2, price: 799 }],
-          gross: 1598,
-          commission: 240,
-          net: 1358,
-          status: 'SHIPPED',
-          awb: 'AZIN40892812'
-        },
-        {
-          id: '402-8374910-9182734',
-          date: '2026-10-08T15:10:00Z',
-          customer: 'Dr. Revathi Ram',
-          city: 'Anna Nagar, Chennai - 600040',
-          items: [{ name: 'Herbal Hair Oil (200ml)', qty: 1, price: 799 }],
-          gross: 799,
-          commission: 120,
-          net: 679,
-          status: 'DELIVERED',
-          awb: 'AZIN40718293'
-        },
-        {
-          id: '402-1928374-6251928',
-          date: '2026-09-28T14:30:00Z',
-          customer: 'Rithika Jain',
-          city: 'Vasant Kunj, New Delhi - 110070',
-          items: [{ name: 'Hibiscus Flower Shampoo (250ml)', qty: 2, price: 549 }],
-          gross: 1098,
-          commission: 165,
-          net: 933,
-          status: 'DELIVERED',
-          awb: 'AZIN40591823'
-        },
-        {
-          id: '401-9283746-1092837',
-          date: '2026-07-20T10:00:00Z',
-          customer: 'Padmavathi M.',
-          city: 'Saibaba Colony, Coimbatore - 641011',
-          items: [{ name: 'Royal Hair Ritual Duo (Set)', qty: 2, price: 999 }],
-          gross: 1998,
-          commission: 300,
-          net: 1698,
-          status: 'DELIVERED',
-          awb: 'AZIN40192847'
-        }
-      ]
+      activeListings: 0,
+      skus: {},
+      orders: []
     },
     meesho: {
       id: 'meesho',
-      name: 'Meesho Supplier Panel',
-      sellerId: 'MSH_8849',
+      name: 'Meesho Supplier Hub',
+      sellerId: 'MSH_NACH_44',
       feePercent: 10,
-      themeColor: '#802058',
-      activeListings: 3,
-      skus: {
-        'prod_oil_01': 'MSH-NACH-OIL200',
-        'prod_shampoo_02': 'MSH-NACH-SHP250',
-        'prod_duo_03': 'MSH-NACH-DUO999'
-      },
-      orders: [
-        {
-          id: 'sub_ord_9812749',
-          date: '2026-10-12T11:45:00Z',
-          customer: 'Vasanthi K.',
-          city: 'Medical College Road, Thanjavur - 613001',
-          items: [{ name: 'Hibiscus Flower Shampoo (250ml)', qty: 1, price: 549 }],
-          gross: 549,
-          commission: 55,
-          net: 494,
-          status: 'PROCESSING',
-          awb: 'MSH_AWB_98234'
-        },
-        {
-          id: 'sub_ord_9809182',
-          date: '2026-10-10T13:20:00Z',
-          customer: 'Kokila Selvam',
-          city: 'Fairlands, Salem - 636007',
-          items: [{ name: 'Herbal Hair Oil (200ml)', qty: 1, price: 799 }],
-          gross: 799,
-          commission: 80,
-          net: 719,
-          status: 'SHIPPED',
-          awb: 'MSH_AWB_98192'
-        },
-        {
-          id: 'sub_ord_9798234',
-          date: '2026-10-04T17:10:00Z',
-          customer: 'Manju Bhargavi',
-          city: 'Brodipet, Guntur - 522002',
-          items: [
-            { name: 'Herbal Hair Oil (200ml)', qty: 1, price: 799 },
-            { name: 'Hibiscus Flower Shampoo (250ml)', qty: 1, price: 549 }
-          ],
-          gross: 1348,
-          commission: 135,
-          net: 1213,
-          status: 'DELIVERED',
-          awb: 'MSH_AWB_97812'
-        },
-        {
-          id: 'sub_ord_9682390',
-          date: '2026-09-18T16:00:00Z',
-          customer: 'Shalini Sundar',
-          city: 'Cantonment, Tiruchirappalli - 620018',
-          items: [{ name: 'Royal Hair Ritual Duo (Set)', qty: 1, price: 999 }],
-          gross: 999,
-          commission: 100,
-          net: 899,
-          status: 'DELIVERED',
-          awb: 'MSH_AWB_96728'
-        },
-        {
-          id: 'sub_ord_9510928',
-          date: '2026-06-12T09:15:00Z',
-          customer: 'Bhuvaneswari N.',
-          city: 'Palayamkottai, Tirunelveli - 627002',
-          items: [{ name: 'Herbal Hair Oil (200ml)', qty: 2, price: 799 }],
-          gross: 1598,
-          commission: 160,
-          net: 1438,
-          status: 'DELIVERED',
-          awb: 'MSH_AWB_95012'
-        }
-      ]
+      themeColor: '#F43397',
+      activeListings: 0,
+      skus: {},
+      orders: []
     }
   };
 
@@ -4265,6 +4265,46 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
+    // Fresh re-render for activated tab
+    if (tabId === 'reviews') {
+      if (typeof loadAdminReviews === 'function') loadAdminReviews();
+    } else if (tabId === 'products') {
+      if (typeof renderProductsTable === 'function') renderProductsTable();
+    } else if (tabId === 'inventory') {
+      if (typeof renderInventoryMatrix === 'function') renderInventoryMatrix();
+    } else if (tabId === 'orders') {
+      if (typeof renderOrdersTable === 'function') renderOrdersTable();
+    } else if (tabId === 'invoices') {
+      if (typeof renderInvoicesTable === 'function') renderInvoicesTable();
+    } else if (tabId === 'dashboard') {
+      if (typeof renderDashboard === 'function') renderDashboard(latestAnalytics);
+    } else if (tabId === 'messages') {
+      if (typeof loadAdminMessages === 'function') loadAdminMessages();
+    } else if (tabId === 'marketplace') {
+      if (typeof renderMarketplaceHub === 'function') renderMarketplaceHub();
+    }
+
+    // WhatsApp style badge clearing on tab visit
+    if (tabId === 'orders') {
+      const currentOrderIds = (orders || []).map(o => String(o.id));
+      saveSeenIds('nachiyar_seen_order_ids', currentOrderIds);
+      const b = document.getElementById('badgeOrderCount');
+      if (b) b.style.display = 'none';
+    } else if (tabId === 'reviews') {
+      const currentReviewIds = (adminReviews || []).map(r => String(r.id));
+      saveSeenIds('nachiyar_seen_review_ids', currentReviewIds);
+      const b = document.getElementById('badgePendingReviews');
+      if (b) b.style.display = 'none';
+    } else if (tabId === 'messages') {
+      const currentMsgIds = (customerMessages || []).map(m => String(m.id));
+      saveSeenIds('nachiyar_seen_message_ids', currentMsgIds);
+      const b = document.getElementById('badgeUnreadMessages');
+      if (b) b.style.display = 'none';
+    }
+    if (typeof updateNotificationBadges === 'function') {
+      updateNotificationBadges();
+    }
+
     // Close mobile sidebar on navigation
     closeSidebar();
   }
@@ -4368,7 +4408,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const kpiRevokedAdmins = document.getElementById('kpiRevokedAdmins');
     const activeBadge = document.getElementById('activeAccountsBadgeCount');
 
-    if (badgeStaffCount) badgeStaffCount.textContent = totalCount;
+    if (badgeStaffCount) badgeStaffCount.style.display = 'none';
     if (kpiTotalAdmins) kpiTotalAdmins.textContent = totalCount;
     if (kpiRevokedAdmins) kpiRevokedAdmins.textContent = deletedList.length;
     if (activeBadge) activeBadge.textContent = totalCount + (totalCount === 1 ? ' Account' : ' Accounts');
@@ -4708,8 +4748,270 @@ document.addEventListener('DOMContentLoaded', () => {
       .catch(() => {});
   }
 
+
+  // ==========================================
+  // UNIVERSAL CUSTOM RESPONSIVE DROPDOWNS (100% Mobile Safe Portal)
+  // Guarantees zero viewport overflow across all mobile screens & DevTools
+  // ==========================================
+  function enhanceSelect(select) {
+    if (!select || select.dataset.customized === 'true') return;
+    if (select.dataset.noCustom === 'true') return;
+    select.dataset.customized = 'true';
+
+    const isSmall = select.classList.contains('ord-status-select') || select.classList.contains('form-input-sm');
+    const isFilter = select.classList.contains('select-filter');
+    const explicitWidth = select.getAttribute('style')?.match(/width:\s*([^;]+)/)?.[1];
+
+    // Visually hide native select while keeping it interactive in DOM for form validation & serialization
+    select.style.position = 'absolute';
+    select.style.opacity = '0';
+    select.style.pointerEvents = 'none';
+    select.style.width = '1px';
+    select.style.height = '1px';
+    select.tabIndex = -1;
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'custom-select-wrapper' + 
+      (isSmall ? ' custom-select-wrapper--sm' : '') + 
+      (isFilter ? ' custom-select-wrapper--filter' : '');
+
+    if (isSmall) {
+      if (explicitWidth) wrapper.style.width = explicitWidth;
+    } else if (isFilter) {
+      if (explicitWidth) wrapper.style.minWidth = explicitWidth;
+    } else {
+      wrapper.style.width = '100%';
+    }
+
+    const trigger = document.createElement('div');
+    trigger.className = 'custom-select-trigger' + (isSmall ? ' custom-select-trigger--sm' : '');
+    trigger.setAttribute('tabindex', '0');
+    trigger.setAttribute('role', 'combobox');
+    trigger.setAttribute('aria-expanded', 'false');
+
+    const labelSpan = document.createElement('span');
+    labelSpan.className = 'custom-select-label';
+    trigger.appendChild(labelSpan);
+
+    const arrowSpan = document.createElement('span');
+    arrowSpan.className = 'custom-select-arrow';
+    arrowSpan.innerHTML = '▾';
+    trigger.appendChild(arrowSpan);
+
+    // Floating menu attached to document.body to prevent any container clipping
+    const menu = document.createElement('div');
+    menu.className = 'custom-select-menu-floating' + (isSmall ? ' custom-select-menu-floating--sm' : '');
+    menu._ownerSelect = select;
+    menu._trigger = trigger;
+    menu._wrapper = wrapper;
+    document.body.appendChild(menu);
+
+    select._customSelectMenu = menu;
+    select._customSelectWrapper = wrapper;
+
+    function getOptionVisualHtml(opt) {
+      if (!opt) return 'Select...';
+      if (isSmall) {
+        const val = (opt.value || '').toLowerCase();
+        let dotColor = '#64748B';
+        if (val === 'placed') dotColor = '#3B82F6';
+        else if (val === 'processing') dotColor = '#F59E0B';
+        else if (val === 'shipped') dotColor = '#8B5CF6';
+        else if (val === 'delivered') dotColor = '#10B981';
+        return '<span style="display:inline-flex; align-items:center; gap:6px;"><span style="display:inline-block; width:7px; height:7px; border-radius:50%; background-color:' + dotColor + '; flex-shrink:0;"></span><span>' + opt.text + '</span></span>';
+      }
+      return opt.text;
+    }
+
+    function updateTriggerLabel() {
+      const selectedOpt = select.options[select.selectedIndex] || select.querySelector('option[value="' + select.value + '"]') || select.options[0];
+      if (selectedOpt) {
+        labelSpan.innerHTML = getOptionVisualHtml(selectedOpt);
+      } else {
+        labelSpan.textContent = 'Select...';
+      }
+
+      menu.querySelectorAll('.custom-select-item').forEach(item => {
+        if (item.dataset.value === select.value) {
+          item.classList.add('active');
+        } else {
+          item.classList.remove('active');
+        }
+      });
+    }
+
+    function rebuildItems() {
+      menu.innerHTML = '';
+      Array.from(select.options).forEach(opt => {
+        const item = document.createElement('div');
+        item.className = 'custom-select-item' + (opt.value === select.value ? ' active' : '');
+        item.dataset.value = opt.value;
+        item.innerHTML = getOptionVisualHtml(opt);
+
+        item.addEventListener('click', (e) => {
+          e.stopPropagation();
+          select.value = opt.value;
+          updateTriggerLabel();
+          closeAllCustomDropdowns();
+
+          select.dispatchEvent(new Event('change', { bubbles: true }));
+          if (typeof select.onchange === 'function') {
+            select.onchange();
+          }
+        });
+
+        menu.appendChild(item);
+      });
+      updateTriggerLabel();
+    }
+
+    function openMenu() {
+      closeAllCustomDropdowns();
+      wrapper.classList.add('is-open');
+      menu.classList.add('is-active');
+      trigger.setAttribute('aria-expanded', 'true');
+
+      // Accurately position menu strictly within viewport [8px, window.innerWidth - 8px]
+      const rect = trigger.getBoundingClientRect();
+      const winWidth = window.innerWidth;
+      const winHeight = window.innerHeight;
+
+      menu.style.display = 'block';
+      menu.style.visibility = 'hidden';
+
+      const minW = isSmall ? 120 : 160;
+      let menuWidth = Math.max(rect.width, minW);
+      menuWidth = Math.min(menuWidth, winWidth - 16);
+
+      menu.style.width = Math.round(menuWidth) + 'px';
+      menu.style.maxWidth = (winWidth - 16) + 'px';
+
+      let left = rect.left;
+      if (left + menuWidth > winWidth - 8) {
+        left = winWidth - menuWidth - 8;
+      }
+      if (left < 8) {
+        left = 8;
+      }
+      menu.style.left = Math.round(left) + 'px';
+
+      const menuHeight = menu.offsetHeight || 180;
+      const spaceBelow = winHeight - rect.bottom;
+      const spaceAbove = rect.top;
+
+      if (spaceBelow < menuHeight + 10 && spaceAbove > spaceBelow) {
+        menu.style.top = Math.round(Math.max(8, rect.top - menuHeight - 4)) + 'px';
+      } else {
+        menu.style.top = Math.round(Math.min(winHeight - menuHeight - 8, rect.bottom + 4)) + 'px';
+      }
+      menu.style.visibility = 'visible';
+    }
+
+    trigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (wrapper.classList.contains('is-open')) {
+        closeAllCustomDropdowns();
+      } else {
+        openMenu();
+      }
+    });
+
+    trigger.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        trigger.click();
+      }
+    });
+
+    select.parentNode.insertBefore(wrapper, select);
+    wrapper.appendChild(select);
+    wrapper.appendChild(trigger);
+
+    rebuildItems();
+
+    select._syncCustomSelect = () => {
+      rebuildItems();
+      updateTriggerLabel();
+    };
+
+    const observer = new MutationObserver(() => {
+      rebuildItems();
+    });
+    observer.observe(select, { childList: true });
+  }
+
+  function enhanceAllSelects(container = document) {
+    // Purge floating menus whose owner select has been removed from DOM
+    document.querySelectorAll('.custom-select-menu-floating').forEach(m => {
+      if (!m._ownerSelect || !document.body.contains(m._ownerSelect)) {
+        m.remove();
+      }
+    });
+
+    container.querySelectorAll('select').forEach(sel => {
+      if (sel.dataset.customized === 'true') {
+        if (sel._syncCustomSelect) sel._syncCustomSelect();
+        return;
+      }
+      enhanceSelect(sel);
+    });
+  }
+
+  function closeAllCustomDropdowns() {
+    document.querySelectorAll('.custom-select-wrapper.is-open').forEach(w => {
+      w.classList.remove('is-open');
+      const tr = w.querySelector('.custom-select-trigger');
+      if (tr) tr.setAttribute('aria-expanded', 'false');
+    });
+    document.querySelectorAll('.custom-select-menu-floating.is-active').forEach(m => {
+      m.classList.remove('is-active');
+      m.style.display = 'none';
+    });
+  }
+
+  // Close floating menus on outside click, window resize, or container scroll (capture phase catches table scroll)
+  document.addEventListener('pointerdown', (e) => {
+    const activeMenu = document.querySelector('.custom-select-menu-floating.is-active');
+    if (!activeMenu) return;
+    const activeTrigger = activeMenu._trigger;
+    if (activeTrigger && activeTrigger.contains(e.target)) return;
+    if (activeMenu.contains(e.target)) return;
+    closeAllCustomDropdowns();
+  });
+
+  window.addEventListener('scroll', closeAllCustomDropdowns, { capture: true, passive: true });
+  window.addEventListener('resize', closeAllCustomDropdowns, { passive: true });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeAllCustomDropdowns();
+  });
+  document.addEventListener('reset', (e) => {
+    setTimeout(() => enhanceAllSelects(e.target), 10);
+  });
+
+  // Hook product search input & category filter
+  const prodSearchInput = document.getElementById('productSearchInput');
+  const prodCatFilter = document.getElementById('productCategoryFilter');
+  if (prodSearchInput) prodSearchInput.addEventListener('input', renderProductsTable);
+  if (prodCatFilter) prodCatFilter.addEventListener('change', renderProductsTable);
+
   initStaffManagement();
   restoreActiveTab();
   loadAllData();
+  setTimeout(enhanceAllSelects, 100);
+
+  // Live background sync for incoming orders, reviews, and inquiries (every 25s)
+  setInterval(async () => {
+    try {
+      const [ordRes, revRes, msgRes] = await Promise.all([
+        authFetch('/api/orders').then(r => r.json()).catch(() => null),
+        authFetch('/api/reviews/admin').then(r => r.json()).catch(() => null),
+        authFetch('/api/contact/messages').then(r => r.json()).catch(() => null)
+      ]);
+      if (ordRes && ordRes.success && ordRes.data) orders = ordRes.data;
+      if (revRes && revRes.success && revRes.data) adminReviews = revRes.data;
+      if (msgRes && msgRes.success && msgRes.data) customerMessages = msgRes.data;
+      if (typeof updateNotificationBadges === 'function') updateNotificationBadges();
+    } catch (e) {}
+  }, 25000);
 
 });

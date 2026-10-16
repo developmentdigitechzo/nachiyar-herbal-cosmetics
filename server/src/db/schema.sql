@@ -147,5 +147,13 @@ VALUES
 ON CONFLICT (username) DO NOTHING;
 
 INSERT INTO site_settings (id, data)
-VALUES (1, '{"announcementText": "ROYAL BOTANICAL CARE • FREE PAN-INDIA SHIPPING OVER ₹599", "freeShippingThreshold": 599, "paymentMethods": {"cod": {"enabled": true, "label": "Cash on Delivery"}, "upi": {"enabled": true, "label": "UPI / QR Code", "upiId": "nachiyarherbals18@okaxis", "merchantName": "Nachiyar Herbals"}}}'::jsonb)
+VALUES (1, '{"announcementText": "ROYAL BOTANICAL CARE • FREE PAN-INDIA SHIPPING ON ORDERS ₹599 & ABOVE", "freeShippingThreshold": 599, "paymentMethods": {"cod": {"enabled": true, "label": "Cash on Delivery"}, "upi": {"enabled": true, "label": "UPI / QR Code", "upiId": "nachiyarherbals18@okaxis", "merchantName": "Nachiyar Herbals"}}}'::jsonb)
+ON CONFLICT (id) DO NOTHING;
+
+-- SEED CORE PRODUCTS IF TABLE IS EMPTY
+INSERT INTO products (id, name, slug, price, mrp, stock, category, tags, images, description)
+VALUES 
+  ('prod_oil_01', 'Herbal Hair Oil', 'herbal-hair-oil', 299.00, 599.00, 95, 'Hair Care', '["hair-vitalizer", "18-botanicals", "cold-pressed"]'::jsonb, '["assets/new-oil-bottle-card.jpg"]'::jsonb, 'Authentic cold-pressed herbal hair vitalizer prepared with 18 certified Ayurvedic botanicals.'),
+  ('prod_shampoo_02', 'Hibiscus Flower Shampoo', 'hibiscus-flower-shampoo', 249.00, 549.00, 90, 'Hair Care', '["scalp-cleanser", "hibiscus", "sulphate-free"]'::jsonb, '["assets/new-shampoo-bottle-card.jpg"]'::jsonb, 'Gentle scalp cleanser infused with fresh handpicked red hibiscus flowers and natural coconut surfactants.'),
+  ('prod_duo_03', 'The Royal Hair Ritual (Duo Set)', 'royal-hair-ritual-duo', 499.00, 1148.00, 85, 'Ritual Combos', '["complete-ritual", "bestseller", "ayurvedic-duo"]'::jsonb, '["assets/duo-ritual-new.jpg"]'::jsonb, 'The complete 2-step royal restorative haircare routine featuring our Herbal Hair Oil and Hibiscus Shampoo.')
 ON CONFLICT (id) DO NOTHING;

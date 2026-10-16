@@ -1,0 +1,520 @@
+{
+  "products": [
+    {
+      "id": "prod_oil_01",
+      "slug": "herbal-hair-oil",
+      "name": "Herbal Hair Oil",
+      "subtitle": "Lavender Glass Dropper Bottle • 100% Cold-Pressed",
+      "category": "Hair Care",
+      "categoryId": "cat_hair_care",
+      "price": 599,
+      "mrp": 699,
+      "stock": 80,
+      "initialStock": 100,
+      "onlineSold": 8,
+      "offlineSold": 12,
+      "sku": "NH-OIL-200ML",
+      "images": [
+        "assets/new-oil-bottle-card.jpg",
+        "assets/clinical-oil-pour-hand.jpg",
+        "assets/lifestyle-oil-massage.jpg"
+      ],
+      "themeColor": "#6B4E9B",
+      "tagline": "Cold-Pressed • 18 Rare Herbs • Root Activating",
+      "metricBadge": "100% PURE",
+      "badge": "Bestseller",
+      "shortDescription": "Traditional 21-day solar-infused oil in pure lavender essence to stimulate roots and banish hair fall.",
+      "description": "Crafted in small batches according to classical Ayurvedic texts. Nachiyar Herbal Hair Oil features deep-steeped cold-pressed oils enriched with Bhringraj, Amla, Brahmi, and delicate lavender blossom essence. Calms scalp inflammation, repairs dry split ends, and delivers noticeable root strength within two weeks of regular application.",
+      "benefits": [
+        "Clinically proven hair fall reduction in 14 days",
+        "Soothes irritated, dry scalp with calming lavender aromatherapy",
+        "Deeply bioavailable: absorbs without heavy mineral grease",
+        "Encourages dense follicle growth and strand thickness"
+      ],
+      "ingredients": "Cold-Pressed Black Sesame Oil, Virgin Coconut Oil, Pure French Lavender Oil (Lavandula Angustifolia), Bhringraj, Amla, Brahmi, Hibiscus Blossom, Fenugreek, Rosemary, Indian Nardostachys (Jatamansi).",
+      "howToUse": "Dispense 1-2 droppers directly across scalp partings. Gently massage using circular fingertip motions for 5-10 minutes. Leave on for a minimum of 1 hour or overnight before cleansing.",
+      "variants": [
+        {
+          "id": "v_oil_100",
+          "name": "100ml Travel Edition",
+          "price": 349,
+          "mrp": 399,
+          "stock": 45,
+          "sku": "NH-OIL-100"
+        },
+        {
+          "id": "v_oil_200",
+          "name": "200ml Glass Dropper Bottle",
+          "price": 599,
+          "mrp": 699,
+          "stock": 85,
+          "sku": "NH-OIL-200"
+        },
+        {
+          "id": "v_oil_500",
+          "name": "500ml Luxury Value Refill",
+          "price": 1199,
+          "mrp": 1399,
+          "stock": 25,
+          "sku": "NH-OIL-500"
+        }
+      ],
+      "seo": {
+        "metaTitle": "Nachiyar Herbal Hair Oil | 100% Cold-Pressed Lavender Ayurvedic Elixir",
+        "metaDescription": "Discover Nachiyar Herbal Hair Oil in its signature lavender bottle. 18 rare Ayurvedic herbs infused over 21 days for follicle strength, shine, and hair fall prevention.",
+        "keywords": "herbal hair oil, lavender hair oil, nachiyar herbals, cold pressed hair oil, ayurvedic scalp care, bhringraj oil",
+        "slug": "herbal-hair-oil"
+      },
+      "status": "active"
+    },
+    {
+      "id": "prod_shampoo_02",
+      "slug": "hibiscus-flower-shampoo",
+      "name": "Hibiscus Flower Shampoo",
+      "subtitle": "Crimson Botanical Pump Bottle • Sulfate-Free pH 5.5",
+      "category": "Scalp & Cleansing",
+      "categoryId": "cat_scalp",
+      "price": 549,
+      "mrp": 649,
+      "stock": 68,
+      "initialStock": 90,
+      "onlineSold": 8,
+      "offlineSold": 14,
+      "sku": "NH-SHAMP-250ML",
+      "images": [
+        "assets/new-shampoo-bottle-card.jpg",
+        "assets/lifestyle-shampoo-lather.jpg",
+        "assets/lifestyle-flowing-hair.jpg"
+      ],
+      "themeColor": "#822234",
+      "tagline": "Sulfate-Free • Fresh Petal Infusion • pH 5.5",
+      "metricBadge": "pH 5.5 BALANCED",
+      "badge": "Customer Favorite",
+      "shortDescription": "Petal-rich lather that cleanses without stripping natural moisture, restoring scalp microbiome balance.",
+      "description": "Formulated with handpicked South Indian hibiscus blossoms and gentle plant-derived saponins. Gently cleanses without stripping natural oils, enhancing softness, promoting follicle vitality, and restoring hair's natural radiant shine.",
+      "benefits": [
+        "0% Sulfates, Silicones, Parabens, or Synthetic Dyes",
+        "pH 5.5 balanced to protect the delicate scalp acid mantle",
+        "Natural hibiscus mucilage locks in moisture and mirrors conditioning shine",
+        "Safe for color-treated, chemically straightened, or sensitive hair"
+      ],
+      "ingredients": "Aqua, Fresh Hibiscus Rosa-Sinensis Flower Extract, Decyl Glucoside (Coconut derived), Shikakai Extract, Reetha (Soapnut), Aloe Vera Leaf Juice, Vegetable Glycerin, Vitamin E, Sweet Orange Peel Oil.",
+      "howToUse": "Pump 2-3 pumps into wet palms and work into a rich lather. Massage thoroughly into damp scalp and lengths. Rinse with cool water. Pair with Nachiyar Herbal Hair Oil for maximum results.",
+      "variants": [
+        {
+          "id": "v_shamp_250",
+          "name": "250ml Botanical Pump Bottle",
+          "price": 549,
+          "mrp": 649,
+          "stock": 68,
+          "sku": "NH-SHAMP-250"
+        },
+        {
+          "id": "v_shamp_500",
+          "name": "500ml Family Pump Bottle",
+          "price": 949,
+          "mrp": 1099,
+          "stock": 30,
+          "sku": "NH-SHAMP-500"
+        }
+      ],
+      "seo": {
+        "metaTitle": "Nachiyar Hibiscus Flower Shampoo | Sulfate-Free Scalp Cleanser pH 5.5",
+        "metaDescription": "Infused with fresh hibiscus petals, Nachiyar's gentle sulfate-free shampoo restores natural shine, calms the scalp, and strengthens roots.",
+        "keywords": "hibiscus shampoo, sulfate free shampoo, nachiyar herbals, natural hair cleanser, ayurvedic shampoo, ph balanced shampoo",
+        "slug": "hibiscus-flower-shampoo"
+      },
+      "status": "active"
+    },
+    {
+      "id": "prod_duo_03",
+      "slug": "royal-hair-ritual-duo",
+      "name": "The Royal Hair Ritual (Duo Set)",
+      "subtitle": "Oil (200ml) + Shampoo (250ml) + Silk Travel Pouch",
+      "category": "Ritual Sets",
+      "categoryId": "cat_sets",
+      "price": 999,
+      "mrp": 1148,
+      "stock": 42,
+      "initialStock": 55,
+      "onlineSold": 7,
+      "offlineSold": 6,
+      "sku": "NH-DUO-SET",
+      "images": [
+        "assets/duo-ritual-new.jpg",
+        "assets/new-oil-bottle-card.jpg",
+        "assets/new-shampoo-bottle-card.jpg"
+      ],
+      "themeColor": "#271434",
+      "tagline": "Complete 2-Step Routine • Save 15%",
+      "metricBadge": "15% OFF",
+      "badge": "Royal Special Value",
+      "shortDescription": "The ultimate Ayurvedic duo: Pre-wash deep oil nourishment + restorative gentle petal cleansing.",
+      "description": "Experience complete follicular revitalisation. Step 1: Pre-wash deep scalp nourishment with the Lavender Herbal Hair Oil. Step 2: Gentle balancing wash with the Hibiscus Flower Shampoo. Includes a complimentary gold silk travel pouch and free Pan-India Express Delivery.",
+      "benefits": [
+        "Comprehensive 2-step solution: nourishment + gentle cleansing",
+        "Saves 15% compared to purchasing individual bottles",
+        "Includes limited-edition gold silk storage pouch",
+        "Complimentary Pan-India Express Delivery on all orders"
+      ],
+      "ingredients": "Includes full formulation of Herbal Hair Oil (200ml) and Hibiscus Flower Shampoo (250ml).",
+      "howToUse": "Apply Herbal Hair Oil 2-3 hours before bath. Cleanse gently using Hibiscus Flower Shampoo. Repeat ritual 2-3 times weekly.",
+      "variants": [
+        {
+          "id": "v_duo_standard",
+          "name": "Full Ritual Duo (200ml Oil + 250ml Shampoo)",
+          "price": 999,
+          "mrp": 1148,
+          "stock": 42,
+          "sku": "NH-DUO-STD"
+        }
+      ],
+      "seo": {
+        "metaTitle": "The Royal Hair Ritual Duo | Nachiyar Herbal Oil & Hibiscus Shampoo",
+        "metaDescription": "Get the complete 2-step Ayurvedic hair ritual by Nachiyar Herbals. 15% off combo pack with free shipping and silk travel pouch.",
+        "keywords": "hair care routine combo, nachiyar hair care duo, hair oil and shampoo set, ayurvedic hair set",
+        "slug": "royal-hair-ritual-duo"
+      },
+      "status": "active"
+    }
+  ],
+  "categories": [
+    {
+      "id": "cat_hair_care",
+      "name": "Hair Care",
+      "slug": "hair-care",
+      "count": 1
+    },
+    {
+      "id": "cat_scalp",
+      "name": "Scalp & Cleansing",
+      "slug": "scalp-cleansing",
+      "count": 1
+    },
+    {
+      "id": "cat_sets",
+      "name": "Ritual Sets & Combos",
+      "slug": "ritual-sets",
+      "count": 1
+    },
+    {
+      "id": "cat_gifting",
+      "name": "Royal Gifting",
+      "slug": "royal-gifting",
+      "count": 0
+    }
+  ],
+  "orders": [
+    {
+      "id": "ord_1001",
+      "orderNumber": "NH-ON-1001",
+      "channel": "online",
+      "customer": {
+        "name": "Pooja Madhavan",
+        "email": "pooja.m@example.com",
+        "phone": "+91 98401 23456",
+        "address": "42, Besant Avenue, Adyar",
+        "city": "Chennai",
+        "state": "Tamil Nadu",
+        "pincode": "600020"
+      },
+      "items": [
+        {
+          "productId": "prod_oil_01",
+          "name": "Herbal Hair Oil",
+          "price": 599,
+          "qty": 1,
+          "size": "200ml Glass Dropper Bottle",
+          "img": "assets/herbal-hair-oil.jpg"
+        },
+        {
+          "productId": "prod_shampoo_02",
+          "name": "Hibiscus Flower Shampoo",
+          "price": 549,
+          "qty": 1,
+          "size": "250ml Botanical Pump Bottle",
+          "img": "assets/hibiscus-shampoo.jpg"
+        }
+      ],
+      "subtotal": 1148,
+      "discount": 149,
+      "shipping": 0,
+      "total": 999,
+      "paymentMethod": "UPI (GPay)",
+      "paymentStatus": "paid",
+      "status": "shipped",
+      "createdAt": "2026-10-06T14:32:00.000Z"
+    },
+    {
+      "id": "ord_1002",
+      "orderNumber": "NH-ON-1002",
+      "channel": "online",
+      "customer": {
+        "name": "Ananya Sharma",
+        "email": "ananya.s@example.com",
+        "phone": "+91 98200 98765",
+        "address": "Flat 804, Oberoi Springs, Andheri West",
+        "city": "Mumbai",
+        "state": "Maharashtra",
+        "pincode": "400053"
+      },
+      "items": [
+        {
+          "productId": "prod_duo_03",
+          "name": "The Royal Hair Ritual (Duo Set)",
+          "price": 999,
+          "qty": 1,
+          "size": "Full Ritual Duo",
+          "img": "assets/duo-ritual.jpg"
+        }
+      ],
+      "subtotal": 999,
+      "discount": 0,
+      "shipping": 0,
+      "total": 999,
+      "paymentMethod": "Credit Card",
+      "paymentStatus": "paid",
+      "status": "processing",
+      "createdAt": "2026-10-07T11:15:00.000Z"
+    },
+    {
+      "id": "ord_1791387291524",
+      "orderNumber": "NH-ON-1003",
+      "channel": "online",
+      "customer": {
+        "name": "Test Online Customer",
+        "email": "test@nachiyar.com",
+        "phone": "9888888888",
+        "address": "12 Temple St"
+      },
+      "items": [
+        {
+          "productId": "prod_oil_01",
+          "name": "Herbal Hair Oil",
+          "price": 599,
+          "qty": 3,
+          "img": "assets/herbal-hair-oil.jpg"
+        }
+      ],
+      "subtotal": 1797,
+      "discount": 0,
+      "shipping": 0,
+      "total": 1797,
+      "paymentMethod": "UPI / Online Payment",
+      "paymentStatus": "paid",
+      "status": "placed",
+      "createdAt": "2026-10-07T15:34:51.524Z"
+    }
+  ],
+  "invoices": [
+    {
+      "id": "inv_2001",
+      "invoiceNumber": "NH-INV-2026-001",
+      "channel": "offline",
+      "customer": {
+        "name": "Smt. Meenakshi Sundaram",
+        "phone": "+91 94440 11223",
+        "email": "meenakshi.s@gmail.com",
+        "address": "Store Walk-in, T. Nagar Retail Counter, Chennai",
+        "gstin": ""
+      },
+      "items": [
+        {
+          "productId": "prod_oil_01",
+          "name": "Herbal Hair Oil (200ml)",
+          "price": 599,
+          "qty": 2,
+          "subtotal": 1198
+        },
+        {
+          "productId": "prod_shampoo_02",
+          "name": "Hibiscus Flower Shampoo (250ml)",
+          "price": 549,
+          "qty": 1,
+          "subtotal": 549
+        }
+      ],
+      "subtotal": 1747,
+      "discount": 150,
+      "tax": 80,
+      "total": 1677,
+      "paymentStatus": "paid",
+      "paymentMode": "UPI (Store QR)",
+      "notes": "Direct walk-in purchase at Chennai boutique counter",
+      "createdBy": "Karthik R. (Billing Manager)",
+      "createdAt": "2026-10-05T16:20:00.000Z"
+    },
+    {
+      "id": "inv_2002",
+      "invoiceNumber": "NH-INV-2026-002",
+      "channel": "offline",
+      "customer": {
+        "name": "Dr. Radhika Krishnan",
+        "phone": "+91 98840 55443",
+        "email": "dr.radhika@ayurclinic.in",
+        "address": "Ayur Wellness Centre, Coimbatore",
+        "gstin": "33AAACH1234F1Z8"
+      },
+      "items": [
+        {
+          "productId": "prod_oil_01",
+          "name": "Herbal Hair Oil (200ml)",
+          "price": 599,
+          "qty": 5,
+          "subtotal": 2995
+        },
+        {
+          "productId": "prod_shampoo_02",
+          "name": "Hibiscus Flower Shampoo (250ml)",
+          "price": 549,
+          "qty": 5,
+          "subtotal": 2745
+        }
+      ],
+      "subtotal": 5740,
+      "discount": 574,
+      "tax": 258,
+      "total": 5424,
+      "paymentStatus": "paid",
+      "paymentMode": "Card / POS Terminal",
+      "notes": "B2B Clinic clinic order - Bulk discount applied",
+      "createdBy": "Super Admin",
+      "createdAt": "2026-10-07T12:00:00.000Z"
+    },
+    {
+      "id": "inv_1791387291515",
+      "invoiceNumber": "NH-INV-2026-003",
+      "channel": "offline",
+      "customer": {
+        "name": "Test Walk-in",
+        "phone": "9999999999"
+      },
+      "items": [
+        {
+          "productId": "prod_oil_01",
+          "name": "Herbal Hair Oil",
+          "price": 599,
+          "qty": 2,
+          "subtotal": 1198
+        }
+      ],
+      "subtotal": 1198,
+      "discount": 0,
+      "tax": 60,
+      "total": 1258,
+      "paymentStatus": "paid",
+      "paymentMode": "Cash",
+      "notes": "In-store retail billing",
+      "createdBy": "Sales Staff",
+      "createdAt": "2026-10-07T15:34:51.515Z"
+    }
+  ],
+  "inventory_logs": [
+    {
+      "id": "log_01",
+      "productId": "prod_oil_01",
+      "productName": "Herbal Hair Oil",
+      "channel": "offline",
+      "reference": "NH-INV-2026-001",
+      "change": -2,
+      "prevStock": 92,
+      "newStock": 90,
+      "timestamp": "2026-10-05T16:20:00.000Z",
+      "reason": "Offline Billing counter sale"
+    },
+    {
+      "id": "log_02",
+      "productId": "prod_oil_01",
+      "productName": "Herbal Hair Oil",
+      "channel": "online",
+      "reference": "NH-ON-1001",
+      "change": -1,
+      "prevStock": 90,
+      "newStock": 89,
+      "timestamp": "2026-10-06T14:32:00.000Z",
+      "reason": "Online Website checkout order"
+    },
+    {
+      "id": "log_03",
+      "productId": "prod_oil_01",
+      "productName": "Herbal Hair Oil",
+      "channel": "offline",
+      "reference": "NH-INV-2026-002",
+      "change": -5,
+      "prevStock": 89,
+      "newStock": 84,
+      "timestamp": "2026-10-07T12:00:00.000Z",
+      "reason": "Clinic B2B Wholesale Invoice"
+    },
+    {
+      "id": "log_1791387291508_yw3p",
+      "productId": "prod_oil_01",
+      "productName": "Herbal Hair Oil",
+      "channel": "offline",
+      "reference": "NH-INV-2026-003",
+      "change": -2,
+      "prevStock": 85,
+      "newStock": 83,
+      "timestamp": "2026-10-07T15:34:51.513Z",
+      "reason": "Offline Invoice / Store Sale to Test Walk-in"
+    },
+    {
+      "id": "log_1791387291524_hre8",
+      "productId": "prod_oil_01",
+      "productName": "Herbal Hair Oil",
+      "channel": "online",
+      "reference": "NH-ON-1003",
+      "change": -3,
+      "prevStock": 83,
+      "newStock": 80,
+      "timestamp": "2026-10-07T15:34:51.524Z",
+      "reason": "Online Customer Checkout (Test Online Customer)"
+    }
+  ],
+  "users": [
+    {
+      "id": "user_super_admin",
+      "username": "admin",
+      "name": "Super Administrator",
+      "role": "super_admin",
+      "permissions": [
+        "all"
+      ]
+    },
+    {
+      "id": "user_inventory_mgr",
+      "username": "inventory",
+      "name": "R. Sundar (Stock Lead)",
+      "role": "inventory_manager",
+      "permissions": [
+        "products",
+        "inventory",
+        "stock_adjust",
+        "categories"
+      ]
+    },
+    {
+      "id": "user_billing_mgr",
+      "username": "billing",
+      "name": "P. Karthik (Sales Lead)",
+      "role": "sales_manager",
+      "permissions": [
+        "offline_sales",
+        "invoices",
+        "customers",
+        "pos"
+      ]
+    }
+  ],
+  "site_settings": {
+    "brandName": "Nachiyar Herbals & Cosmetics",
+    "supportEmail": "care@nachiyarherbals.com",
+    "supportPhone": "+91 94440 88990",
+    "announcementText": "ROYAL BOTANICAL CARE ✦ FREE PAN-INDIA SHIPPING OVER ₹599 ✦ COLD-PRESSED IN SMALL BATCHES",
+    "freeShippingThreshold": 599,
+    "mysteryCouponCode": "ROYAL15",
+    "mysteryDiscountPct": 15,
+    "gstin": "33AAACH9876K1Z2",
+    "storeAddress": "Nachiyar Botanical Heritage, No. 18 Temple Ring Road, Madurai, Tamil Nadu - 625001"
+  }
+}

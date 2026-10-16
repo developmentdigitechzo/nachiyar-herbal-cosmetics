@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=5.0">
+  <link rel="stylesheet" href="styles.css?v=5.1">
   <link rel="stylesheet" href="hero-lifestyle.css">
   <link rel="stylesheet" href="customer-account.css">
 </head>
@@ -65,46 +65,46 @@
             <a href="/" class="nav-link" style="color:var(--color-gold-dark); font-weight:700;">Home</a>
           </li>
           <li class="nav-item has-dropdown nav-item--has-dropdown">
-            <a href="shop.html" class="nav-link">Shop Rituals <span class="caret">▾</span></a>
+            <a href="/shop/" class="nav-link">Shop Rituals <span class="caret">▾</span></a>
             <!-- Mega-menu Preview -->
             <div class="nav-dropdown-mega">
               <div class="mega-grid">
-                <a href="product.html?slug=herbal-hair-oil" class="mega-card mega-card--oil">
+                <a href="/product/?slug=herbal-hair-oil" class="mega-card mega-card--oil">
                   <div class="mega-card-thumb">
                     <img src="assets/new-oil-bottle-card.jpg" alt="Herbal Hair Oil">
                   </div>
                   <div class="mega-card-info">
                     <span class="mega-tag">Ayurvedic Hair Vitalizer</span>
                     <h4>Herbal Hair Oil</h4>
-                    <p class="mega-price">₹599 • 200ml</p>
+                    <p class="mega-price">₹299 • 200ml</p>
                     <span class="mega-cta">View & Buy →</span>
                   </div>
                 </a>
-                <a href="product.html?slug=hibiscus-flower-shampoo" class="mega-card mega-card--shampoo">
+                <a href="/product/?slug=hibiscus-flower-shampoo" class="mega-card mega-card--shampoo">
                   <div class="mega-card-thumb">
                     <img src="assets/new-shampoo-bottle-card.jpg" alt="Hibiscus Flower Shampoo">
                   </div>
                   <div class="mega-card-info">
                     <span class="mega-tag">Gentle Scalp Cleanser</span>
                     <h4>Hibiscus Flower Shampoo</h4>
-                    <p class="mega-price">₹549 • 250ml</p>
+                    <p class="mega-price">₹249 • 250ml</p>
                     <span class="mega-cta">View & Buy →</span>
                   </div>
                 </a>
-                <a href="product.html?slug=royal-hair-ritual-duo" class="mega-card mega-card--duo">
+                <a href="/product/?slug=royal-hair-ritual-duo" class="mega-card mega-card--duo">
                   <div class="mega-card-thumb">
                     <img src="assets/duo-ritual-new.jpg" alt="The Royal Hair Ritual Duo">
                   </div>
                   <div class="mega-card-info">
                     <span class="mega-tag">Complete 2-Step Routine</span>
                     <h4>The Royal Ritual (Duo)</h4>
-                    <p class="mega-price">₹999 <s class="old-price">₹1,148</s> (Save 15%)</p>
+                    <p class="mega-price">₹499 <s class="old-price">₹548</s> (Save ₹49)</p>
                     <span class="mega-cta">View & Buy →</span>
                   </div>
                 </a>
               </div>
               <div class="mega-footer-bar">
-                <a href="shop.html" class="mega-view-all-link">
+                <a href="/shop/" class="mega-view-all-link">
                   <span>Explore Complete Apothecary & All Formulations</span>
                   <span class="view-all-arrow">View & Buy All →</span>
                 </a>
@@ -112,10 +112,10 @@
             </div>
           </li>
           <li class="nav-item">
-            <a href="about.html" class="nav-link">About Us</a>
+            <a href="/about/" class="nav-link">About Us</a>
           </li>
           <li class="nav-item">
-            <a href="contact.html" class="nav-link">Contact</a>
+            <a href="/contact/" class="nav-link">Contact</a>
           </li>
         </ul>
       </nav>
@@ -123,13 +123,13 @@
       <!-- Right Header Actions -->
       <div class="header-actions">
         <!-- Customer Account Trigger (Amazon/Flipkart style) -->
-        <button class="account-trigger-btn" id="accountTriggerBtn" aria-label="Customer Account">
+        <a href="/account/" class="account-trigger-btn" id="accountTriggerBtn" aria-label="Customer Account">
           <svg class="user-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
             <circle cx="12" cy="7" r="4"></circle>
           </svg>
           <span class="user-label" id="navAccountLabel">Sign In</span>
-        </button>
+        </a>
 
         <!-- Cart Trigger -->
         <button class="cart-trigger-btn" id="cartTriggerBtn" aria-label="View shopping bag">
@@ -154,10 +154,10 @@
       </div>
       <ul class="mobile-nav-list">
         <li><a href="/" class="mobile-link">Home</a></li>
-        <li><a href="shop.html" class="mobile-link" style="color:var(--color-lavender-primary); font-weight:800;">Shop Rituals (View & Buy) →</a></li>
-        <li><a href="about.html" class="mobile-link">About Us</a></li>
-        <li><a href="contact.html" class="mobile-link">Contact</a></li>
-        <li><a href="account.html" class="mobile-link">My Account & Orders</a></li>
+        <li><a href="/shop/" class="mobile-link" style="color:var(--color-lavender-primary); font-weight:800;">Shop Rituals (View & Buy) →</a></li>
+        <li><a href="/about/" class="mobile-link">About Us</a></li>
+        <li><a href="/contact/" class="mobile-link">Contact</a></li>
+        <li><a href="/account/" class="mobile-link">My Account & Orders</a></li>
       </ul>
       <div class="mobile-drawer-footer">
         <p class="drawer-support">Customer Concierge: care@nachiyarherbals.com</p>
@@ -190,7 +190,7 @@
                 <span id="copyPromoBtnText">📋 Copy Code</span>
               </button>
             </div>
-            <a href="shop.html" class="btn-promo-shop">
+            <a href="/shop/" class="btn-promo-shop">
               <span>Claim Discount Now →</span>
             </a>
           </div>
@@ -241,11 +241,11 @@
           </p>
 
           <div class="hero-cta-group">
-            <a href="shop.html" class="btn btn--primary">
+            <a href="/shop/" class="btn btn--primary">
               <span>Explore The Formulations</span>
               <span class="btn-arrow">→</span>
             </a>
-            <a href="product.html?slug=royal-hair-ritual-duo" class="btn btn--secondary">
+            <a href="/product/?slug=royal-hair-ritual-duo" class="btn btn--secondary">
               <span>Shop The Duo Set (Save 15%)</span>
             </a>
           </div>
@@ -313,7 +313,7 @@
               <div class="m-hero-product-col m-hero-product-col--oil">
                 <div class="m-hero-stage m-hero-stage--oil" data-stage="2">
                   <span class="m-bottle-pill">100% PURE</span>
-                  <a href="product.html?slug=herbal-hair-oil" class="m-bottle-link" aria-label="Herbal Hair Oil">
+                  <a href="/product/?slug=herbal-hair-oil" class="m-bottle-link" aria-label="Herbal Hair Oil">
                     <div class="m-bottle-box">
                       <img src="assets/hero-bottle-oil-transparent.png" alt="Nachiyar Lavender Herbal Hair Oil" class="m-bottle-img">
                     </div>
@@ -335,7 +335,7 @@
               <div class="m-hero-product-col m-hero-product-col--shampoo">
                 <div class="m-hero-stage m-hero-stage--shampoo" data-stage="3">
                   <span class="m-bottle-pill m-bottle-pill--shampoo">pH 5.5</span>
-                  <a href="product.html?slug=hibiscus-flower-shampoo" class="m-bottle-link" aria-label="Hibiscus Flower Shampoo">
+                  <a href="/product/?slug=hibiscus-flower-shampoo" class="m-bottle-link" aria-label="Hibiscus Flower Shampoo">
                     <div class="m-bottle-box">
                       <img src="assets/hero-bottle-shampoo-transparent.png" alt="Nachiyar Hibiscus Flower Shampoo" class="m-bottle-img">
                     </div>
@@ -364,11 +364,11 @@
             <!-- STAGE 6: CTA BUTTONS -->
             <div class="m-hero-stage m-hero-stage--cta" data-stage="6">
               <div class="m-cta-group">
-                <a href="shop.html" class="btn btn--primary m-cta-btn">
+                <a href="/shop/" class="btn btn--primary m-cta-btn">
                   <span>Explore The Formulations</span>
                   <span class="btn-arrow">→</span>
                 </a>
-                <a href="product.html?slug=royal-hair-ritual-duo" class="btn btn--secondary m-cta-btn">
+                <a href="/product/?slug=royal-hair-ritual-duo" class="btn btn--secondary m-cta-btn">
                   <span>Shop The Pure Set (Save 15%)</span>
                 </a>
               </div>
@@ -898,7 +898,7 @@
 
               <div class="card-image-wrap">
                 <img src="assets/new-oil-bottle-card.jpg" alt="Nachiyar Herbal Hair Oil Lavender Dropper Bottle" class="card-product-img" loading="lazy">
-                <a href="product.html?slug=herbal-hair-oil" class="quick-view-badge">View Formulation ↗</a>
+                <a href="/product/?slug=herbal-hair-oil" class="quick-view-badge">View Formulation ↗</a>
               </div>
 
               <div class="card-details">
@@ -942,7 +942,7 @@
 
               <div class="card-image-wrap">
                 <img src="assets/new-shampoo-bottle-card.jpg" alt="Nachiyar Hibiscus Flower Shampoo Crimson Bottle" class="card-product-img" loading="lazy">
-                <a href="product.html?slug=hibiscus-flower-shampoo" class="quick-view-badge">View Formulation ↗</a>
+                <a href="/product/?slug=hibiscus-flower-shampoo" class="quick-view-badge">View Formulation ↗</a>
               </div>
 
               <div class="card-details">
@@ -1132,7 +1132,7 @@
               <strong class="author-name">Dr. Gayatri S. Raman</strong>
               <span class="author-title">Ayurvedic Trichologist & Hair Wellness Researcher</span>
             </div>
-            <a href="shop.html" class="btn btn--primary quote-cta">
+            <a href="/shop/" class="btn btn--primary quote-cta">
               Explore The Apothecary →
             </a>
           </div>
@@ -1191,7 +1191,7 @@
           <p class="footer-newsletter-sub">Subscribe for limited small-batch release notifications, scalp wellness guides, and exclusive private discounts.</p>
         </div>
         <div class="newsletter-form-col">
-          <form class="footer-form" id="newsletterForm" onsubmit="event.preventDefault(); alert('Welcome to the Royal Circle! Code ROYAL10 has been applied.');">
+          <form class="footer-form" id="newsletterForm" onsubmit="event.preventDefault(); showSideToast({ title: 'Welcome to the Royal Circle! ✨', body: 'Privilege Code ROYAL10 has been applied for your order.', type: 'info' }); this.reset();">
             <div class="form-input-group">
               <input type="email" placeholder="Enter your email address" required aria-label="Email Address">
               <button type="submit" class="newsletter-submit-btn" aria-label="Submit email">
@@ -1209,30 +1209,30 @@
         <div class="footer-col">
           <h4 class="footer-col-title">SHOP RITUALS</h4>
           <ul class="footer-col-links">
-            <li><a href="product.html?slug=herbal-hair-oil">Herbal Hair Oil (200ml)</a></li>
-            <li><a href="product.html?slug=hibiscus-flower-shampoo">Hibiscus Flower Shampoo</a></li>
-            <li><a href="product.html?slug=royal-hair-ritual-duo">The Royal Ritual (Duo Set)</a></li>
-            <li><a href="shop.html">Browse All Formulations</a></li>
+            <li><a href="/product/?slug=herbal-hair-oil">Herbal Hair Oil (200ml)</a></li>
+            <li><a href="/product/?slug=hibiscus-flower-shampoo">Hibiscus Flower Shampoo</a></li>
+            <li><a href="/product/?slug=royal-hair-ritual-duo">The Royal Ritual (Duo Set)</a></li>
+            <li><a href="/shop/">Browse All Formulations</a></li>
           </ul>
         </div>
 
         <div class="footer-col">
           <h4 class="footer-col-title">COMPANY & SCIENCE</h4>
           <ul class="footer-col-links">
-            <li><a href="about.html">About Nachiyar</a></li>
+            <li><a href="/about/">About Nachiyar</a></li>
             <li><a href="about.html#heritage">21-Day Solar Steeping</a></li>
             <li><a href="about.html#sourcing">Ethical Botanical Sourcing</a></li>
-            <li><a href="contact.html">Store Locator & Boutique</a></li>
+            <li><a href="/contact/">Store Locator & Boutique</a></li>
           </ul>
         </div>
 
         <div class="footer-col">
           <h4 class="footer-col-title">CUSTOMER CARE</h4>
           <ul class="footer-col-links">
-            <li><a href="order-status.html">Track Your Order</a></li>
-            <li><a href="contact.html">Contact Customer Care</a></li>
-            <li><a href="checkout.html">Direct Web Checkout</a></li>
-            <li><a href="shop.html">Complete Rituals Catalog</a></li>
+            <li><a href="/order-status/">Track Your Order</a></li>
+            <li><a href="/contact/">Contact Customer Care</a></li>
+            <li><a href="/checkout/">Direct Web Checkout</a></li>
+            <li><a href="/shop/">Complete Rituals Catalog</a></li>
           </ul>
         </div>
 
@@ -1318,7 +1318,7 @@
           <div class="empty-icon">🌿</div>
           <h4>Your bag is currently empty</h4>
           <p>Treat your hair to royal botanical restoration.</p>
-          <a href="shop.html" class="btn btn--primary empty-shop-btn">Explore Formulations</a>
+          <a href="/shop/" class="btn btn--primary empty-shop-btn">Explore Formulations</a>
         </div>
       </div>
 
@@ -1346,7 +1346,7 @@
         </div>
         <p class="cart-taxes-note">Inclusive of all taxes. 100% Satisfaction Guarantee.</p>
 
-        <a href="checkout.html" class="btn-checkout" id="checkoutBtn" style="text-decoration:none;">
+        <a href="/checkout/" class="btn-checkout" id="checkoutBtn" style="text-decoration:none;">
           <span>Proceed To Royal Checkout</span>
           <span class="checkout-arrow">→</span>
         </a>
@@ -1437,7 +1437,7 @@
 
   <div class="cart-toast" id="cartToast" aria-live="polite"></div>
 
-  <script src="app.js?v=5.0"></script>
+  <script src="app.js?v=5.1"></script>
   <script src="customer-account.js"></script>
 </body>
 </html>

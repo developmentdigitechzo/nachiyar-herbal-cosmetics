@@ -112,12 +112,18 @@ app.get(['/nimda-login', '/nimda-login/'], (req, res) => {
 // =========================================================================
 // CLEAN STOREFRONT PAGE ROUTES (e.g. /shop/ without .html)
 // =========================================================================
-const cleanPages = ['shop', 'about', 'contact', 'product', 'checkout', 'account', 'order-status', 'yearsbeer'];
+const cleanPages = ['shop', 'about', 'contact', 'checkout', 'account', 'order-status', 'yearsbeer', 'privacy', 'terms', 'shipping-policy'];
 cleanPages.forEach((page) => {
   app.get([`/${page}`, `/${page}/`], (req, res) => {
     res.setHeader('Cache-Control', 'no-cache, must-revalidate');
     res.sendFile(path.join(projectRoot, `${page}.html`));
   });
+});
+
+// Dedicated product page route with slug parameter support
+app.get(['/product', '/product/', '/product/:slug', '/product/:slug/'], (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+  res.sendFile(path.join(projectRoot, 'product.html'));
 });
 
 // Health check with environment diagnostics
@@ -168,6 +174,26 @@ app.get('/api/settings/public', async (req, res) => {
           appId: process.env.FIREBASE_APP_ID || '',
           measurementId: process.env.FIREBASE_MEASUREMENT_ID || ''
         } : null
+      }
+    });
+  } catch (err) {
+    res.json({ success: true, data: { couponCode: 'FESTIVE15', discountPercent: 15, couponActive: false } });
+  }
+});
+
+// Dedicated active coupon endpoint for instant storefront & checkout privilege resolution
+app.get('/api/coupon/active', async (req, res) => {
+  try {
+    const result = await dbQuery('SELECT data FROM site_settings WHERE id = 1');
+    const settings = result.rows.length > 0 ? (typeof result.rows[0].data === 'string' ? JSON.parse(result.rows[0].data) : result.rows[0].data) : {};
+    res.json({
+      success: true,
+      data: {
+        couponCode: settings.couponCode || 'FESTIVE15',
+        discountPercent: Number(settings.discountPercent) || 15,
+        couponExpiryDate: settings.couponExpiryDate || '',
+        couponActive: settings.couponActive !== false && settings.couponActive !== 'false',
+        couponTagline: settings.couponTagline || 'Special Festival Discount'
       }
     });
   } catch (err) {
@@ -234,7 +260,7 @@ app.use(express.static(projectRoot, {
 }));
 
 // Fallback static asset handling for trailing-slash URLs (e.g. /nimda/admin.css -> /admin.css)
-['shop', 'about', 'contact', 'product', 'checkout', 'account', 'order-status', 'yearsbeer', 'nimda', 'nimda-login'].forEach(subpath => {
+['shop', 'about', 'contact', 'product', 'checkout', 'account', 'order-status', 'yearsbeer', 'nimda', 'nimda-login', 'privacy', 'terms', 'shipping-policy'].forEach(subpath => {
   app.use(`/${subpath}`, express.static(projectRoot, {
     setHeaders: (res, filePath) => {
       if (filePath.endsWith('.html') || filePath.endsWith('.js')) {

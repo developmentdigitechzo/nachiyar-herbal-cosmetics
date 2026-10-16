@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="admin.css">
+  <link rel="stylesheet" href="admin.css?v=5.2">
   <script>
     // Immediate client-side security auth gate
     (function() {
@@ -79,7 +79,7 @@
         <button class="nav-tab" data-tab="products" id="tabNavProducts">
           <span class="nav-icon">🌿</span>
           <span class="nav-text">Product Manager</span>
-          <span class="badge-count" id="badgeProductCount">3</span>
+          <span class="badge-count" id="badgeProductCount" style="display:none;"></span>
         </button>
 
         <button class="nav-tab" data-tab="inventory" id="tabNavInventory">
@@ -101,13 +101,13 @@
         <button class="nav-tab" data-tab="orders" id="tabNavOrders">
           <span class="nav-icon">🛍️</span>
           <span class="nav-text">Online Orders</span>
-          <span class="badge-count" id="badgeOrderCount">2</span>
+          <span class="badge-count" id="badgeOrderCount" style="display:none; background-color:#E11D48; color:#fff; font-weight:700;">0</span>
         </button>
 
         <button class="nav-tab" data-tab="marketplaces" id="tabNavMarketplaces">
           <span class="nav-icon">🌐</span>
           <span class="nav-text">Marketplace Hub</span>
-          <span class="badge-count" style="background:#2874F0; color:#fff;" id="badgeMarketplaceActive">3</span>
+          <span class="badge-count" style="display:none;" id="badgeMarketplaceActive"></span>
         </button>
 
         <button class="nav-tab" data-tab="reviews" id="tabNavReviews">
@@ -122,10 +122,10 @@
           <span class="badge-count" id="badgeUnreadMessages" style="display:none; background-color:#8B5CF6; color:#fff;">0</span>
         </button>
 
-                <button class="nav-tab" data-tab="team" id="tabNavTeam">
+        <button class="nav-tab" data-tab="team" id="tabNavTeam">
           <span class="nav-icon">👑</span>
           <span class="nav-text">Nimda Accounts</span>
-          <span class="badge-count" style="background:#10B981; color:#fff;" id="badgeStaffCount">1</span>
+          <span class="badge-count" style="display:none;" id="badgeStaffCount"></span>
         </button>
         <button class="nav-tab" data-tab="settings" id="tabNavSettings">
           <span class="nav-icon">⚙️</span>
@@ -189,7 +189,7 @@
             <div class="kpi-icon">🧾</div>
             <div class="kpi-data">
               <div class="kpi-header-row">
-                <span class="kpi-label">Offline Counter Invoices</span>
+                <span class="kpi-label">Offline Counter Sales</span>
                 <span class="kpi-badge-hint">Invoices ↗</span>
               </div>
               <h2 class="kpi-val" id="kpiOfflineInvoices">0</h2>
@@ -844,72 +844,80 @@
             </div>
           </div>
 
-          <div class="settings-form-grid">
+          <div class="settings-form-grid" style="display: flex; flex-direction: column; gap: 24px; margin-bottom: 24px;">
+            <!-- CARD 1: STOREFRONT ANNOUNCEMENT BAR -->
             <div class="card-panel">
-              <h3 style="margin-top: 0; font-size: 1.1rem; font-weight: 800;">1. Storefront Announcement Bar</h3>
-              <p style="font-size: 0.8125rem; color: var(--admin-text-muted); margin-bottom: 16px;">Top running announcement text displayed continuously on the customer storefront.</p>
+              <h3 style="margin-top: 0; font-size: 1.15rem; font-weight: 800; color: var(--admin-text-main);">1. Storefront Announcement Bar</h3>
+              <p style="font-size: 0.8125rem; color: var(--admin-text-muted); margin-bottom: 18px;">Top running announcement text displayed continuously on the customer storefront header marquee.</p>
 
-              <div class="form-group">
-                <label>Header Ticker Text *</label>
-                <textarea id="setAnnouncementText" class="form-input" rows="2" placeholder="e.g. ROYAL BOTANICAL CARE • FREE PAN-INDIA SHIPPING OVER ₹599"></textarea>
+              <div class="form-group" style="margin-bottom: 18px;">
+                <label style="font-weight: 700; margin-bottom: 6px; display: block;">Header Ticker Text *</label>
+                <textarea id="setAnnouncementText" class="form-input" rows="2" placeholder="e.g. ROYAL BOTANICAL CARE • FREE PAN-INDIA SHIPPING OVER ₹599" style="font-size: 0.9rem; line-height: 1.5;"></textarea>
               </div>
 
-              <div class="form-group" style="margin-bottom: 0;">
-                <label>Free Shipping Minimum Order (₹)</label>
-                <input type="number" id="setFreeShipping" class="form-input" value="599" min="0">
-                <small style="color: var(--admin-text-muted); font-size: 0.75rem; margin-top: 4px; display: block;">Orders equal or above this amount automatically qualify for free delivery.</small>
+              <div class="form-group" style="margin-bottom: 0; max-width: 440px;">
+                <label style="font-weight: 700; margin-bottom: 6px; display: block;">Free Shipping Minimum Order (₹)</label>
+                <div style="position: relative; max-width: 220px;">
+                  <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-weight: 800; color: var(--admin-text-muted); pointer-events: none;">₹</span>
+                  <input type="number" id="setFreeShipping" class="form-input" value="599" min="0" style="padding-left: 28px; font-weight: 700;">
+                </div>
+                <small style="color: var(--admin-text-muted); font-size: 0.75rem; margin-top: 6px; display: block;">Orders equal or above this amount automatically qualify for free pan-India delivery.</small>
               </div>
             </div>
 
+            <!-- CARD 2: DISCOUNT COUPON & EXPIRY CAMPAIGN -->
             <div class="card-panel">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--admin-border); flex-wrap: wrap; gap: 10px;">
                 <div>
-                  <h3 style="margin: 0; font-size: 1.1rem; font-weight: 800;">2. Discount Coupon & Expiry Campaign</h3>
-                  <p style="font-size: 0.8125rem; color: var(--admin-text-muted); margin-top: 2px;">Promotional voucher applied at online checkout.</p>
+                  <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: var(--admin-text-main);">2. Discount Coupon & Expiry Campaign</h3>
+                  <p style="font-size: 0.8125rem; color: var(--admin-text-muted); margin-top: 4px;">Promotional voucher applied automatically at online customer checkout and mystery discount bar.</p>
                 </div>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  <span style="font-size: 0.75rem; font-weight: 700; color: var(--admin-text-muted);">Active</span>
-                  <label class="switch-toggle" style="position: relative; display: inline-block; width: 44px; height: 24px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <span style="font-size: 0.8125rem; font-weight: 700; color: var(--admin-text-main);">Campaign Status</span>
+                  <label class="switch-toggle" style="position: relative; display: inline-block; width: 48px; height: 26px;">
                     <input type="checkbox" id="setCouponActive" checked>
                     <span class="toggle-slider"></span>
                   </label>
                 </div>
               </div>
 
-              <div class="form-row">
-                <div class="form-group">
-                  <label>Coupon Promo Code *</label>
+              <!-- Main Coupon Controls in a Spacious Responsive 3-Column Grid -->
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); gap: 18px; margin-bottom: 18px;">
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label style="font-weight: 700; margin-bottom: 6px; display: block;">Coupon Promo Code *</label>
                   <div style="display: flex; gap: 8px;">
-                    <input type="text" id="setCouponCode" class="form-input" placeholder="e.g. ROYAL20" style="text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em; font-family: monospace;">
-                    <button type="button" class="btn-secondary" id="btnGenRandomCoupon" style="white-space: nowrap; font-size: 0.75rem; font-weight: 700;">🎲 Auto-Gen</button>
+                    <input type="text" id="setCouponCode" class="form-input" placeholder="e.g. ROYAL20" style="text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em; font-family: monospace; font-size: 0.95rem; flex: 1; min-width: 0;">
+                    <button type="button" class="btn-secondary" id="btnGenRandomCoupon" style="white-space: nowrap; font-size: 0.8rem; font-weight: 700; padding: 8px 14px; flex-shrink: 0;">🎲 Auto-Gen</button>
                   </div>
                 </div>
-                <div class="form-group">
-                  <label>Discount Percentage (%) *</label>
+
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label style="font-weight: 700; margin-bottom: 6px; display: block;">Discount Percentage (%) *</label>
                   <div style="position: relative;">
-                    <input type="number" id="setDiscountPercent" class="form-input" min="1" max="90" value="15" placeholder="15">
-                    <span style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-weight: 800; color: var(--admin-text-muted);">%</span>
+                    <input type="number" id="setDiscountPercent" class="form-input" min="1" max="90" value="15" placeholder="15" style="padding-right: 36px; font-weight: 700; font-size: 0.95rem;">
+                    <span style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-weight: 800; color: var(--admin-text-muted); pointer-events: none;">%</span>
                   </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label style="font-weight: 700; margin-bottom: 6px; display: block;">Coupon End Date / Expiry Date *</label>
+                  <input type="date" id="setCouponExpiryDate" class="form-input" style="font-weight: 600; font-size: 0.9rem;">
+                  <small style="color: var(--admin-text-muted); font-size: 0.75rem; margin-top: 4px; display: block;">Valid till 11:59 PM. Expires automatically.</small>
                 </div>
               </div>
 
-              <div class="form-row">
-                <div class="form-group" style="margin-bottom: 0;">
-                  <label>Coupon End Date / Expiry Date *</label>
-                  <input type="date" id="setCouponExpiryDate" class="form-input">
-                  <small style="color: var(--admin-text-muted); font-size: 0.75rem; margin-top: 4px; display: block;">Valid till 11:59 PM of this date. Will expire automatically.</small>
-                </div>
-                <div class="form-group" style="margin-bottom: 0;">
-                  <label>Offer Tagline (Storefront Display)</label>
-                  <input type="text" id="setCouponTagline" class="form-input" placeholder="e.g. Royal Harvest Privilege">
-                </div>
+              <!-- Offer Tagline in Full Width -->
+              <div class="form-group" style="margin-bottom: 20px;">
+                <label style="font-weight: 700; margin-bottom: 6px; display: block;">Offer Tagline (Storefront Display)</label>
+                <input type="text" id="setCouponTagline" class="form-input" placeholder="e.g. Surprise Royal Privilege Voucher (15% OFF)" style="font-size: 0.9rem; padding: 10px 14px;">
+                <small style="color: var(--admin-text-muted); font-size: 0.75rem; margin-top: 4px; display: block;">Displayed in the storefront floating mystery discount widget and checkout privilege bar.</small>
               </div>
 
               <!-- Hidden backwards-compatibility field for mystery code -->
               <input type="hidden" id="setMysteryCode" value="ROYAL15">
 
-              <div style="margin-top: 20px; display: flex; justify-content: flex-end;">
-                <button type="button" class="btn-primary" id="btnSaveBannerSettings" style="padding: 10px 20px; font-weight: 700;">
+              <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--admin-border); display: flex; justify-content: flex-end;">
+                <button type="button" class="btn-primary" id="btnSaveBannerSettings" style="padding: 12px 24px; font-weight: 700; font-size: 0.9375rem; display: inline-flex; align-items: center; gap: 8px;">
                   <span>🚀 Save & Publish Banner to Storefront</span>
                 </button>
               </div>
@@ -2340,7 +2348,7 @@
     </div>
   </div>
 
-  <script src="admin.js?v=2.8"></script>
+  <script src="admin.js?v=5.2"></script>
 
   
   </body>

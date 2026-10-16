@@ -206,6 +206,22 @@ async function initStorefrontApp() {
         image: parsedImg || PRODUCTS.duo.image
       };
     }
+
+    // Always register in PRODUCTS catalog by ID and Slug for any dynamic product
+    PRODUCTS[pId] = {
+      id: pId,
+      slug: pSlug,
+      title: p.name || 'Botanical Formulation',
+      name: p.name || 'Botanical Formulation',
+      subtitle: p.subtitle || '',
+      price: parsedPrice,
+      subPrice: Math.round(parsedPrice * 0.9),
+      image: parsedImg,
+      themeBg: p.themeColor || '#6B4E9B'
+    };
+    if (pSlug) {
+      PRODUCTS[pSlug] = PRODUCTS[pId];
+    }
   }
 
   // Helper: Synchronize Live Products, Rates & Images across the entire Storefront DOM
@@ -511,15 +527,24 @@ async function initStorefrontApp() {
         }
       }
 
-      // Update cached active coupon in localStorage
+      // Update cached active coupon in localStorage and global window object
       try {
         localStorage.setItem('nachiyar_active_coupon', JSON.stringify({
           couponCode: activeCouponCode,
           discountPercent: activeDiscountPct,
           couponExpiryDate: activeExpiry,
-          couponActive: isCouponActive
+          couponActive: isCouponActive,
+          couponTagline: data.couponTagline || 'Surprise Royal Privilege Voucher'
         }));
       } catch (err) {}
+
+      window.currentActiveCoupon = {
+        couponCode: activeCouponCode,
+        discountPercent: activeDiscountPct,
+        couponExpiryDate: activeExpiry,
+        couponActive: isCouponActive,
+        couponTagline: data.couponTagline || 'Surprise Royal Privilege Voucher'
+      };
 
       // Render Header Running Ticker
       const track = document.getElementById('headerTickerTrack');
@@ -597,6 +622,33 @@ async function initStorefrontApp() {
       mobileDrawer.classList.remove('is-open');
       document.body.style.overflow = '';
     };
+  }
+
+  // Shop Rituals Mega Dropdown Click & Toggle Management
+  const shopRitualsItem = document.querySelector('.nav-item.has-dropdown, .nav-item--has-dropdown');
+  if (shopRitualsItem) {
+    const triggerLink = shopRitualsItem.querySelector('.nav-link');
+    if (triggerLink) {
+      triggerLink.addEventListener('click', (e) => {
+        const isOpen = shopRitualsItem.classList.contains('is-dropdown-open');
+        if (!isOpen) {
+          e.preventDefault();
+          shopRitualsItem.classList.add('is-dropdown-open');
+        }
+      });
+    }
+
+    document.addEventListener('click', (e) => {
+      if (!shopRitualsItem.contains(e.target)) {
+        shopRitualsItem.classList.remove('is-dropdown-open');
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        shopRitualsItem.classList.remove('is-dropdown-open');
+      }
+    });
   }
 
   // Cart Management
@@ -919,12 +971,120 @@ async function initStorefrontApp() {
     });
   }
 
-  function showToast(msg) {
-    if (!cartToast) return;
-    cartToast.textContent = msg;
-    cartToast.classList.add('is-visible');
-    setTimeout(() => cartToast.classList.remove('is-visible'), 2800);
+
+  // ==========================================
+  // LUXURY SIDE TOAST NOTIFICATION SYSTEM
+  // ==========================================
+  function showSideToast(optionsOrMessage, type = 'success', duration = 4800) {
+    let title = '';
+    let body = '';
+    let icon = '🌿';
+
+    if (typeof optionsOrMessage === 'object' && optionsOrMessage !== null) {
+      title = optionsOrMessage.title || '';
+      body = optionsOrMessage.message || optionsOrMessage.body || '';
+      type = optionsOrMessage.type || type;
+      duration = optionsOrMessage.duration || duration;
+      if (optionsOrMessage.icon) icon = optionsOrMessage.icon;
+    } else {
+      const raw = String(optionsOrMessage || '').trim();
+      if (raw.includes('\n')) {
+        const parts = raw.split(/\n+/);
+        title = parts[0].trim();
+        body = parts.slice(1).join(' ').trim();
+      } else {
+        title = raw;
+        body = '';
+      }
+    }
+
+    const lowerTitle = title.toLowerCase();
+    if (type === 'error' || lowerTitle.includes('please') || lowerTitle.includes('error') || lowerTitle.includes('invalid') || lowerTitle.includes('failed') || lowerTitle.includes('empty')) {
+      type = 'error';
+      icon = '⚠️';
+    } else if (title.includes('🎁') || lowerTitle.includes('voucher') || lowerTitle.includes('privilege') || lowerTitle.includes('welcome') || lowerTitle.includes('code')) {
+      type = 'info';
+      icon = '✨';
+      title = title.replace(/🎁/g, '').trim();
+    } else if (title.includes('🌿')) {
+      icon = '🌿';
+      title = title.replace(/🌿/g, '').trim();
+    } else if (title.includes('✓')) {
+      icon = '✓';
+      title = title.replace(/✓/g, '').trim();
+    }
+
+    let container = document.getElementById('sideToastContainer');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'sideToastContainer';
+      container.className = 'side-toast-container';
+      document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `side-toast side-toast--${type}`;
+    toast.setAttribute('role', 'alert');
+
+    toast.innerHTML = `
+      <div class="side-toast-icon-wrap" aria-hidden="true">${icon}</div>
+      <div class="side-toast-content">
+        <div class="side-toast-title">${title}</div>
+        ${body ? `<div class="side-toast-body">${body}</div>` : ''}
+      </div>
+      <button type="button" class="side-toast-close-btn" aria-label="Dismiss notification">✕</button>
+      <div class="side-toast-progress-bar" style="animation: sideToastProgress ${duration}ms linear forwards;"></div>
+    `;
+
+    container.appendChild(toast);
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        toast.classList.add('is-shown');
+      });
+    });
+
+    let dismissTimeout = null;
+    const dismiss = () => {
+      if (dismissTimeout) clearTimeout(dismissTimeout);
+      toast.classList.remove('is-shown');
+      toast.classList.add('is-leaving');
+      setTimeout(() => {
+        toast.remove();
+        if (container && container.children.length === 0) {
+          container.remove();
+        }
+      }, 450);
+    };
+
+    dismissTimeout = setTimeout(dismiss, duration);
+
+    const closeBtn = toast.querySelector('.side-toast-close-btn');
+    if (closeBtn) closeBtn.onclick = dismiss;
+
+    toast.onmouseenter = () => {
+      if (dismissTimeout) clearTimeout(dismissTimeout);
+      const pb = toast.querySelector('.side-toast-progress-bar');
+      if (pb) pb.style.animationPlayState = 'paused';
+    };
+    toast.onmouseleave = () => {
+      dismissTimeout = setTimeout(dismiss, 1600);
+      const pb = toast.querySelector('.side-toast-progress-bar');
+      if (pb) pb.style.animationPlayState = 'running';
+    };
+
+    return toast;
   }
+
+  window.showSideToast = showSideToast;
+  window.showToast = showSideToast;
+
+  if (typeof window !== 'undefined') {
+    window.alert = function(msg) {
+      showSideToast(msg);
+    };
+  }
+
 
   function openCartDrawer() {
     if (cartOverlay) {
@@ -1002,7 +1162,26 @@ async function initStorefrontApp() {
   // Mystery Tab
   if (mysteryTab) {
     mysteryTab.onclick = () => {
-      alert('🎁 Surprise Royal Privilege!\nUse voucher code: ROYAL15 at checkout to receive 15% OFF your order!');
+      let code = 'FESTIVE10';
+      let pct = 10;
+      let title = 'Surprise Royal Privilege! ✨';
+      try {
+        const cached = JSON.parse(localStorage.getItem('nachiyar_active_coupon') || '{}');
+        if (cached.couponCode) code = cached.couponCode;
+        if (cached.discountPercent) pct = cached.discountPercent;
+        if (cached.couponTagline) title = cached.couponTagline;
+      } catch (e) {}
+      if (window.currentActiveCoupon) {
+        if (window.currentActiveCoupon.couponCode) code = window.currentActiveCoupon.couponCode;
+        if (window.currentActiveCoupon.discountPercent) pct = window.currentActiveCoupon.discountPercent;
+        if (window.currentActiveCoupon.couponTagline) title = window.currentActiveCoupon.couponTagline;
+      }
+      showSideToast({
+        title: title,
+        body: `Use voucher code: ${code} at checkout to receive ${pct}% OFF your order!`,
+        type: 'info',
+        duration: 6000
+      });
     };
   }
   if (mysteryDismiss) {
@@ -1246,22 +1425,12 @@ async function initStorefrontApp() {
         reviewsCountText.textContent = `Based on ${stats.total || reviews.length} Verified Patron Reviews`;
       }
 
-      // Generate card HTML
-      const baseCardsHtml = reviews.map(r => renderReviewCard(r)).join('');
+      // Render ONLY original, unique approved reviews — ZERO duplicate cards!
+      reviewsScrollerTrack.innerHTML = reviews.map(r => renderReviewCard(r)).join('');
 
-      // Repeat cards so we have 2 identical sets (A and B) for infinite seamless looping
-      const setRepeats = reviews.length < 5 ? 3 : 2;
-      let setHtml = '';
-      for (let i = 0; i < setRepeats; i++) {
-        setHtml += baseCardsHtml;
-      }
-
-      // Track has Set 1 + Set 2 (identical duplicate)
-      reviewsScrollerTrack.innerHTML = setHtml + setHtml;
-
-      // Measure half-width after DOM layout
+      // Measure and initialize carousel engine after DOM layout
       requestAnimationFrame(() => {
-        reviewsScrollerState.halfWidth = reviewsScrollerTrack.scrollWidth / 2;
+        reviewsScrollerState.halfWidth = 0;
         initReviewsEngine();
       });
     } else {
@@ -1291,44 +1460,65 @@ async function initStorefrontApp() {
     if (!viewport || !track) return;
 
     const S = reviewsScrollerState;
+    if (S.rafId) {
+      cancelAnimationFrame(S.rafId);
+      S.rafId = null;
+    }
+
+    // Check if review cards overflow the viewport
+    const maxScroll = Math.max(0, track.scrollWidth - viewport.clientWidth);
+
+    // If all review cards fit on screen (e.g. 1, 2, or 3 reviews), center them cleanly and disable scrolling
+    if (maxScroll <= 10) {
+      track.style.transform = 'none';
+      track.style.justifyContent = 'center';
+      track.style.width = '100%';
+      if (btnNext) btnNext.style.display = 'none';
+      if (btnPrev) btnPrev.style.display = 'none';
+      S.currentX = 0;
+      S.targetX = null;
+      return;
+    }
+
+    // Multiple reviews overflowing viewport: enable horizontal carousel
+    track.style.justifyContent = 'flex-start';
+    track.style.width = 'max-content';
+    if (btnNext) btnNext.style.display = 'flex';
+    if (btnPrev) btnPrev.style.display = 'flex';
+
+    let scrollDirection = -1; // -1 = scrolling left, 1 = scrolling right
 
     function applyTransform() {
-      // Keep currentX wrapped cleanly within [-halfWidth, 0]
-      if (S.halfWidth > 0) {
-        while (S.currentX <= -S.halfWidth) {
-          S.currentX += S.halfWidth;
-          if (S.targetX !== null) S.targetX += S.halfWidth;
-        }
-        while (S.currentX > 0) {
-          S.currentX -= S.halfWidth;
-          if (S.targetX !== null) S.targetX -= S.halfWidth;
-        }
-      }
+      if (S.currentX < -maxScroll) S.currentX = -maxScroll;
+      if (S.currentX > 0) S.currentX = 0;
       track.style.transform = `translate3d(${S.currentX}px, 0, 0)`;
     }
 
     function animateLoop() {
       if (S.targetX !== null) {
-        // Smoothly lerp towards targetX (e.g. from arrow clicks)
         const diff = S.targetX - S.currentX;
         if (Math.abs(diff) > 0.5) {
-          S.currentX += diff * 0.18; // smooth spring/ease
+          S.currentX += diff * 0.18;
         } else {
           S.currentX = S.targetX;
           S.targetX = null;
         }
         applyTransform();
       } else if (!S.isPaused && !S.isInteracting) {
-        // Continuous smooth auto-scrolling (moving leftwards)
-        S.currentX -= S.speed;
+        S.currentX += scrollDirection * S.speed;
+        if (S.currentX <= -maxScroll) {
+          S.currentX = -maxScroll;
+          scrollDirection = 1;
+        } else if (S.currentX >= 0) {
+          S.currentX = 0;
+          scrollDirection = -1;
+        }
         applyTransform();
       }
 
       S.rafId = requestAnimationFrame(animateLoop);
     }
 
-    // Cancel any existing loop and start clean
-    if (S.rafId) cancelAnimationFrame(S.rafId);
     S.rafId = requestAnimationFrame(animateLoop);
 
     function pauseAuto() {
@@ -1337,7 +1527,7 @@ async function initStorefrontApp() {
       if (S.resumeTimer) clearTimeout(S.resumeTimer);
     }
 
-    function scheduleResume(delay = 2200) {
+    function scheduleResume(delay = 2500) {
       if (S.resumeTimer) clearTimeout(S.resumeTimer);
       S.resumeTimer = setTimeout(() => {
         S.isInteracting = false;
@@ -1345,39 +1535,38 @@ async function initStorefrontApp() {
       }, delay);
     }
 
-    // Step by exactly one review card width
     function stepReview(direction) {
       pauseAuto();
       const firstCard = track.querySelector('.review-card');
       const cardWidth = firstCard ? firstCard.getBoundingClientRect().width : 380;
-      const step = cardWidth + 24; // card width + flex gap
-      // direction: -1 = next (slide left), +1 = prev (slide right)
-      S.targetX = S.currentX + (step * direction);
-      scheduleResume(2800);
+      const step = cardWidth + 24;
+      let nextTarget = S.currentX + (step * direction);
+      if (nextTarget < -maxScroll) nextTarget = -maxScroll;
+      if (nextTarget > 0) nextTarget = 0;
+      S.targetX = nextTarget;
+      scheduleResume(3000);
     }
 
     if (btnNext) {
-      btnNext.addEventListener('click', (e) => {
+      btnNext.onclick = (e) => {
         e.preventDefault();
-        e.stopPropagation();
         stepReview(-1);
-      });
+      };
     }
 
     if (btnPrev) {
-      btnPrev.addEventListener('click', (e) => {
+      btnPrev.onclick = (e) => {
         e.preventDefault();
-        e.stopPropagation();
         stepReview(1);
-      });
+      };
     }
 
-    // ── Mouse Drag (Desktop) ──────────────────────────────
+    // Mouse drag
     let isMouseDown = false;
     let dragStartX = 0;
     let dragBaseX = 0;
 
-    viewport.addEventListener('mousedown', (e) => {
+    viewport.onmousedown = (e) => {
       if (e.target.closest('.reviews-edge-nav') || e.target.closest('button')) return;
       if (e.button !== 0) return;
       isMouseDown = true;
@@ -1386,23 +1575,24 @@ async function initStorefrontApp() {
       pauseAuto();
       viewport.classList.add('is-dragging');
       e.preventDefault();
-    });
+    };
 
-    document.addEventListener('mousemove', (e) => {
+    window.addEventListener('mousemove', (e) => {
       if (!isMouseDown) return;
       const deltaX = e.pageX - dragStartX;
       S.currentX = dragBaseX + deltaX;
       applyTransform();
     });
 
-    document.addEventListener('mouseup', () => {
-      if (!isMouseDown) return;
-      isMouseDown = false;
-      viewport.classList.remove('is-dragging');
-      scheduleResume(2000);
+    window.addEventListener('mouseup', () => {
+      if (isMouseDown) {
+        isMouseDown = false;
+        viewport.classList.remove('is-dragging');
+        scheduleResume();
+      }
     });
 
-    // ── Touch Drag (Mobile / Tablet) ──────────────────────
+    // Touch swipe
     let touchStartX = 0;
     let touchBaseX = 0;
 
@@ -1422,29 +1612,12 @@ async function initStorefrontApp() {
 
     viewport.addEventListener('touchend', () => {
       touchStartX = 0;
-      scheduleResume(2000);
+      scheduleResume();
     });
 
-    // ── Trackpad / Mouse Wheel Horizontal Scroll ──────────
-    viewport.addEventListener('wheel', (e) => {
-      const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : (e.shiftKey ? e.deltaY : 0);
-      if (Math.abs(delta) > 1) {
-        pauseAuto();
-        S.currentX -= delta;
-        applyTransform();
-        scheduleResume(2000);
-        e.preventDefault();
-      }
-    }, { passive: false });
-
-    // Pause on hover over viewport (desktop mouse)
-    viewport.addEventListener('mouseenter', () => {
-      S.isPaused = true;
-    });
-
-    viewport.addEventListener('mouseleave', () => {
-      S.isPaused = false;
-    });
+    // Hover
+    viewport.onmouseenter = () => { S.isPaused = true; };
+    viewport.onmouseleave = () => { S.isPaused = false; };
   }
   // ────────────────────────────────────────────────────────────────────────────
 
@@ -1535,11 +1708,11 @@ async function initStorefrontApp() {
       const comment = document.getElementById('reviewComment')?.value.trim();
 
       if (!authorName) {
-        alert('Please enter your name.');
+        showSideToast('Please enter your name.', 'error');
         return;
       }
       if (!comment) {
-        alert('Please write your review message.');
+        showSideToast('Please write your review message.', 'error');
         return;
       }
 
@@ -1574,7 +1747,12 @@ async function initStorefrontApp() {
       }
 
       // Always show positive confirmation to patron and reset modal
-      alert('🌿 Thank you for your review!\n\nYour review has been submitted to the Nachiyar apothecary team for verification. Once approved by our administrator, it will appear on our live storefront marquee.');
+      showSideToast({
+        title: 'Thank you for your review! 🌿',
+        body: 'Your review has been submitted to the Nachiyar apothecary team for verification. Once approved by our administrator, it will appear on our live storefront marquee.',
+        type: 'success',
+        duration: 6000
+      });
       reviewSubmissionForm.reset();
       if (reviewRatingInput) reviewRatingInput.value = '5';
       if (ratingValueLabel) ratingValueLabel.textContent = ratingDescriptions[5];

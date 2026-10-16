@@ -206,7 +206,7 @@ button {
 .site-header {
   position: sticky;
   top: 0;
-  z-index: 90;
+  z-index: 1000;
   background-color: rgba(249, 248, 245, 0.92);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -345,28 +345,40 @@ button {
 
 .nav-dropdown-mega {
   position: absolute;
-  top: 100%;
-  left: -100px;
-  width: 680px;
-  background-color: var(--color-surface);
-  border-radius: var(--border-radius-tile);
-  box-shadow: var(--shadow-lg);
-  border: 1px solid var(--color-border);
-  padding: 20px;
+  top: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%) translateY(8px);
+  width: 720px;
+  background-color: #FFFFFF;
+  border-radius: 18px;
+  box-shadow: 0 24px 50px rgba(42, 21, 62, 0.18), 0 6px 18px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  padding: 22px;
   visibility: hidden;
   opacity: 0;
-  transform: translateY(12px);
-  transition: all var(--duration-fast) var(--ease-smooth);
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
   pointer-events: none;
-  z-index: 200;
+  z-index: 1200;
+}
+
+/* Invisible bridge so mouse hover doesn't drop between nav-link and dropdown */
+.nav-dropdown-mega::before {
+  content: '';
+  position: absolute;
+  top: -14px;
+  left: 0;
+  right: 0;
+  height: 14px;
+  background: transparent;
 }
 
 .nav-item.has-dropdown:hover .nav-dropdown-mega,
 .nav-item.nav-item--has-dropdown:hover .nav-dropdown-mega,
+.nav-item.is-dropdown-open .nav-dropdown-mega,
 .nav-item:hover > .nav-dropdown-mega {
   visibility: visible;
   opacity: 1;
-  transform: translateY(0);
+  transform: translateX(-50%) translateY(0);
   pointer-events: auto;
 }
 
@@ -418,7 +430,7 @@ button {
 .mega-card-thumb img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
   object-position: center;
   transition: transform var(--duration-fast) ease;
 }
@@ -6217,7 +6229,7 @@ textarea.form-input {
   border-bottom: 1px solid rgba(212, 175, 55, 0.25);
   padding: 12px 16px;
   position: relative;
-  z-index: 90;
+  z-index: 10;
 }
 
 .promo-banner-container {
@@ -6626,5 +6638,155 @@ body.cart-open #mobileCurvedBottomNav {
   .btn-checkout {
     padding: 14px 20px !important;
     font-size: 0.9375rem !important;
+  }
+}
+
+/* ==========================================================================
+   LUXURY SIDE TOAST NOTIFICATION SYSTEM
+   ========================================================================== */
+.side-toast-container {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 9999999;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  pointer-events: none;
+  max-width: 420px;
+  width: calc(100vw - 32px);
+}
+
+.side-toast {
+  pointer-events: auto;
+  position: relative;
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 16px 18px 18px 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  box-shadow: 0 20px 45px -10px rgba(46, 16, 101, 0.22), 0 6px 18px -4px rgba(0, 0, 0, 0.08);
+  border: 1.5px solid rgba(107, 78, 155, 0.22);
+  transform: translateX(125%);
+  opacity: 0;
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease;
+  overflow: hidden;
+  backdrop-filter: blur(8px);
+}
+
+.side-toast.is-shown {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.side-toast.is-leaving {
+  transform: translateX(130%);
+  opacity: 0;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 1, 1), opacity 0.3s ease;
+}
+
+/* Icon Wrap */
+.side-toast-icon-wrap {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.side-toast--success .side-toast-icon-wrap {
+  background: linear-gradient(135deg, #ECFDF5, #D1FAE5);
+  color: #059669;
+  border: 1px solid #A7F3D0;
+}
+
+.side-toast--warning .side-toast-icon-wrap,
+.side-toast--error .side-toast-icon-wrap {
+  background: linear-gradient(135deg, #FEF2F2, #FEE2E2);
+  color: #DC2626;
+  border: 1px solid #FECACA;
+}
+
+.side-toast--info .side-toast-icon-wrap {
+  background: linear-gradient(135deg, #EDE9FE, #DDD6FE);
+  color: #6B4E9B;
+  border: 1px solid #C4B5FD;
+}
+
+/* Content */
+.side-toast-content {
+  flex: 1;
+  min-width: 0;
+  padding-right: 18px;
+}
+
+.side-toast-title {
+  font-family: var(--font-heading, 'Playfair Display', serif);
+  font-size: 0.975rem;
+  font-weight: 700;
+  color: #2E1065;
+  line-height: 1.35;
+  margin-bottom: 4px;
+}
+
+.side-toast-body {
+  font-size: 0.825rem;
+  color: #4B5563;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+/* Close Button */
+.side-toast-close-btn {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  background: transparent;
+  border: none;
+  color: #9CA3AF;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.side-toast-close-btn:hover {
+  color: #2E1065;
+  background: rgba(107, 78, 155, 0.08);
+}
+
+/* Progress Bar */
+.side-toast-progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  width: 100%;
+  background: linear-gradient(90deg, #6B4E9B, #D4AF37);
+  transform-origin: left;
+}
+
+@keyframes sideToastProgress {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+
+@media (max-width: 640px) {
+  .side-toast-container {
+    top: 16px;
+    right: 16px;
+    left: 16px;
+    width: auto;
+    max-width: none;
   }
 }

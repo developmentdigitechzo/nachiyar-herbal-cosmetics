@@ -16,6 +16,120 @@
     pincode: '600020'
   };
 
+
+  // ==========================================
+  // LUXURY SIDE TOAST NOTIFICATION SYSTEM
+  // ==========================================
+  function showSideToast(optionsOrMessage, type = 'success', duration = 4800) {
+    let title = '';
+    let body = '';
+    let icon = '🌿';
+
+    if (typeof optionsOrMessage === 'object' && optionsOrMessage !== null) {
+      title = optionsOrMessage.title || '';
+      body = optionsOrMessage.message || optionsOrMessage.body || '';
+      type = optionsOrMessage.type || type;
+      duration = optionsOrMessage.duration || duration;
+      if (optionsOrMessage.icon) icon = optionsOrMessage.icon;
+    } else {
+      const raw = String(optionsOrMessage || '').trim();
+      if (raw.includes('\n')) {
+        const parts = raw.split(/\n+/);
+        title = parts[0].trim();
+        body = parts.slice(1).join(' ').trim();
+      } else {
+        title = raw;
+        body = '';
+      }
+    }
+
+    const lowerTitle = title.toLowerCase();
+    if (type === 'error' || lowerTitle.includes('please') || lowerTitle.includes('error') || lowerTitle.includes('invalid') || lowerTitle.includes('failed') || lowerTitle.includes('empty')) {
+      type = 'error';
+      icon = '⚠️';
+    } else if (title.includes('🎁') || lowerTitle.includes('voucher') || lowerTitle.includes('privilege') || lowerTitle.includes('welcome') || lowerTitle.includes('code')) {
+      type = 'info';
+      icon = '✨';
+      title = title.replace(/🎁/g, '').trim();
+    } else if (title.includes('🌿')) {
+      icon = '🌿';
+      title = title.replace(/🌿/g, '').trim();
+    } else if (title.includes('✓')) {
+      icon = '✓';
+      title = title.replace(/✓/g, '').trim();
+    }
+
+    let container = document.getElementById('sideToastContainer');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'sideToastContainer';
+      container.className = 'side-toast-container';
+      document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `side-toast side-toast--${type}`;
+    toast.setAttribute('role', 'alert');
+
+    toast.innerHTML = `
+      <div class="side-toast-icon-wrap" aria-hidden="true">${icon}</div>
+      <div class="side-toast-content">
+        <div class="side-toast-title">${title}</div>
+        ${body ? `<div class="side-toast-body">${body}</div>` : ''}
+      </div>
+      <button type="button" class="side-toast-close-btn" aria-label="Dismiss notification">✕</button>
+      <div class="side-toast-progress-bar" style="animation: sideToastProgress ${duration}ms linear forwards;"></div>
+    `;
+
+    container.appendChild(toast);
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        toast.classList.add('is-shown');
+      });
+    });
+
+    let dismissTimeout = null;
+    const dismiss = () => {
+      if (dismissTimeout) clearTimeout(dismissTimeout);
+      toast.classList.remove('is-shown');
+      toast.classList.add('is-leaving');
+      setTimeout(() => {
+        toast.remove();
+        if (container && container.children.length === 0) {
+          container.remove();
+        }
+      }, 450);
+    };
+
+    dismissTimeout = setTimeout(dismiss, duration);
+
+    const closeBtn = toast.querySelector('.side-toast-close-btn');
+    if (closeBtn) closeBtn.onclick = dismiss;
+
+    toast.onmouseenter = () => {
+      if (dismissTimeout) clearTimeout(dismissTimeout);
+      const pb = toast.querySelector('.side-toast-progress-bar');
+      if (pb) pb.style.animationPlayState = 'paused';
+    };
+    toast.onmouseleave = () => {
+      dismissTimeout = setTimeout(dismiss, 1600);
+      const pb = toast.querySelector('.side-toast-progress-bar');
+      if (pb) pb.style.animationPlayState = 'running';
+    };
+
+    return toast;
+  }
+
+  window.showSideToast = showSideToast;
+  window.showToast = showSideToast;
+
+  if (typeof window !== 'undefined') {
+    window.alert = function(msg) {
+      showSideToast(msg);
+    };
+  }
+
   // State
   let currentCustomer = null;
   try {
@@ -25,7 +139,7 @@
 
   document.addEventListener('DOMContentLoaded', () => {
     ensureMobileCurvedBottomNav();
-    if (!window.location.pathname.includes('account.html')) {
+    if (!window.location.pathname.includes('account')) {
       injectAccountUI();
       bindNavbarAccountButton();
     }
@@ -33,7 +147,7 @@
 
     // Auto open drawer if redirected from login/register
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('open_account') === 'true' && !window.location.pathname.includes('account.html')) {
+    if (urlParams.get('open_account') === 'true' && !window.location.pathname.includes('account')) {
       setTimeout(openAccountDrawer, 300);
     }
   });
@@ -217,7 +331,7 @@
     if (!btn) {
       const headerActions = document.querySelector('.header-actions');
       if (headerActions) {
-        btn = document.createElement('button');
+        btn = document.createElement('a'); btn.href = '/account/';
         btn.id = 'accountTriggerBtn';
         btn.className = 'account-trigger-btn';
         btn.setAttribute('aria-label', 'Customer Account');
@@ -240,8 +354,8 @@
 
     if (btn) {
       btn.onclick = (e) => {
-        e.preventDefault();
-        openAccountDrawer();
+        // Direct navigation to dedicated /account/ dashboard (image 2)
+        window.location.href = '/account/';
       };
     }
   }
