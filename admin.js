@@ -4218,8 +4218,25 @@ document.addEventListener('DOMContentLoaded', () => {
   if (adminSidebarClose) adminSidebarClose.addEventListener('click', closeSidebar);
   if (adminSidebarBackdrop) adminSidebarBackdrop.addEventListener('click', closeSidebar);
 
-  function switchTab(tabId, updateHistory = true) {
+  // Extract tab from clean URL path (e.g. /nimda/dashboard/ or /nimda/products/) or legacy hash
+  function getTabFromUrl() {
+    if (window.location.hash) {
+      const hashTab = window.location.hash.replace('#', '').trim().toLowerCase();
+      if (hashTab) return hashTab;
+    }
+    const pathParts = window.location.pathname.split('/').filter(Boolean);
+    if (pathParts.length >= 2 && pathParts[0].toLowerCase() === 'nimda') {
+      return pathParts[1].toLowerCase();
+    }
+    return null;
+  }
+
+  function switchTab(tabId, updateHistory = true, push = false) {
     if (!tabId) return;
+
+    if (!document.getElementById(`pane-${tabId}`)) {
+      tabId = 'dashboard';
+    }
 
     navTabs.forEach(t => {
       if (t.dataset.tab === tabId) t.classList.add('active');
@@ -4233,8 +4250,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Save active tab so browser refresh stays on the exact same page
     localStorage.setItem('nachiyar_admin_active_tab', tabId);
-    if (updateHistory && window.location.hash !== `#${tabId}`) {
-      window.history.replaceState(null, '', `#${tabId}`);
+
+    // Clean URL: /nimda/dashboard/, /nimda/products/, etc. (No '#' anywhere)
+    const targetUrl = `/nimda/${tabId}/`;
+    if (updateHistory) {
+      if (window.location.hash) {
+        window.history.replaceState({ tab: tabId }, '', targetUrl);
+      } else if (window.location.pathname !== targetUrl) {
+        if (push) {
+          window.history.pushState({ tab: tabId }, '', targetUrl);
+        } else {
+          window.history.replaceState({ tab: tabId }, '', targetUrl);
+        }
+      }
     }
 
     // Close mobile sidebar on navigation
@@ -4242,14 +4270,20 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   navTabs.forEach(t => {
-    t.onclick = () => switchTab(t.dataset.tab);
+    t.onclick = () => switchTab(t.dataset.tab, true, true);
   });
 
-  // Listen for browser back / forward button hash changes
+  // Listen for browser back / forward button navigation (popstate)
+  window.addEventListener('popstate', (e) => {
+    const tabFromState = (e.state && e.state.tab) || getTabFromUrl() || 'dashboard';
+    switchTab(tabFromState, false);
+  });
+
+  // Fallback for legacy hashchange (instantly converts to clean URL)
   window.addEventListener('hashchange', () => {
-    const hashTab = window.location.hash.replace('#', '').trim();
+    const hashTab = window.location.hash.replace('#', '').trim().toLowerCase();
     if (hashTab && document.getElementById(`pane-${hashTab}`)) {
-      switchTab(hashTab, false);
+      switchTab(hashTab, true, false);
     }
   });
 
@@ -4261,16 +4295,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 2800);
   }
 
-  // Restore active tab from URL hash or localStorage upon refresh
+  // Restore active tab from clean URL path or localStorage upon refresh
   function restoreActiveTab() {
-    const hashTab = window.location.hash.replace('#', '').trim();
+    const urlTab = getTabFromUrl();
     const savedTab = localStorage.getItem('nachiyar_admin_active_tab');
-    const targetTab = hashTab || savedTab || 'dashboard';
+    const targetTab = urlTab || savedTab || 'dashboard';
 
     if (document.getElementById(`pane-${targetTab}`)) {
-      switchTab(targetTab, true);
+      switchTab(targetTab, true, false);
     } else {
-      switchTab('dashboard', true);
+      switchTab('dashboard', true, false);
     }
   }
 

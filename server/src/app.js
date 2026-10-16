@@ -56,10 +56,13 @@ app.use((req, res, next) => {
     if (rawName === 'index') {
       return res.redirect(301, '/' + queryString);
     }
-    if (rawName === 'admin' || rawName === 'nimda') {
+    if (rawName === 'admin' || rawName === 'admin-login') {
+      return res.status(404).send('<!DOCTYPE html><html><head><title>404 Not Found</title></head><body style="font-family:sans-serif;text-align:center;padding:50px;"><h2>404 Not Found</h2><p>The requested URL was not found on this server.</p></body></html>');
+    }
+    if (rawName === 'nimda') {
       return res.redirect(301, '/nimda/' + queryString);
     }
-    if (rawName === 'admin-login' || rawName === 'nimda-login') {
+    if (rawName === 'nimda-login') {
       return res.redirect(301, '/nimda-login/' + queryString);
     }
     return res.redirect(301, `/${rawName}/${queryString}`);
@@ -68,10 +71,20 @@ app.use((req, res, next) => {
 });
 
 // =========================================================================
-// NIMDA ROUTE & SECURITY ACCESS GATE
+// NIMDA ROUTE & SECURITY ACCESS GATE (ONLY /nimda/ opens console)
 // =========================================================================
+// Completely block /admin and /admin-login so they NEVER open (return 404 Not Found)
+app.all(['/admin', '/admin/*', '/admin-login', '/admin-login/*'], (req, res) => {
+  res.status(404).send('<!DOCTYPE html><html><head><title>404 Not Found</title></head><body style="font-family:sans-serif;text-align:center;padding:50px;"><h2>404 Not Found</h2><p>The requested URL was not found on this server.</p></body></html>');
+});
+
 // Protect direct access to Nimda console: unauthorized visitors redirected to /nimda-login/
-app.get(['/nimda', '/nimda/'], (req, res) => {
+// Supports clean URLs without hashes: /nimda, /nimda/, and /nimda/:tab/ (e.g. /nimda/dashboard/)
+app.get(['/nimda', '/nimda/*', '/nimda/'], (req, res, next) => {
+  if (path.extname(req.path)) {
+    return next();
+  }
+
   const token = (req.cookies && req.cookies.nachiyar_nimda_token) ||
                 (req.cookies && req.cookies.nachiyar_admin_token) || 
                 (req.headers['authorization'] && req.headers['authorization'].replace('Bearer ', '')) || 
@@ -80,9 +93,7 @@ app.get(['/nimda', '/nimda/'], (req, res) => {
 
   const user = verifyToken(token);
   if (user) {
-    const nimdaPath = fs.existsSync(path.join(projectRoot, 'nimda.html')) 
-      ? path.join(projectRoot, 'nimda.html') 
-      : path.join(projectRoot, 'admin.html');
+    const nimdaPath = path.join(projectRoot, 'nimda.html');
     res.setHeader('Cache-Control', 'no-cache, must-revalidate');
     return res.sendFile(nimdaPath);
   }
@@ -93,20 +104,9 @@ app.get(['/nimda', '/nimda/'], (req, res) => {
 
 // Serve Nimda staff login page
 app.get(['/nimda-login', '/nimda-login/'], (req, res) => {
-  const loginPath = fs.existsSync(path.join(projectRoot, 'nimda-login.html')) 
-    ? path.join(projectRoot, 'nimda-login.html') 
-    : path.join(projectRoot, 'admin-login.html');
+  const loginPath = path.join(projectRoot, 'nimda-login.html');
   res.setHeader('Cache-Control', 'no-cache, must-revalidate');
   res.sendFile(loginPath);
-});
-
-// Any legacy /admin requests redirect permanently to /nimda/
-app.get(['/admin', '/admin/'], (req, res) => {
-  res.redirect(301, '/nimda/');
-});
-
-app.get(['/admin-login', '/admin-login/'], (req, res) => {
-  res.redirect(301, '/nimda-login/');
 });
 
 // =========================================================================
@@ -234,7 +234,7 @@ app.use(express.static(projectRoot, {
 }));
 
 // Fallback static asset handling for trailing-slash URLs (e.g. /nimda/admin.css -> /admin.css)
-['shop', 'about', 'contact', 'product', 'checkout', 'account', 'order-status', 'yearsbeer', 'nimda', 'nimda-login', 'admin', 'admin-login'].forEach(subpath => {
+['shop', 'about', 'contact', 'product', 'checkout', 'account', 'order-status', 'yearsbeer', 'nimda', 'nimda-login'].forEach(subpath => {
   app.use(`/${subpath}`, express.static(projectRoot, {
     setHeaders: (res, filePath) => {
       if (filePath.endsWith('.html') || filePath.endsWith('.js')) {

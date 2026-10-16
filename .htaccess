@@ -10,11 +10,16 @@
   RewriteCond %{THE_REQUEST} \s/+(.+?)\.html[\s?] [NC]
   RewriteRule ^ %1/ [R=301,L]
 
-  # 2. Redirect legacy /admin/ requests to /nimda/
-  RewriteRule ^admin/?$ /nimda/ [R=301,L]
-  RewriteRule ^admin-login/?$ /nimda-login/ [R=301,L]
+  # 2. Block /admin and /admin-login completely (404 Not Found)
+  RewriteRule ^admin(/.*)?$ - [R=404,L,NC]
+  RewriteRule ^admin-login(/.*)?$ - [R=404,L,NC]
 
-  # 3. Clean URL routing for static HTML files
+  # 3. Route all clean /nimda/* subpaths (e.g. /nimda/dashboard/) to nimda.html
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^nimda(/.*)?$ nimda.html [L,QSA]
+
+  # 4. Clean URL routing for static HTML files
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteCond %{DOCUMENT_ROOT}/$1.html -f

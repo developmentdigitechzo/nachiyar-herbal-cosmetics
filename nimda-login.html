@@ -491,7 +491,7 @@
             document.cookie = `nachiyar_admin_token=${data.token}; path=/; max-age=86400; SameSite=Lax`;
             showAlert('Access Granted! Launching Nimda OS...', true);
             setTimeout(() => {
-              window.location.replace('/nimda/#dashboard');
+              window.location.replace('/nimda/dashboard/');
             }, 300);
             return;
           } else {
@@ -547,7 +547,7 @@
         document.cookie = `nachiyar_admin_token=${fallbackToken}; path=/; max-age=86400; SameSite=Lax`;
         showAlert(`Access Granted as ${matched.name || matched.username}! Launching Nimda OS...`, true);
         setTimeout(() => {
-          window.location.replace('/nimda/#dashboard');
+          window.location.replace('/nimda/dashboard/');
         }, 300);
         return;
       }
@@ -571,7 +571,7 @@
         document.cookie = `nachiyar_admin_token=${fallbackToken}; path=/; max-age=86400; SameSite=Lax`;
         showAlert('Staff Access Verified! Launching Nimda OS...', true);
         setTimeout(() => {
-          window.location.replace('/nimda/#dashboard');
+          window.location.replace('/nimda/dashboard/');
         }, 300);
       } else {
         showAlert('Invalid username or password. Please try again.');

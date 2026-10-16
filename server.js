@@ -29,7 +29,7 @@ const server = app.listen(PORT, () => {
   console.log(`🗄️ Database:      ${config.database.host || 'PostgreSQL Connection'} (SSL: ${Boolean(config.database.ssl)})`);
   console.log(`📁 File Storage:  ${storageService.getStorageType().toUpperCase()} (${storageService.getStorageDirectory()})`);
   console.log(`🛍️ Storefront:    http://localhost:${PORT}`);
-  console.log(`💼 Admin Console: http://localhost:${PORT}/admin.html`);
+  console.log(`💼 Nimda Console: http://localhost:${PORT}/nimda/`);
   console.log(`==================================================================`);
 });
 
