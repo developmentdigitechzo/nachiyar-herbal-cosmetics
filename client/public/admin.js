@@ -21,11 +21,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Authenticated Fetch Helper
   async function authFetch(url, options = {}) {
-    options.headers = {
+    const headers = {
       ...(options.headers || {}),
       'Authorization': `Bearer ${adminToken}`,
       'x-admin-token': adminToken
     };
+    if (options.body && typeof options.body === 'string' && !headers['Content-Type']) {
+      headers['Content-Type'] = 'application/json';
+    }
+    options.headers = headers;
     const res = await fetch(url, options);
     if (res.status === 401) {
       localStorage.removeItem('nachiyar_admin_token');
@@ -1032,16 +1036,40 @@ document.addEventListener('DOMContentLoaded', () => {
     if (bpc) bpc.style.display = 'none';
 
     if (filtered.length === 0) {
-      productsTableBody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:32px; color:var(--admin-text-muted);">No products found matching your filter criteria.</td></tr>';
+      productsTableBody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding:32px; color:var(--admin-text-muted);">No products found matching your filter criteria.</td></tr>';
       return;
     }
 
     filtered.forEach(p => {
+      // Check showcase slot
+      const showcase = (storeSettings && storeSettings.homeShowcase) || {};
+      const isSlot1 = (showcase.slot1 && showcase.slot1.productId === p.id) || (!showcase.slot1 && p.id === 'prod_oil_01');
+      const isSlot2 = (showcase.slot2 && showcase.slot2.productId === p.id) || (!showcase.slot2 && p.id === 'prod_shampoo_02');
+      const isCombo = (showcase.combo && showcase.combo.productId === p.id) || (!showcase.combo && p.id === 'prod_duo_03');
+
+      let showcaseBtnLabel = '+ Set as Home Feature ▾';
+      let showcaseBtnClass = 'inactive';
+      let activeSlotKey = '';
+
+      if (isSlot1) {
+        showcaseBtnLabel = '★ Live: Flagship 1 (Left) ▾';
+        showcaseBtnClass = 'active-showcase';
+        activeSlotKey = 'slot1';
+      } else if (isSlot2) {
+        showcaseBtnLabel = '★ Live: Flagship 2 (Right) ▾';
+        showcaseBtnClass = 'active-showcase';
+        activeSlotKey = 'slot2';
+      } else if (isCombo) {
+        showcaseBtnLabel = '★ Live: Combo Banner ▾';
+        showcaseBtnClass = 'active-showcase';
+        activeSlotKey = 'combo';
+      }
+
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td>
           <div style="display:flex; align-items:center; gap:10px;">
-            <img src="${p.images[0]}" alt="${p.name}" style="width:36px; height:48px; border-radius:6px; object-fit:contain; background:#F8FAFC; border:1px solid #E2E8F0; padding:2px;">
+            <img src="${(p.images && p.images[0]) || 'assets/new-oil-bottle-card.jpg'}" alt="${p.name}" style="width:36px; height:48px; border-radius:6px; object-fit:contain; background:#F8FAFC; border:1px solid #E2E8F0; padding:2px;">
             <div>
               <strong>${p.name}</strong>
               <small style="display:block; color:var(--admin-text-muted);">${p.subtitle || ''}</small>
@@ -1061,6 +1089,30 @@ document.addEventListener('DOMContentLoaded', () => {
           </a>
         </td>
         <td>
+          <div class="showcase-cell" data-prod-id="${p.id}">
+            <button type="button" class="btn-showcase-badge ${showcaseBtnClass}" data-id="${p.id}">
+              ${showcaseBtnLabel}
+            </button>
+            <div class="showcase-popover" id="popover-${p.id}">
+              <div class="showcase-popover-header">Home Showcase Position</div>
+              <button type="button" class="showcase-opt-btn ${isSlot1 ? 'is-active-opt' : ''}" data-action="set-slot1" data-slot="slot1" data-id="${p.id}">
+                📌 Flagship 1 (Left Card)
+              </button>
+              <button type="button" class="showcase-opt-btn ${isSlot2 ? 'is-active-opt' : ''}" data-action="set-slot2" data-slot="slot2" data-id="${p.id}">
+                📌 Flagship 2 (Right Card)
+              </button>
+              <button type="button" class="showcase-opt-btn ${isCombo ? 'is-active-opt' : ''}" data-action="configure-combo" data-slot="combo" data-id="${p.id}">
+                🎁 Configure Combo Banner...
+              </button>
+              ${activeSlotKey ? `
+              <button type="button" class="showcase-opt-btn remove-opt" data-action="remove-slot" data-slot="${activeSlotKey}" data-id="${p.id}">
+                ✕ Remove from Home (Shop Only)
+              </button>
+              ` : ''}
+            </div>
+          </div>
+        </td>
+        <td>
           <div style="display:flex; gap:6px;">
             <button class="btn-secondary btn-sm btn-edit-prod" data-id="${p.id}">Edit</button>
             <button class="btn-secondary btn-sm btn-del-prod" data-id="${p.id}" style="color:#DC2626;">Delete</button>
@@ -1068,6 +1120,56 @@ document.addEventListener('DOMContentLoaded', () => {
         </td>
       `;
       productsTableBody.appendChild(tr);
+    });
+
+    // Toggle Showcase Popovers
+    document.querySelectorAll('.btn-showcase-badge').forEach(btn => {
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        const prodId = btn.dataset.id;
+        const targetPopover = document.getElementById(`popover-${prodId}`);
+        document.querySelectorAll('.showcase-popover.open').forEach(p => {
+          if (p !== targetPopover) p.classList.remove('open');
+        });
+        if (targetPopover) targetPopover.classList.toggle('open');
+      };
+    });
+
+    // Showcase Action Button Clicks
+    document.querySelectorAll('.showcase-opt-btn').forEach(btn => {
+      btn.onclick = async (e) => {
+        e.stopPropagation();
+        const action = btn.dataset.action;
+        const prodId = btn.dataset.id;
+        const slot = btn.dataset.slot;
+        const prod = products.find(x => x.id === prodId);
+
+        document.querySelectorAll('.showcase-popover.open').forEach(p => p.classList.remove('open'));
+
+        if (action === 'set-slot1') {
+          openFlagshipModal('slot1', prod);
+        } else if (action === 'set-slot2') {
+          openFlagshipModal('slot2', prod);
+        } else if (action === 'configure-combo') {
+          openComboModal(prod);
+        } else if (action === 'remove-slot') {
+          if (confirm(`Remove this product from Home Page showcase? It will remain active in the Shop catalog.`)) {
+            try {
+              const res = await authFetch('/api/settings/home-showcase', {
+                method: 'POST',
+                body: JSON.stringify({ slot: slot, remove: true })
+              });
+              const json = await res.json();
+              if (json.success) {
+                showToast('Removed from Home Page showcase.');
+                loadAllData();
+              }
+            } catch (err) {
+              showToast('Failed to update showcase: ' + err.message);
+            }
+          }
+        }
+      };
     });
 
     // Edit Product
@@ -1085,6 +1187,384 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       };
     });
+  }
+
+  // Close showcase popovers when clicking anywhere on the document
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.showcase-popover.open').forEach(p => p.classList.remove('open'));
+  });
+
+  // Open Flagship Modal
+  function openFlagshipModal(slot, prod) {
+    if (!prod) return;
+    const modal = document.getElementById('flagshipModalOverlay');
+    if (!modal) return;
+    const showcase = (storeSettings && storeSettings.homeShowcase && storeSettings.homeShowcase[slot]) || {};
+    const isSameProduct = showcase.productId === prod.id && !showcase.removed;
+
+    document.getElementById('flagshipFormSlot').value = slot;
+    document.getElementById('flagshipFormProductId').value = prod.id;
+    document.getElementById('flagshipModalTitle').textContent = slot === 'slot1' ? '★ Configure Flagship 1 (Left Card)' : '★ Configure Flagship 2 (Right Card)';
+    document.getElementById('flagshipModalSubtitle').textContent = `Set the live image, rates, and titles shown on the Home Page for this slot.`;
+
+    document.getElementById('flagshipFormTitle').value = (isSameProduct && showcase.title) ? showcase.title : (prod.name || '');
+    document.getElementById('flagshipFormSubtitle').value = (isSameProduct && showcase.subtitle) ? showcase.subtitle : (prod.subtitle || '');
+    document.getElementById('flagshipFormPrice').value = (isSameProduct && showcase.price !== undefined) ? showcase.price : prod.price;
+    document.getElementById('flagshipFormMrp').value = (isSameProduct && showcase.mrp !== undefined) ? showcase.mrp : (prod.mrp || Math.round(prod.price * 1.2));
+
+    const img = (isSameProduct && showcase.customImage) ? showcase.customImage : ((prod.images && prod.images[0]) || 'assets/new-oil-bottle-card.jpg');
+    document.getElementById('flagshipFormImageUrl').value = img;
+    document.getElementById('flagshipImagePreview').src = img;
+
+    const statusEl = document.getElementById('flagshipUploadStatus');
+    if (statusEl) statusEl.style.display = 'none';
+
+    modal.classList.add('is-active');
+    modal.style.display = 'flex';
+  }
+
+  // Open Combo Banner Modal
+  function openComboModal(prod) {
+    const modal = document.getElementById('comboModalOverlay');
+    if (!modal) return;
+    const showcase = (storeSettings && storeSettings.homeShowcase && storeSettings.homeShowcase.combo) || {};
+
+    const sel = document.getElementById('comboLinkProductSelect');
+    if (sel && Array.isArray(products)) {
+      sel.innerHTML = products.map(p => `
+        <option value="${p.id}" ${((prod && prod.id === p.id) || (!prod && showcase.productId === p.id) || p.id === 'prod_duo_03') ? 'selected' : ''}>
+          ${p.name} (Stock: ${p.stock} units)
+        </option>
+      `).join('');
+    }
+
+    const linkedProd = prod || (Array.isArray(products) && products.find(p => p.id === showcase.productId)) || (Array.isArray(products) && products.find(p => p.id === 'prod_duo_03')) || (products && products[0]);
+    const isSameProduct = linkedProd && showcase.productId === linkedProd.id && !showcase.removed;
+
+    // 1. Interactive Multi-Product Selector Population
+    const pickerList = document.getElementById('comboProductsPickerList');
+    const selectedIds = Array.isArray(showcase.selectedProductIds) && showcase.selectedProductIds.length > 0
+      ? showcase.selectedProductIds
+      : ['prod_oil_01', 'prod_shampoo_02'];
+
+    if (pickerList && Array.isArray(products)) {
+      pickerList.innerHTML = products.map(p => {
+        const isChecked = selectedIds.includes(p.id);
+        const pImg = (p.images && p.images[0]) || 'assets/herbal-hair-oil.jpg';
+        const pPrice = Number(p.price) || 0;
+        const pMrp = Number(p.mrp) || Math.round(pPrice * 1.5);
+        return `
+          <label style="display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; background: ${isChecked ? '#EEF2FF' : '#FFFFFF'}; border: 1.5px solid ${isChecked ? '#6366F1' : '#E2E8F0'}; border-radius: 6px; cursor: pointer; transition: all 0.15s ease;">
+            <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+              <input type="checkbox" class="combo-product-chk" value="${p.id}" data-name="${p.name}" data-price="${pPrice}" data-mrp="${pMrp}" data-img="${pImg}" ${isChecked ? 'checked' : ''} style="accent-color: #4F46E5; width: 16px; height: 16px; cursor: pointer;">
+              <img src="${pImg}" alt="${p.name}" style="width: 34px; height: 34px; object-fit: cover; border-radius: 4px; border: 1px solid #E2E8F0; flex-shrink: 0;">
+              <div style="min-width: 0;">
+                <div style="font-size: 0.8125rem; font-weight: 700; color: #1E293B; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${p.name}</div>
+                <div style="font-size: 0.71875rem; color: #64748B;">${p.category || 'Product'} • Stock: ${p.stock || 0}</div>
+              </div>
+            </div>
+            <div style="text-align: right; flex-shrink: 0; margin-left: 8px;">
+              <div style="font-size: 0.8125rem; font-weight: 700; color: #1E293B;">₹${pPrice}</div>
+              <div style="font-size: 0.6875rem; color: #94A3B8; text-decoration: line-through;">₹${pMrp}</div>
+            </div>
+          </label>
+        `;
+      }).join('');
+
+      // Live Recalculation logic
+      const updateComboCalculations = (isUserInteraction = false) => {
+        const chks = Array.from(pickerList.querySelectorAll('.combo-product-chk:checked'));
+        const badge = document.getElementById('comboSelectedCountBadge');
+        if (badge) badge.textContent = `${chks.length} Selected`;
+
+        let totalMrp = 0;
+        let totalBase = 0;
+        const names = [];
+
+        chks.forEach(chk => {
+          totalMrp += Number(chk.dataset.mrp) || 0;
+          totalBase += Number(chk.dataset.price) || 0;
+          names.push(chk.dataset.name);
+          const parent = chk.closest('label');
+          if (parent) {
+            parent.style.background = '#EEF2FF';
+            parent.style.borderColor = '#6366F1';
+          }
+        });
+
+        pickerList.querySelectorAll('.combo-product-chk:not(:checked)').forEach(chk => {
+          const parent = chk.closest('label');
+          if (parent) {
+            parent.style.background = '#FFFFFF';
+            parent.style.borderColor = '#E2E8F0';
+          }
+        });
+
+        const banner = document.getElementById('comboCalculationBanner');
+        if (banner) {
+          banner.style.display = chks.length > 0 ? 'block' : 'none';
+        }
+        const calcMrpEl = document.getElementById('comboCalcMrp');
+        if (calcMrpEl) calcMrpEl.textContent = `₹${totalMrp}`;
+        const calcBaseEl = document.getElementById('comboCalcBase');
+        if (calcBaseEl) calcBaseEl.textContent = `₹${totalBase}`;
+
+        const priceInput = document.getElementById('comboFormPrice');
+        const mrpInput = document.getElementById('comboFormMrp');
+        const tagInput = document.getElementById('comboFormTag');
+        const titleInput = document.getElementById('comboFormTitle');
+
+        if (isUserInteraction && chks.length > 0) {
+          if (mrpInput) mrpInput.value = totalMrp;
+          const suggestedPrice = Math.max(99, Math.round((totalBase * 0.85) / 10) * 10 - 1);
+          if (priceInput && (!priceInput.value || priceInput.value == 0 || isUserInteraction)) {
+            priceInput.value = suggestedPrice;
+          }
+          const curPrice = Number(priceInput?.value || suggestedPrice);
+          const savings = totalMrp - curPrice;
+          const pct = totalMrp > 0 ? Math.round((savings / totalMrp) * 100) : 0;
+
+          const pill = document.getElementById('comboCalcSavingsPill');
+          if (pill) pill.textContent = `Save ₹${Math.max(0, savings)} (${pct}% OFF)`;
+
+          if (tagInput) tagInput.value = `BEST VALUE: SAVE ₹${Math.max(0, savings)}`;
+          if (titleInput && (!titleInput.value || titleInput.value.includes('Ritual') || titleInput.value.includes('Combo'))) {
+            titleInput.value = names.length > 1 ? `${names.join(' + ')} Ritual Set` : (names[0] ? `${names[0]} Combo Pack` : 'Royal Duo Ritual Set');
+          }
+        } else {
+          const curPrice = Number(priceInput?.value || 0);
+          const savings = totalMrp - curPrice;
+          const pct = totalMrp > 0 ? Math.round((savings / totalMrp) * 100) : 0;
+          const pill = document.getElementById('comboCalcSavingsPill');
+          if (pill) pill.textContent = `Save ₹${Math.max(0, savings)} (${pct}% OFF)`;
+        }
+      };
+
+      pickerList.querySelectorAll('.combo-product-chk').forEach(chk => {
+        chk.addEventListener('change', () => updateComboCalculations(true));
+      });
+
+      const priceInp = document.getElementById('comboFormPrice');
+      if (priceInp) {
+        priceInp.oninput = () => updateComboCalculations(false);
+      }
+
+      updateComboCalculations(false);
+    }
+
+    document.getElementById('comboFormProductId').value = linkedProd ? linkedProd.id : 'prod_duo_03';
+    document.getElementById('comboFormTitle').value = (isSameProduct && showcase.title) ? showcase.title : (linkedProd ? linkedProd.name : 'The Royal Hair Ritual (Duo Set)');
+    document.getElementById('comboFormTag').value = (isSameProduct && showcase.tag) ? showcase.tag : 'BEST VALUE: SAVE ₹149';
+    document.getElementById('comboFormPrice').value = (isSameProduct && showcase.price !== undefined) ? showcase.price : (linkedProd ? linkedProd.price : 499);
+    document.getElementById('comboFormMrp').value = (isSameProduct && showcase.mrp !== undefined) ? showcase.mrp : (linkedProd ? (linkedProd.mrp || Math.round(linkedProd.price * 1.5)) : 1148);
+
+    const comboImg = (isSameProduct && showcase.customImage) ? showcase.customImage : ((linkedProd && linkedProd.images && linkedProd.images[0]) || 'assets/duo-ritual-new.jpg');
+    document.getElementById('comboFormImageUrl').value = comboImg;
+    document.getElementById('comboImagePreview').src = comboImg;
+    document.getElementById('comboFormDesc').value = (isSameProduct && showcase.description) ? showcase.description : (linkedProd ? linkedProd.description : 'Experience full follicular revitalisation. Step 1: Pre-wash deep scalp nourishment with the Lavender Herbal Hair Oil. Step 2: Gentle balancing wash with the Hibiscus Flower Shampoo. Includes custom gold travel pouch.');
+
+    const statusEl = document.getElementById('comboUploadStatus');
+    if (statusEl) statusEl.style.display = 'none';
+
+    modal.classList.add('is-active');
+    modal.style.display = 'flex';
+  }
+
+  // Flagship Image Upload Button
+  const btnUpFlagship = document.getElementById('btnUploadFlagshipImage');
+  const fileInputFlagship = document.getElementById('flagshipFileInput');
+  if (btnUpFlagship && fileInputFlagship) {
+    btnUpFlagship.onclick = () => fileInputFlagship.click();
+    fileInputFlagship.onchange = async () => {
+      const file = fileInputFlagship.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          showToast('Uploading flagship image...');
+          const res = await authFetch('/api/upload', {
+            method: 'POST',
+            body: JSON.stringify({ image: e.target.result, filename: `flagship_${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}` })
+          });
+          const json = await res.json();
+          if (json.success && json.url) {
+            document.getElementById('flagshipFormImageUrl').value = json.url;
+            document.getElementById('flagshipImagePreview').src = json.url;
+            const statusEl = document.getElementById('flagshipUploadStatus');
+            if (statusEl) statusEl.style.display = 'block';
+            showToast('✅ Image uploaded successfully!');
+          } else {
+            showToast('⚠️ Image upload failed: ' + (json.message || ''));
+          }
+        } catch (err) {
+          showToast('Upload error: ' + err.message);
+        }
+      };
+      reader.readAsDataURL(file);
+    };
+  }
+
+  // Flagship Image URL manual input listener
+  const flagshipUrlInput = document.getElementById('flagshipFormImageUrl');
+  if (flagshipUrlInput) {
+    flagshipUrlInput.addEventListener('input', () => {
+      document.getElementById('flagshipImagePreview').src = flagshipUrlInput.value.trim() || 'assets/new-oil-bottle-card.jpg';
+    });
+  }
+
+  // Combo Image Upload Button
+  const btnUpCombo = document.getElementById('btnUploadComboImage');
+  const fileInputCombo = document.getElementById('comboFileInput');
+  if (btnUpCombo && fileInputCombo) {
+    btnUpCombo.onclick = () => fileInputCombo.click();
+    fileInputCombo.onchange = async () => {
+      const file = fileInputCombo.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          showToast('Uploading combo banner image...');
+          const res = await authFetch('/api/upload', {
+            method: 'POST',
+            body: JSON.stringify({ image: e.target.result, filename: `combo_${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}` })
+          });
+          const json = await res.json();
+          if (json.success && json.url) {
+            document.getElementById('comboFormImageUrl').value = json.url;
+            document.getElementById('comboImagePreview').src = json.url;
+            const statusEl = document.getElementById('comboUploadStatus');
+            if (statusEl) statusEl.style.display = 'block';
+            showToast('✅ Combo image uploaded successfully!');
+          } else {
+            showToast('⚠️ Image upload failed: ' + (json.message || ''));
+          }
+        } catch (err) {
+          showToast('Upload error: ' + err.message);
+        }
+      };
+      reader.readAsDataURL(file);
+    };
+  }
+
+  // Combo Image URL manual input listener
+  const comboUrlInput = document.getElementById('comboFormImageUrl');
+  if (comboUrlInput) {
+    comboUrlInput.addEventListener('input', () => {
+      document.getElementById('comboImagePreview').src = comboUrlInput.value.trim() || 'assets/duo-ritual-new.jpg';
+    });
+  }
+
+  // Close Showcase Modals
+  ['comboModalClose', 'btnCancelComboModal'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.onclick = () => {
+      const m = document.getElementById('comboModalOverlay');
+      if (m) { m.classList.remove('is-active'); m.style.display = 'none'; }
+    };
+  });
+
+  ['flagshipModalClose', 'btnCancelFlagshipModal'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.onclick = () => {
+      const m = document.getElementById('flagshipModalOverlay');
+      if (m) { m.classList.remove('is-active'); m.style.display = 'none'; }
+    };
+  });
+
+  // Flagship Form Submit
+  const flagshipForm = document.getElementById('flagshipForm');
+  if (flagshipForm) {
+    flagshipForm.onsubmit = async (e) => {
+      e.preventDefault();
+      const slot = document.getElementById('flagshipFormSlot').value || (document.getElementById('flagshipModalTitle')?.textContent?.includes('Flagship 2') ? 'slot2' : 'slot1');
+      const productId = document.getElementById('flagshipFormProductId').value;
+      const title = document.getElementById('flagshipFormTitle').value.trim();
+      const subtitle = document.getElementById('flagshipFormSubtitle').value.trim();
+      const price = Number(document.getElementById('flagshipFormPrice').value);
+      const mrp = Number(document.getElementById('flagshipFormMrp').value) || Math.round(price * 1.2);
+      const customImage = document.getElementById('flagshipFormImageUrl').value.trim();
+
+      try {
+        showToast('Saving showcase settings...');
+        const res = await authFetch('/api/settings/home-showcase', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            slot,
+            productId,
+            title,
+            subtitle,
+            price,
+            mrp,
+            customImage
+          })
+        });
+        const json = await res.json();
+        if (json.success) {
+          showToast(`★ Home Flagship ${slot === 'slot1' ? '1 (Left)' : '2 (Right)'} updated live!`);
+          const modal = document.getElementById('flagshipModalOverlay');
+          if (modal) { modal.classList.remove('is-active'); modal.style.display = 'none'; }
+          loadAllData();
+        } else {
+          showToast('Error: ' + (json.message || 'Failed to update'));
+        }
+      } catch (err) {
+        showToast('Error: ' + err.message);
+      }
+    };
+  }
+
+  // Combo Form Submit
+  const comboBannerForm = document.getElementById('comboBannerForm');
+  if (comboBannerForm) {
+    comboBannerForm.onsubmit = async (e) => {
+      e.preventDefault();
+      const productId = document.getElementById('comboLinkProductSelect')?.value || document.getElementById('comboFormProductId').value;
+      const title = document.getElementById('comboFormTitle').value.trim();
+      const tag = document.getElementById('comboFormTag').value.trim();
+      const price = Number(document.getElementById('comboFormPrice').value);
+      const mrp = Number(document.getElementById('comboFormMrp').value) || Math.round(price * 1.25);
+      const customImage = document.getElementById('comboFormImageUrl').value.trim();
+      const description = document.getElementById('comboFormDesc').value.trim();
+
+      const selectedChks = Array.from(document.querySelectorAll('#comboProductsPickerList .combo-product-chk:checked'));
+      const selectedProductIds = selectedChks.map(c => c.value);
+
+      if (selectedProductIds.length === 0) {
+        showToast('⚠️ Please select at least one product to include in this combo.');
+        return;
+      }
+
+      try {
+        showToast('Publishing combo banner...');
+        const res = await authFetch('/api/settings/home-showcase', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            slot: 'combo',
+            productId,
+            selectedProductIds,
+            title,
+            tag,
+            price,
+            mrp,
+            customImage,
+            description
+          })
+        });
+        const json = await res.json();
+        if (json.success) {
+          showToast('🎁 Home Combo Banner published successfully!');
+          const modal = document.getElementById('comboModalOverlay');
+          if (modal) { modal.classList.remove('is-active'); modal.style.display = 'none'; }
+          loadAllData();
+        } else {
+          showToast('Error: ' + (json.message || 'Failed to publish'));
+        }
+      } catch (err) {
+        showToast('Error: ' + err.message);
+      }
+    };
   }
 
   function openProductModal(productId = null) {
@@ -1131,6 +1611,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const catSelect = document.getElementById('formProdCategory');
     if (catSelect && typeof catSelect._syncCustomSelect === 'function') {
       catSelect._syncCustomSelect();
+    }
+
+    // Sync Showcase Placement Slot Select
+    const slotSelect = document.getElementById('formProdShowcaseSlot');
+    if (slotSelect) {
+      if (productId && storeSettings && storeSettings.homeShowcase) {
+        const hs = storeSettings.homeShowcase;
+        if (hs.slot1 && hs.slot1.productId === productId && !hs.slot1.removed) {
+          slotSelect.value = 'slot1';
+        } else if (hs.slot2 && hs.slot2.productId === productId && !hs.slot2.removed) {
+          slotSelect.value = 'slot2';
+        } else if (hs.combo && hs.combo.productId === productId && !hs.combo.removed) {
+          slotSelect.value = 'combo';
+        } else {
+          slotSelect.value = '';
+        }
+      } else {
+        slotSelect.value = '';
+      }
     }
 
     productModalOverlay.classList.add('is-active');
@@ -1234,6 +1733,36 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Swap Flagship 1 & 2 Positions on Home Page
+  const btnSwapFlagship = document.getElementById('btnSwapFlagship');
+  if (btnSwapFlagship) {
+    btnSwapFlagship.onclick = async () => {
+      if (!confirm('Are you sure you want to swap Flagship 1 (Left Card) and Flagship 2 (Right Card) positions on the Home Page?')) return;
+      try {
+        showToast('Swapping Flagship positions...');
+        const res = await authFetch('/api/settings/home-showcase', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ swap: true })
+        });
+        const json = await res.json();
+        if (json.success) {
+          showToast('Flagship 1 & 2 swapped successfully!');
+          try {
+            localStorage.setItem('nachiyar_products_updated', Date.now().toString());
+            const ch = new BroadcastChannel('nachiyar_store_channel');
+            ch.postMessage({ type: 'PRODUCTS_UPDATED', timestamp: Date.now() });
+          } catch (e) {}
+          await loadAllData();
+        } else {
+          showToast(json.message || 'Swap failed');
+        }
+      } catch (err) {
+        showToast('Failed to swap positions: ' + err.message);
+      }
+    };
+  }
+
   btnOpenNewProductModal.onclick = () => openProductModal();
   modalProductClose.onclick = () => productModalOverlay.classList.remove('is-active');
   btnCancelProductModal.onclick = () => productModalOverlay.classList.remove('is-active');
@@ -1296,6 +1825,44 @@ document.addEventListener('DOMContentLoaded', () => {
     if (res.success) {
       showToast(id ? 'Product updated successfully.' : 'New product created.');
       productModalOverlay.classList.remove('is-active');
+
+      // Check showcase placement slot selection
+      const chosenSlot = document.getElementById('formProdShowcaseSlot')?.value;
+      const createdId = res.data?.id || id;
+      const currentHs = storeSettings && storeSettings.homeShowcase;
+
+      if (chosenSlot && createdId) {
+        try {
+          await authFetch('/api/settings/home-showcase', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              slot: chosenSlot,
+              productId: createdId,
+              title: payload.name,
+              subtitle: payload.subtitle,
+              price: payload.price,
+              mrp: payload.mrp,
+              customImage: payload.images[0]
+            })
+          });
+        } catch (e) {
+          console.error('Failed to update home showcase slot:', e);
+        }
+      } else if (!chosenSlot && id && currentHs) {
+        // If product was previously in a showcase slot and user set it to "None", remove it from showcase
+        for (const sKey of ['slot1', 'slot2', 'combo']) {
+          if (currentHs[sKey] && currentHs[sKey].productId === id && !currentHs[sKey].removed) {
+            try {
+              await authFetch('/api/settings/home-showcase', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ slot: sKey, remove: true })
+              });
+            } catch (e) {}
+          }
+        }
+      }
 
       // Broadcast update to all open storefront tabs and refresh cache
       try {

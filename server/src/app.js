@@ -173,7 +173,12 @@ app.get('/api/settings/public', async (req, res) => {
           messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || '',
           appId: process.env.FIREBASE_APP_ID || '',
           measurementId: process.env.FIREBASE_MEASUREMENT_ID || ''
-        } : null
+        } : null,
+        homeShowcase: settings.homeShowcase || {
+          slot1: { productId: 'prod_oil_01', title: 'Herbal Hair Oil', price: 299, mrp: 599, customImage: 'assets/new-oil-bottle-card.jpg' },
+          slot2: { productId: 'prod_shampoo_02', title: 'Hibiscus Flower Shampoo', price: 249, mrp: 549, customImage: 'assets/new-shampoo-bottle-card.jpg' },
+          combo: { productId: 'prod_duo_03', selectedProductIds: ['prod_oil_01', 'prod_shampoo_02'], title: 'The Royal Hair Ritual (Duo Set)', price: 499, mrp: 1148, customImage: 'assets/duo-ritual-new.jpg', tag: 'BEST VALUE: SAVE ₹149' }
+        }
       }
     });
   } catch (err) {

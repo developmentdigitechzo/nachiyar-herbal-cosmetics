@@ -67,6 +67,14 @@ router.post('/', async (req, res) => {
     const orderNumber = `NH-ON-${1000 + orderIndex}`;
     const orderId = `ord_${Date.now()}`;
 
+    // Load site settings for payment validation and combo bundle tracking
+    const settingsRes = await client.query('SELECT data FROM site_settings WHERE id = 1');
+    const siteSettings = settingsRes.rows.length > 0
+      ? (typeof settingsRes.rows[0].data === 'string' ? JSON.parse(settingsRes.rows[0].data) : settingsRes.rows[0].data)
+      : {};
+    const pmSettings = siteSettings.paymentMethods || {};
+    const comboSettings = siteSettings?.homeShowcase?.combo || null;
+
     // Deduct stock and write inventory logs
     for (const item of body.items) {
       const prodId = item.productId || item.id;
@@ -99,15 +107,39 @@ router.post('/', async (req, res) => {
           newStock,
           `Online Customer Checkout (${body.customer ? (body.customer.fullName || body.customer.name) : 'Web'})`
         ]);
+
+        // Dual Inventory Deductions for Combo Bundles
+        if (comboSettings && (prodId === comboSettings.productId || prodId === 'prod_duo_03') && Array.isArray(comboSettings.selectedProductIds)) {
+          for (const subProdId of comboSettings.selectedProductIds) {
+            if (subProdId !== prodId) {
+              const subRes = await client.query('SELECT id, name, stock FROM products WHERE id = $1', [subProdId]);
+              if (subRes.rows.length > 0) {
+                const subProd = subRes.rows[0];
+                const subPrev = Number(subProd.stock) || 0;
+                const subNew = Math.max(0, subPrev - qty);
+                await client.query('UPDATE products SET stock = $1, updated_at = NOW() WHERE id = $2', [subNew, subProdId]);
+                await client.query(`
+                  INSERT INTO inventory_logs (
+                    id, product_id, product_name, channel, reference,
+                    change, prev_stock, new_stock, timestamp, reason
+                  ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), $9)
+                `, [
+                  `log_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+                  subProd.id,
+                  subProd.name,
+                  'online',
+                  orderNumber,
+                  -qty,
+                  subPrev,
+                  subNew,
+                  `Combo Bundle Item Deduction: ${prod.name} (${orderNumber})`
+                ]);
+              }
+            }
+          }
+        }
       }
     }
-
-    // Verify Payment Method against Admin Settings
-    const settingsRes = await client.query('SELECT data FROM site_settings WHERE id = 1');
-    const siteSettings = settingsRes.rows.length > 0
-      ? (typeof settingsRes.rows[0].data === 'string' ? JSON.parse(settingsRes.rows[0].data) : settingsRes.rows[0].data)
-      : {};
-    const pmSettings = siteSettings.paymentMethods || {};
 
     const rawMethod = String(body.paymentMethod || '').trim();
     let normalizedCategory = 'cod';

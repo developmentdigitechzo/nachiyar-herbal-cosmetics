@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="admin.css?v=5.2">
+  <link rel="stylesheet" href="admin.css?v=5.3">
   <script>
     // Immediate client-side security auth gate
     (function() {
@@ -459,7 +459,13 @@
             <h1 class="pane-title">Product Catalog Manager</h1>
             <p class="pane-desc">Add unlimited products, update pricing, descriptions, images, variants, and SEO.</p>
           </div>
-          <button class="btn-primary" id="btnOpenNewProductModal">+ Add New Product</button>
+          <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <button type="button" class="btn-secondary" id="btnSwapFlagship" title="Instantly swap Left Card (Slot 1) and Right Card (Slot 2) on Home Page" style="font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
+              <span>⇄</span>
+              <span>Swap Flagship 1 &amp; 2</span>
+            </button>
+            <button class="btn-primary" id="btnOpenNewProductModal">+ Add New Product</button>
+          </div>
         </div>
 
         <!-- Products List Table -->
@@ -485,6 +491,7 @@
                   <th>Current Stock</th>
                   <th>Status</th>
                   <th>SEO Slug</th>
+                  <th>Home Showcase</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -1606,6 +1613,164 @@
     </div>
   </div>
 
+  <!-- ==================== MODAL: CONFIGURE COMBO BANNER ==================== -->
+  <div class="modal-overlay" id="comboModalOverlay" style="display: none;">
+    <div class="modal-box" style="width: min(92vw, 560px); max-height: 90vh; overflow-y: auto; box-sizing: border-box; border-radius: 12px; background: #fff; box-shadow: 0 20px 40px rgba(0,0,0,0.25);">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: flex-start; padding: 20px 24px; border-bottom: 1px solid #E2E8F0;">
+        <div>
+          <h2 style="font-size: 1.25rem; font-weight: 800; margin: 0; color: #1E293B;">🎁 Configure Home Page Combo Banner</h2>
+          <p style="font-size: 0.8125rem; color: #64748B; margin: 4px 0 0;">Upload a dedicated combo banner photo, set exclusive combo pricing &amp; savings tagline.</p>
+        </div>
+        <button type="button" class="modal-close-btn" id="comboModalClose" style="background: none; border: none; font-size: 1.25rem; cursor: pointer; color: #64748B;">✕</button>
+      </div>
+
+      <form id="comboBannerForm" class="modal-form" style="padding: 20px 24px;">
+        <input type="hidden" id="comboFormProductId" value="prod_duo_03">
+
+        <!-- 1. Interactive Multi-Product Selector -->
+        <div class="form-group" style="margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 4px;">
+            <label style="font-size: 0.8125rem; font-weight: 700; color: #1E293B; margin: 0;">1. Select Products to Include in this Combo *</label>
+            <span id="comboSelectedCountBadge" style="font-size: 0.75rem; background: #EEF2FF; color: #4338CA; font-weight: 700; padding: 2px 8px; border-radius: 999px;">0 Selected</span>
+          </div>
+          <p style="font-size: 0.75rem; color: #64748B; margin: 0 0 8px;">Tick the individual products from your catalog that make up this combo pack. Total MRP and regular prices will auto-calculate.</p>
+          
+          <div id="comboProductsPickerList" style="max-height: 180px; overflow-y: auto; border: 1.5px solid #E2E8F0; border-radius: 8px; padding: 6px; background: #F8FAFC; display: flex; flex-direction: column; gap: 6px;">
+            <!-- Dynamically populated with products, checkboxes, thumbnails, individual prices -->
+          </div>
+
+          <!-- Dynamic Live Calculation Banner -->
+          <div id="comboCalculationBanner" style="display: none; margin-top: 10px; padding: 10px 14px; background: #F0FDF4; border: 1.5px solid #BBF7D0; border-radius: 8px; font-size: 0.8125rem; color: #166534;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+              <span><strong>Combined MRP:</strong> <span id="comboCalcMrp">₹0</span> | <strong>Combined Regular:</strong> <span id="comboCalcBase">₹0</span></span>
+              <span id="comboCalcSavingsPill" style="background: #15803D; color: #fff; font-weight: 700; font-size: 0.75rem; padding: 3px 10px; border-radius: 999px; letter-spacing: 0.3px;">Save ₹0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Associated Catalog Product Picker -->
+        <div class="form-group" style="margin-bottom: 14px;">
+          <label style="font-size: 0.8125rem; font-weight: 700; color: #334155; display: block; margin-bottom: 6px;">2. Link to Catalog Combo Product (for Shop Page &amp; Cart)</label>
+          <select id="comboLinkProductSelect" class="form-input" style="width: 100%; box-sizing: border-box; height: 40px;">
+            <!-- Dynamically populated from products -->
+          </select>
+          <small style="color: #64748B; font-size: 0.75rem; display: block; margin-top: 4px;">Orders placed for this combo banner will link to this catalog item and appear in the Shop page catalog.</small>
+        </div>
+
+        <!-- Combo Title & Tagline -->
+        <div class="form-row" style="display: flex; gap: 12px; margin-bottom: 14px; flex-wrap: wrap;">
+          <div class="form-group" style="flex: 2; min-width: 220px;">
+            <label style="font-size: 0.8125rem; font-weight: 700; color: #334155; display: block; margin-bottom: 6px;">Combo Title *</label>
+            <input type="text" id="comboFormTitle" class="form-input" placeholder="The Royal Hair Ritual (Duo Set)" required style="width: 100%; box-sizing: border-box;">
+          </div>
+          <div class="form-group" style="flex: 1; min-width: 150px;">
+            <label style="font-size: 0.8125rem; font-weight: 700; color: #334155; display: block; margin-bottom: 6px;">Savings Tagline</label>
+            <input type="text" id="comboFormTag" class="form-input" placeholder="BEST VALUE: SAVE ₹149" style="width: 100%; box-sizing: border-box;">
+          </div>
+        </div>
+
+        <!-- Separate Combo Pricing -->
+        <div class="form-row" style="display: flex; gap: 12px; margin-bottom: 14px; flex-wrap: wrap;">
+          <div class="form-group" style="flex: 1; min-width: 140px;">
+            <label style="font-size: 0.8125rem; font-weight: 700; color: #334155; display: block; margin-bottom: 6px;">Special Combo Price (₹) *</label>
+            <input type="number" id="comboFormPrice" class="form-input" placeholder="499" required min="1" style="width: 100%; box-sizing: border-box;">
+          </div>
+          <div class="form-group" style="flex: 1; min-width: 140px;">
+            <label style="font-size: 0.8125rem; font-weight: 700; color: #334155; display: block; margin-bottom: 6px;">Original Total MRP (₹)</label>
+            <input type="number" id="comboFormMrp" class="form-input" placeholder="1148" min="1" style="width: 100%; box-sizing: border-box;">
+          </div>
+        </div>
+
+        <!-- Dedicated Combo Banner Image Upload -->
+        <div class="form-group" style="margin-bottom: 14px;">
+          <label style="font-size: 0.8125rem; font-weight: 700; color: #334155; display: block; margin-bottom: 6px;">Dedicated Combo Banner Image *</label>
+          <div style="display: flex; gap: 14px; align-items: center; margin-bottom: 8px; flex-wrap: wrap;">
+            <div style="width: 80px; height: 80px; border-radius: 8px; border: 1.5px dashed #CBD5E1; display: flex; align-items: center; justify-content: center; background: #F8FAFC; overflow: hidden; flex-shrink: 0;">
+              <img id="comboImagePreview" src="assets/duo-ritual-new.jpg" alt="Combo Preview" style="width: 100%; height: 100%; object-fit: contain;">
+            </div>
+            <div style="flex: 1; min-width: 200px;">
+              <input type="file" id="comboFileInput" accept="image/*" style="display: none;">
+              <button type="button" class="btn-secondary btn-sm" id="btnUploadComboImage" style="margin-bottom: 6px;">📁 Choose New Image File</button>
+              <input type="text" id="comboFormImageUrl" class="form-input form-input-sm" placeholder="or enter image path / URL" style="width: 100%; box-sizing: border-box;">
+              <div id="comboUploadStatus" style="font-size: 0.75rem; color: #10B981; display: none; margin-top: 4px;">✅ Image uploaded successfully!</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Combo Description -->
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label style="font-size: 0.8125rem; font-weight: 700; color: #334155; display: block; margin-bottom: 6px;">Combo Description</label>
+          <textarea id="comboFormDesc" class="form-input" rows="3" placeholder="Experience full follicular revitalisation..." style="width: 100%; box-sizing: border-box; resize: vertical;"></textarea>
+        </div>
+
+        <!-- Modal Actions -->
+        <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #E2E8F0; padding-top: 14px; flex-wrap: wrap;">
+          <button type="button" class="btn-secondary" id="btnCancelComboModal">Cancel</button>
+          <button type="submit" class="btn-primary" id="btnSaveComboBanner">💾 Save &amp; Publish Combo Banner</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: CONFIGURE FLAGSHIP SHOWCASE ==================== -->
+  <div class="modal-overlay" id="flagshipModalOverlay" style="display: none;">
+    <div class="modal-box" style="width: min(92vw, 520px); max-height: 90vh; overflow-y: auto; box-sizing: border-box; border-radius: 12px; background: #fff; box-shadow: 0 20px 40px rgba(0,0,0,0.25);">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: flex-start; padding: 20px 24px; border-bottom: 1px solid #E2E8F0;">
+        <div>
+          <h2 id="flagshipModalTitle" style="font-size: 1.25rem; font-weight: 800; margin: 0; color: #1E293B;">★ Configure Home Page Flagship Card</h2>
+          <p id="flagshipModalSubtitle" style="font-size: 0.8125rem; color: #64748B; margin: 4px 0 0;">Customize the picture and rates shown on the Home Page flagship card.</p>
+        </div>
+        <button type="button" class="modal-close-btn" id="flagshipModalClose" style="background: none; border: none; font-size: 1.25rem; cursor: pointer; color: #64748B;">✕</button>
+      </div>
+
+      <form id="flagshipForm" class="modal-form" style="padding: 20px 24px;">
+        <input type="hidden" id="flagshipFormSlot">
+        <input type="hidden" id="flagshipFormProductId">
+
+        <div class="form-group" style="margin-bottom: 14px;">
+          <label style="font-size: 0.8125rem; font-weight: 700; color: #334155; display: block; margin-bottom: 6px;">Product Title *</label>
+          <input type="text" id="flagshipFormTitle" class="form-input" required style="width: 100%; box-sizing: border-box;">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 14px;">
+          <label style="font-size: 0.8125rem; font-weight: 700; color: #334155; display: block; margin-bottom: 6px;">Subtitle / Size info</label>
+          <input type="text" id="flagshipFormSubtitle" class="form-input" placeholder="e.g. Lavender Glass Bottle with Precision Dropper • 200ml" style="width: 100%; box-sizing: border-box;">
+        </div>
+
+        <div class="form-row" style="display: flex; gap: 12px; margin-bottom: 14px; flex-wrap: wrap;">
+          <div class="form-group" style="flex: 1; min-width: 130px;">
+            <label style="font-size: 0.8125rem; font-weight: 700; color: #334155; display: block; margin-bottom: 6px;">Showcase Price (₹) *</label>
+            <input type="number" id="flagshipFormPrice" class="form-input" required min="1" style="width: 100%; box-sizing: border-box;">
+          </div>
+          <div class="form-group" style="flex: 1; min-width: 130px;">
+            <label style="font-size: 0.8125rem; font-weight: 700; color: #334155; display: block; margin-bottom: 6px;">Showcase MRP (₹)</label>
+            <input type="number" id="flagshipFormMrp" class="form-input" min="1" style="width: 100%; box-sizing: border-box;">
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label style="font-size: 0.8125rem; font-weight: 700; color: #334155; display: block; margin-bottom: 6px;">Showcase Card Image *</label>
+          <div style="display: flex; gap: 14px; align-items: center; margin-bottom: 8px; flex-wrap: wrap;">
+            <div style="width: 70px; height: 70px; border-radius: 8px; border: 1.5px dashed #CBD5E1; display: flex; align-items: center; justify-content: center; background: #F8FAFC; overflow: hidden; flex-shrink: 0;">
+              <img id="flagshipImagePreview" src="" alt="Preview" style="width: 100%; height: 100%; object-fit: contain;">
+            </div>
+            <div style="flex: 1; min-width: 200px;">
+              <input type="file" id="flagshipFileInput" accept="image/*" style="display: none;">
+              <button type="button" class="btn-secondary btn-sm" id="btnUploadFlagshipImage" style="margin-bottom: 6px;">📁 Choose New Image</button>
+              <input type="text" id="flagshipFormImageUrl" class="form-input form-input-sm" placeholder="Image URL / path" style="width: 100%; box-sizing: border-box;">
+              <div id="flagshipUploadStatus" style="font-size: 0.75rem; color: #10B981; display: none; margin-top: 4px;">✅ Image uploaded successfully!</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #E2E8F0; padding-top: 14px; flex-wrap: wrap;">
+          <button type="button" class="btn-secondary" id="btnCancelFlagshipModal">Cancel</button>
+          <button type="submit" class="btn-primary" id="btnSaveFlagshipModal">💾 Save &amp; Update Home Card</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- ==================== MODAL 1: ADD / EDIT PRODUCT ==================== -->
   <div class="modal-overlay" id="productModalOverlay">
     <div class="modal-box modal-box--large">
@@ -1714,6 +1879,20 @@
           <div class="form-group">
             <label>Target Keywords (comma-separated)</label>
             <input type="text" id="formProdKeywords" class="form-input" placeholder="hair oil, ayurveda, nachiyar">
+          </div>
+
+          <h4 class="form-section-title">5. Storefront Home Page Showcase Placement</h4>
+          <div class="form-group">
+            <label style="font-weight: 700; color: #1E293B;">Display on Storefront Front / Main Page?</label>
+            <select id="formProdShowcaseSlot" class="form-input" style="font-weight: 600;">
+              <option value="">None (Standard Product Catalog / Shop Only)</option>
+              <option value="slot1">⭐ Featured Flagship 1 (Home Page Left Product Card)</option>
+              <option value="slot2">⭐ Featured Flagship 2 (Home Page Right Product Card)</option>
+              <option value="combo">🎁 Royal Combo Ritual Banner</option>
+            </select>
+            <small style="color: var(--admin-text-muted); font-size: 0.75rem; margin-top: 4px; display: block;">
+              Select a position to immediately feature this product directly on the customer storefront front page upon saving.
+            </small>
           </div>
 
         </div>
@@ -2348,7 +2527,7 @@
     </div>
   </div>
 
-  <script src="admin.js?v=5.2"></script>
+  <script src="admin.js?v=5.4"></script>
 
   
   </body>

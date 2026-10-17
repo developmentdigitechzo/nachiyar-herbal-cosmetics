@@ -224,8 +224,135 @@ async function initStorefrontApp() {
   }
 
   // Helper: Synchronize Live Products, Rates & Images across the entire Storefront DOM
-  function applyLiveProductsToDOM(productsList) {
+  function applyLiveProductsToDOM(productsList, customShowcase = null) {
     if (!productsList || !productsList.length) return;
+
+    // Load showcase configuration from argument, window, or localStorage cache
+    let showcase = customShowcase;
+    if (!showcase && window.__NACHIYAR_SETTINGS && window.__NACHIYAR_SETTINGS.homeShowcase) {
+      showcase = window.__NACHIYAR_SETTINGS.homeShowcase;
+    }
+    if (!showcase) {
+      try {
+        showcase = JSON.parse(localStorage.getItem('nachiyar_home_showcase') || '{}');
+      } catch (e) {
+        showcase = {};
+      }
+    }
+
+    const slot1Cfg = showcase?.slot1 || null;
+    const slot2Cfg = showcase?.slot2 || null;
+    const comboCfg = showcase?.combo || null;
+
+    const isSlot1Removed = !!(slot1Cfg && (slot1Cfg.removed === true || slot1Cfg.disabled === true));
+    const isSlot2Removed = !!(slot2Cfg && (slot2Cfg.removed === true || slot2Cfg.disabled === true));
+    const isComboRemoved = !!(comboCfg && (comboCfg.removed === true || comboCfg.disabled === true));
+
+    const slot1TargetId = isSlot1Removed ? null : (slot1Cfg?.productId || 'prod_oil_01');
+    const slot2TargetId = isSlot2Removed ? null : (slot2Cfg?.productId || 'prod_shampoo_02');
+    const comboTargetId = isComboRemoved ? null : (comboCfg?.productId || 'prod_duo_03');
+
+    // 1. Enforce live storefront visibility for Flagship collection cards & combo banner
+    const cardOilEl = document.getElementById('card-oil');
+    if (cardOilEl) cardOilEl.style.display = isSlot1Removed ? 'none' : '';
+    const megaOilEl = document.querySelector('.mega-card[href*="herbal-hair-oil"]') || document.querySelector('.mega-card:first-child');
+    if (megaOilEl) megaOilEl.style.display = isSlot1Removed ? 'none' : '';
+
+    const cardShampEl = document.getElementById('card-shampoo');
+    if (cardShampEl) cardShampEl.style.display = isSlot2Removed ? 'none' : '';
+    const megaShampEl = document.querySelector('.mega-card[href*="hibiscus-flower-shampoo"]') || document.querySelector('.mega-card:nth-child(2)');
+    if (megaShampEl) megaShampEl.style.display = isSlot2Removed ? 'none' : '';
+
+    const bundleBannerEl = document.querySelector('.bundle-banner');
+    if (bundleBannerEl) bundleBannerEl.style.display = isComboRemoved ? 'none' : '';
+    const megaDuoEl = document.querySelector('.mega-card[href*="royal-hair-ritual-duo"]') || document.querySelector('.mega-card--duo');
+    if (megaDuoEl) megaDuoEl.style.display = isComboRemoved ? 'none' : '';
+
+    const dynamicGrid = document.getElementById('dynamicProductsGrid');
+    if (dynamicGrid) {
+      if (!isSlot1Removed && isSlot2Removed) {
+        dynamicGrid.style.gridTemplateColumns = 'minmax(0, 580px)';
+        dynamicGrid.style.justifyContent = 'center';
+      } else if (isSlot1Removed && !isSlot2Removed) {
+        dynamicGrid.style.gridTemplateColumns = 'minmax(0, 580px)';
+        dynamicGrid.style.justifyContent = 'center';
+      } else {
+        dynamicGrid.style.gridTemplateColumns = '';
+        dynamicGrid.style.justifyContent = '';
+      }
+    }
+
+    const collSection = document.getElementById('collection');
+    if (collSection) {
+      collSection.style.display = (isSlot1Removed && isSlot2Removed && isComboRemoved) ? 'none' : '';
+    }
+
+    // Helper: update border box color & badges ONLY for Featured Collection Cards (#card-oil / #card-shampoo)
+    function syncCardThemeAndBadges(cardEl, prodObj, defaultTheme) {
+      if (!cardEl) return;
+      const nameLower = ((prodObj.name || '') + ' ' + (prodObj.id || '') + ' ' + (prodObj.slug || '')).toLowerCase();
+      const isShampoo = nameLower.includes('shampoo') || nameLower.includes('cleanser');
+      const isOil = nameLower.includes('oil');
+
+      let themeBg = prodObj.themeColor;
+      if (!themeBg) {
+        if (isShampoo) themeBg = '#822234';
+        else if (isOil) themeBg = '#6B4E9B';
+        else themeBg = defaultTheme;
+      }
+
+      let cardTextColor = '#FAF8FD';
+      let accentHover = '#543980';
+      let pillText = prodObj.tagline || '';
+      let badgeNum = '100%';
+      let badgeUnit = 'PURE';
+      let badgeTitle = '100% Pure Active Plant Infusion';
+
+      if (themeBg.toLowerCase() === '#822234' || isShampoo) {
+        cardTextColor = '#FCF4F6';
+        accentHover = '#691726';
+        if (!pillText) pillText = 'Sulfate-Free • Fresh Petals';
+        badgeNum = 'pH 5.5';
+        badgeUnit = 'BALANCED';
+        badgeTitle = 'pH 5.5 Balanced Scalp Care';
+      } else if (themeBg.toLowerCase() === '#6b4e9b' || isOil) {
+        cardTextColor = '#FAF8FD';
+        accentHover = '#543980';
+        if (!pillText) pillText = 'Cold-Pressed • 18 Rare Herbs';
+        badgeNum = '100%';
+        badgeUnit = 'PURE';
+        badgeTitle = '100% Pure Active Plant Infusion';
+      } else {
+        if (!pillText) pillText = '100% Pure Botanical';
+        badgeNum = '100%';
+        badgeUnit = 'HERBAL';
+        badgeTitle = 'Pure Botanical Care';
+      }
+
+      cardEl.style.setProperty('--card-bg', themeBg);
+      cardEl.style.setProperty('--card-color', cardTextColor);
+      cardEl.style.setProperty('--accent-hover', accentHover);
+      cardEl.style.backgroundColor = themeBg;
+      cardEl.style.color = cardTextColor;
+
+      const pill = cardEl.querySelector('.pill-tag');
+      if (pill) pill.textContent = pillText;
+
+      const circleBadge = cardEl.querySelector('.circle-badge');
+      if (circleBadge) {
+        circleBadge.title = badgeTitle;
+        const bNum = circleBadge.querySelector('.badge-number');
+        if (bNum) bNum.textContent = badgeNum;
+        const bUnit = circleBadge.querySelector('.badge-unit');
+        if (bUnit) bUnit.textContent = badgeUnit;
+      }
+
+      const cat = cardEl.querySelector('.product-category');
+      if (cat) cat.textContent = prodObj.category || (isShampoo ? 'Gentle Scalp Cleanser & Shine Wash' : 'Ayurvedic Hair & Scalp Vitalizer');
+
+      const desc = cardEl.querySelector('.product-card-desc');
+      if (desc && prodObj.description) desc.textContent = prodObj.description;
+    }
 
     productsList.forEach(p => {
       updateProductMap(p);
@@ -238,38 +365,102 @@ async function initStorefrontApp() {
       const pId = p.id || '';
       const pSlug = p.slug || '';
 
-      // Strict matching for flagship core formulations on the home page
-      const isDuo = pId === 'prod_duo_03' || pSlug === 'royal-hair-ritual-duo';
-      const isOil = pId === 'prod_oil_01' || pSlug === 'herbal-hair-oil';
-      const isShampoo = pId === 'prod_shampoo_02' || pSlug === 'hibiscus-flower-shampoo';
+      const isSlot1 = !isSlot1Removed && ((slot1TargetId && pId === slot1TargetId) || (slot1TargetId === 'prod_oil_01' && (pId === 'prod_oil_01' || pSlug === 'herbal-hair-oil')));
+      const isSlot2 = !isSlot2Removed && ((slot2TargetId && pId === slot2TargetId) || (slot2TargetId === 'prod_shampoo_02' && (pId === 'prod_shampoo_02' || pSlug === 'hibiscus-flower-shampoo')));
+      const isCombo = !isComboRemoved && ((comboTargetId && pId === comboTargetId) || (comboTargetId === 'prod_duo_03' && (pId === 'prod_duo_03' || pSlug === 'royal-hair-ritual-duo')));
+
+      const isOil = (pId === 'prod_oil_01') || (pSlug === 'herbal-hair-oil');
+      const isShampoo = (pId === 'prod_shampoo_02') || (pSlug === 'hibiscus-flower-shampoo');
+
+      let activePrice = pPrice;
+      let activeMrp = pMrp;
+      let activeImg = pImg;
+      let activeName = pName;
+      let activeSub = pSub;
+
+      if (isSlot1 && slot1Cfg) {
+        if (slot1Cfg.price !== undefined && slot1Cfg.price !== '') activePrice = Number(slot1Cfg.price);
+        if (slot1Cfg.mrp !== undefined && slot1Cfg.mrp !== '') activeMrp = Number(slot1Cfg.mrp);
+        if (slot1Cfg.customImage) activeImg = slot1Cfg.customImage;
+        if (slot1Cfg.title) activeName = slot1Cfg.title;
+        if (slot1Cfg.subtitle) activeSub = slot1Cfg.subtitle;
+      } else if (isSlot2 && slot2Cfg) {
+        if (slot2Cfg.price !== undefined && slot2Cfg.price !== '') activePrice = Number(slot2Cfg.price);
+        if (slot2Cfg.mrp !== undefined && slot2Cfg.mrp !== '') activeMrp = Number(slot2Cfg.mrp);
+        if (slot2Cfg.customImage) activeImg = slot2Cfg.customImage;
+        if (slot2Cfg.title) activeName = slot2Cfg.title;
+        if (slot2Cfg.subtitle) activeSub = slot2Cfg.subtitle;
+      } else if (isCombo && comboCfg) {
+        if (comboCfg.price !== undefined && comboCfg.price !== '') activePrice = Number(comboCfg.price);
+        if (comboCfg.mrp !== undefined && comboCfg.mrp !== '') activeMrp = Number(comboCfg.mrp);
+        if (comboCfg.customImage) activeImg = comboCfg.customImage;
+        if (comboCfg.title) activeName = comboCfg.title;
+        if (comboCfg.subtitle) activeSub = comboCfg.subtitle;
+      }
+
+      // Also update PRODUCTS dictionary for cart / buy operations
+      if (isSlot1) {
+        PRODUCTS.oil = {
+          ...PRODUCTS.oil,
+          id: pId,
+          title: activeName,
+          subtitle: activeSub,
+          price: activePrice,
+          subPrice: Math.round(activePrice * 0.9),
+          image: activeImg
+        };
+      } else if (isSlot2) {
+        PRODUCTS.shampoo = {
+          ...PRODUCTS.shampoo,
+          id: pId,
+          title: activeName,
+          subtitle: activeSub,
+          price: activePrice,
+          subPrice: Math.round(activePrice * 0.9),
+          image: activeImg
+        };
+      } else if (isCombo) {
+        PRODUCTS.duo = {
+          ...PRODUCTS.duo,
+          id: pId,
+          title: activeName,
+          subtitle: activeSub,
+          price: activePrice,
+          subPrice: Math.round(activePrice * 0.9),
+          image: activeImg
+        };
+      }
 
       // 1. Header Mega Menu
-      if (isOil) {
-        const megaOil = document.querySelector('.mega-card[href*="herbal-hair-oil"]');
+      if (isSlot1) {
+        const megaOil = document.querySelector('.mega-card[href*="herbal-hair-oil"]') || document.querySelector('.mega-card:first-child');
         if (megaOil) {
-          const h4 = megaOil.querySelector('h4'); if (h4) h4.textContent = pName;
-          const priceP = megaOil.querySelector('.mega-price'); if (priceP) priceP.textContent = `₹${pPrice} • 200ml`;
-          const img = megaOil.querySelector('img'); if (img && pImg) img.src = pImg;
+          const h4 = megaOil.querySelector('h4'); if (h4) h4.textContent = activeName;
+          const priceP = megaOil.querySelector('.mega-price'); if (priceP) priceP.textContent = `₹${activePrice} • ${p.category || '200ml'}`;
+          const img = megaOil.querySelector('img'); if (img && activeImg) img.src = activeImg;
+          if (pSlug) megaOil.href = `/product/?slug=${pSlug}`;
         }
-      } else if (isShampoo) {
-        const megaShamp = document.querySelector('.mega-card[href*="hibiscus-flower-shampoo"]');
+      } else if (isSlot2) {
+        const megaShamp = document.querySelector('.mega-card[href*="hibiscus-flower-shampoo"]') || document.querySelector('.mega-card:nth-child(2)');
         if (megaShamp) {
-          const h4 = megaShamp.querySelector('h4'); if (h4) h4.textContent = pName;
-          const priceP = megaShamp.querySelector('.mega-price'); if (priceP) priceP.textContent = `₹${pPrice} • 250ml`;
-          const img = megaShamp.querySelector('img'); if (img && pImg) img.src = pImg;
+          const h4 = megaShamp.querySelector('h4'); if (h4) h4.textContent = activeName;
+          const priceP = megaShamp.querySelector('.mega-price'); if (priceP) priceP.textContent = `₹${activePrice} • ${p.category || '250ml'}`;
+          const img = megaShamp.querySelector('img'); if (img && activeImg) img.src = activeImg;
+          if (pSlug) megaShamp.href = `/product/?slug=${pSlug}`;
         }
-      } else if (isDuo) {
-        const megaDuo = document.querySelector('.mega-card[href*="royal-hair-ritual-duo"]');
+      } else if (isCombo) {
+        const megaDuo = document.querySelector('.mega-card[href*="royal-hair-ritual-duo"]') || document.querySelector('.mega-card--duo');
         if (megaDuo) {
-          const h4 = megaDuo.querySelector('h4'); if (h4) h4.textContent = pName;
-          const savingsPct = pMrp > pPrice ? Math.round(((pMrp - pPrice) / pMrp) * 100) : 15;
+          const h4 = megaDuo.querySelector('h4'); if (h4) h4.textContent = activeName;
+          const savingsPct = activeMrp > activePrice ? Math.round(((activeMrp - activePrice) / activeMrp) * 100) : 15;
           const priceP = megaDuo.querySelector('.mega-price');
-          if (priceP) priceP.innerHTML = `₹${pPrice} <s class="old-price">₹${pMrp}</s> (Save ${savingsPct}%)`;
-          const img = megaDuo.querySelector('img'); if (img && pImg) img.src = pImg;
+          if (priceP) priceP.innerHTML = `₹${activePrice} <s class="old-price">₹${activeMrp}</s> (Save ${savingsPct}%)`;
+          const img = megaDuo.querySelector('img'); if (img && activeImg) img.src = activeImg;
+          if (pSlug) megaDuo.href = `/product/?slug=${pSlug}`;
         }
       }
 
-      // 2. Desktop Hero Flank Cards
+      // 2. Desktop Hero Flank Cards (ORIGINAL: always fixed transparent bottles & original pricing)
       if (isOil) {
         const flankOil = document.querySelector('.hero-product-flank--left .hero-flank-card') || document.querySelector('.flank-oil');
         if (flankOil) {
@@ -306,7 +497,7 @@ async function initStorefrontApp() {
         }
       }
 
-      // 3. Mobile Hero Showcase
+      // 3. Mobile Hero Showcase (ORIGINAL: always fixed transparent bottles & original pricing)
       if (isOil) {
         const nameEl = document.querySelector('.m-hero-stage--oil .m-bottle-name');
         if (nameEl) nameEl.textContent = pName;
@@ -334,84 +525,107 @@ async function initStorefrontApp() {
       }
 
       // 4. Featured Collection: "Two Formulations. Zero Compromise." (#card-oil, #card-shampoo, .bundle-banner)
-      if (isOil) {
+      if (isSlot1) {
         const cardOil = document.getElementById('card-oil');
+        syncCardThemeAndBadges(cardOil, p, '#6B4E9B');
+
         if (cardOil) {
           const title = cardOil.querySelector('.product-card-title');
-          if (title) title.textContent = pName;
+          if (title) title.textContent = activeName;
           const sub = cardOil.querySelector('.product-card-subtitle');
-          if (sub && pSub) sub.textContent = pSub;
+          if (sub && activeSub) sub.textContent = activeSub;
           const curPrice = cardOil.querySelector('.price-current');
-          if (curPrice) curPrice.textContent = `₹${pPrice}`;
+          if (curPrice) curPrice.textContent = `₹${activePrice}`;
           const mrpPrice = cardOil.querySelector('.price-mrp');
-          if (mrpPrice) mrpPrice.textContent = `₹${pMrp}`;
+          if (mrpPrice) mrpPrice.textContent = `₹${activeMrp}`;
           const img = cardOil.querySelector('.card-product-img');
-          if (img && pImg) img.src = pImg;
+          if (img && activeImg) img.src = activeImg;
           const btn = cardOil.querySelector('.btn-quick-add');
           if (btn) {
             btn.dataset.id = pId;
-            btn.dataset.name = pName;
-            btn.dataset.price = pPrice;
-            if (pImg) btn.dataset.img = pImg;
+            btn.dataset.name = activeName;
+            btn.dataset.price = activePrice;
+            if (activeImg) btn.dataset.img = activeImg;
           }
+          const link = cardOil.querySelector('.quick-view-badge');
+          if (link && pSlug) link.href = `/product/?slug=${pSlug}`;
         }
-      } else if (isShampoo) {
+      } else if (isSlot2) {
         const cardShamp = document.getElementById('card-shampoo');
+        syncCardThemeAndBadges(cardShamp, p, '#822234');
+
         if (cardShamp) {
           const title = cardShamp.querySelector('.product-card-title');
-          if (title) title.textContent = pName;
+          if (title) title.textContent = activeName;
           const sub = cardShamp.querySelector('.product-card-subtitle');
-          if (sub && pSub) sub.textContent = pSub;
+          if (sub && activeSub) sub.textContent = activeSub;
           const curPrice = cardShamp.querySelector('.price-current');
-          if (curPrice) curPrice.textContent = `₹${pPrice}`;
+          if (curPrice) curPrice.textContent = `₹${activePrice}`;
           const mrpPrice = cardShamp.querySelector('.price-mrp');
-          if (mrpPrice) mrpPrice.textContent = `₹${pMrp}`;
+          if (mrpPrice) mrpPrice.textContent = `₹${activeMrp}`;
           const img = cardShamp.querySelector('.card-product-img');
-          if (img && pImg) img.src = pImg;
+          if (img && activeImg) img.src = activeImg;
           const btn = cardShamp.querySelector('.btn-quick-add');
           if (btn) {
             btn.dataset.id = pId;
-            btn.dataset.name = pName;
-            btn.dataset.price = pPrice;
-            if (pImg) btn.dataset.img = pImg;
+            btn.dataset.name = activeName;
+            btn.dataset.price = activePrice;
+            if (activeImg) btn.dataset.img = activeImg;
           }
+          const link = cardShamp.querySelector('.quick-view-badge');
+          if (link && pSlug) link.href = `/product/?slug=${pSlug}`;
         }
-      } else if (isDuo) {
-        const bundle = document.querySelector('.bundle-banner');
+      } else if (isCombo) {
+        const bundle = document.querySelector('.bundle-banner') || document.querySelector('.bundle-grid');
         if (bundle) {
           const title = bundle.querySelector('.bundle-title');
-          if (title) title.textContent = pName;
-          const curPrice = bundle.querySelector('.bundle-price-now');
-          if (curPrice) curPrice.textContent = `₹${pPrice}`;
-          const wasPrice = bundle.querySelector('.bundle-price-was');
-          if (wasPrice) wasPrice.textContent = `₹${pMrp}`;
+          if (title) title.textContent = activeName;
+          const curPrice = bundle.querySelector('.bundle-price-now') || bundle.querySelector('.price-current');
+          if (curPrice) curPrice.textContent = `₹${activePrice}`;
+          const wasPrice = bundle.querySelector('.bundle-price-was') || bundle.querySelector('.price-mrp');
+          if (wasPrice) wasPrice.textContent = `₹${activeMrp}`;
           const badge = bundle.querySelector('.bundle-badge');
           if (badge) {
-            const savings = pMrp - pPrice;
-            badge.textContent = savings > 0 ? `★ BEST VALUE: SAVE ₹${savings}` : '★ ROYAL COMBO VALUE';
+            const savings = activeMrp - activePrice;
+            badge.textContent = comboCfg?.tag || (savings > 0 ? `★ BEST VALUE: SAVE ₹${savings}` : '★ ROYAL COMBO VALUE');
           }
           const discPill = bundle.querySelector('.discount-pill');
           if (discPill) {
-            const pct = pMrp > pPrice ? Math.round(((pMrp - pPrice) / pMrp) * 100) : 0;
+            const pct = activeMrp > activePrice ? Math.round(((activeMrp - activePrice) / activeMrp) * 100) : 0;
             discPill.textContent = pct > 0 ? `${pct}% OFF` : 'SPECIAL PRICE';
           }
+          const descEl = bundle.querySelector('.bundle-description');
+          if (descEl && (comboCfg?.description || p.description)) {
+            descEl.textContent = comboCfg?.description || p.description;
+          }
+          const feats = bundle.querySelector('.bundle-features');
+          if (feats && Array.isArray(comboCfg?.selectedProductIds) && comboCfg.selectedProductIds.length > 0) {
+            const includedItems = comboCfg.selectedProductIds
+              .map(id => productsList.find(x => x.id === id))
+              .filter(Boolean);
+            if (includedItems.length > 0) {
+              feats.innerHTML = includedItems.map(item => `
+                <span>✦ 1x ${item.name} (${item.subtitle || item.category || 'Full Size'})</span>
+              `).join('') + `<span>✦ Free Pan-India Express Delivery</span>`;
+            }
+          }
           const img = bundle.querySelector('.bundle-img');
-          if (img && pImg) img.src = pImg;
+          if (img && activeImg) img.src = activeImg;
           const btn = bundle.querySelector('.btn-bundle-add');
           if (btn) {
             btn.dataset.id = pId;
-            btn.dataset.name = pName;
-            btn.dataset.price = pPrice;
-            if (pImg) btn.dataset.img = pImg;
+            btn.dataset.name = activeName;
+            btn.dataset.price = activePrice;
+            if (activeImg) btn.dataset.img = activeImg;
           }
         }
       }
 
       // 5. Update ALL quick-add and add-to-bag buttons across the page matching this product ID or slug
       document.querySelectorAll(`[data-id="${pId}"], [data-id="${pSlug}"]`).forEach(btn => {
-        btn.dataset.price = pPrice;
-        btn.dataset.name = pName;
-        if (pImg) btn.dataset.img = pImg;
+        btn.dataset.price = activePrice;
+        btn.dataset.name = activeName;
+        if (activeImg) btn.dataset.img = activeImg;
       });
     });
 
@@ -489,12 +703,23 @@ async function initStorefrontApp() {
       fetch('/api/settings/public?_t=' + Date.now(), { cache: 'no-store' }).then(r => r.json()).catch(() => ({ success: false }))
     ]);
 
+    if (sRes.success && sRes.data) {
+      const data = sRes.data;
+      if (data.homeShowcase) {
+        try {
+          localStorage.setItem('nachiyar_home_showcase', JSON.stringify(data.homeShowcase));
+        } catch (e) {}
+        window.__NACHIYAR_SETTINGS = { ...(window.__NACHIYAR_SETTINGS || {}), homeShowcase: data.homeShowcase };
+      }
+    }
+
     if (pRes.success && pRes.data && pRes.data.length) {
       try {
         localStorage.setItem('nachiyar_store_products', JSON.stringify(pRes.data));
       } catch (e) {}
 
-      applyLiveProductsToDOM(pRes.data);
+      const activeShowcase = (sRes.success && sRes.data && sRes.data.homeShowcase) || null;
+      applyLiveProductsToDOM(pRes.data, activeShowcase);
     }
 
     if (sRes.success && sRes.data) {

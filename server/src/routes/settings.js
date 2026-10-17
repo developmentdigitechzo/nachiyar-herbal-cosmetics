@@ -34,7 +34,12 @@ router.get('/public', async (req, res) => {
           messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || '',
           appId: process.env.FIREBASE_APP_ID || '',
           measurementId: process.env.FIREBASE_MEASUREMENT_ID || ''
-        } : null
+        } : null,
+        homeShowcase: settings.homeShowcase || {
+          slot1: { productId: 'prod_oil_01', title: 'Herbal Hair Oil', price: 299, mrp: 599, customImage: 'assets/new-oil-bottle-card.jpg' },
+          slot2: { productId: 'prod_shampoo_02', title: 'Hibiscus Flower Shampoo', price: 249, mrp: 549, customImage: 'assets/new-shampoo-bottle-card.jpg' },
+          combo: { productId: 'prod_duo_03', title: 'The Royal Hair Ritual (Duo Set)', price: 499, mrp: 1148, customImage: 'assets/duo-ritual-new.jpg', tag: 'BEST VALUE: SAVE ₹149' }
+        }
       }
     });
   } catch (err) {
@@ -74,6 +79,132 @@ router.put('/', async (req, res) => {
     res.json({ success: true, data: updated });
   } catch (err) {
     console.error('Error updating settings:', err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// POST /api/settings/home-showcase
+router.post('/home-showcase', async (req, res) => {
+  try {
+    const payload = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
+    const { slot, productId, selectedProductIds, customImage, price, mrp, title, subtitle, description, tag, features, remove, swap } = payload;
+
+    const existing = await query('SELECT data FROM site_settings WHERE id = 1');
+    let current = {};
+    if (existing.rows.length > 0) {
+      current = typeof existing.rows[0].data === 'string' ? JSON.parse(existing.rows[0].data) : existing.rows[0].data;
+    }
+
+    if (!current.homeShowcase) {
+      current.homeShowcase = {
+        slot1: { productId: 'prod_oil_01', title: 'Herbal Hair Oil', price: 299, mrp: 599, customImage: 'assets/new-oil-bottle-card.jpg' },
+        slot2: { productId: 'prod_shampoo_02', title: 'Hibiscus Flower Shampoo', price: 249, mrp: 549, customImage: 'assets/new-shampoo-bottle-card.jpg' },
+        combo: { productId: 'prod_duo_03', title: 'The Royal Hair Ritual (Duo Set)', price: 499, mrp: 1148, customImage: 'assets/duo-ritual-new.jpg', tag: 'BEST VALUE: SAVE ₹149' }
+      };
+    }
+
+    // 1. SWAP SLOTS (1 ⇄ 2)
+    if (swap) {
+      const slot1 = current.homeShowcase.slot1 || { productId: 'prod_oil_01', title: 'Herbal Hair Oil', price: 299, mrp: 599, customImage: 'assets/new-oil-bottle-card.jpg' };
+      const slot2 = current.homeShowcase.slot2 || { productId: 'prod_shampoo_02', title: 'Hibiscus Flower Shampoo', price: 249, mrp: 549, customImage: 'assets/new-shampoo-bottle-card.jpg' };
+      
+      current.homeShowcase.slot1 = slot2;
+      current.homeShowcase.slot2 = slot1;
+      current.homeShowcase.updatedAt = new Date().toISOString();
+
+      await query(`
+        INSERT INTO site_settings (id, data) VALUES (1, $1)
+        ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data
+      `, [JSON.stringify(current)]);
+
+      return res.json({
+        success: true,
+        message: 'Flagship 1 and Flagship 2 positions swapped successfully!',
+        homeShowcase: current.homeShowcase
+      });
+    }
+
+    // Validate slot for assignment or removal
+    if (!slot || !['slot1', 'slot2', 'combo'].includes(slot)) {
+      return res.status(400).json({ success: false, message: 'Valid slot (slot1, slot2, or combo) is required.' });
+    }
+
+    // 2. TRUE REMOVAL (Mark as removed and disabled so fallback doesn't resurrect it)
+    if (remove) {
+      current.homeShowcase[slot] = {
+        removed: true,
+        disabled: true,
+        productId: null,
+        title: '',
+        customImage: '',
+        price: 0,
+        mrp: 0,
+        updatedAt: new Date().toISOString()
+      };
+    } else {
+      let prodObj = null;
+      if (productId) {
+        const prodRes = await query('SELECT * FROM products WHERE id = $1', [productId]);
+        if (prodRes.rows.length > 0) prodObj = prodRes.rows[0];
+      }
+
+      current.homeShowcase[slot] = {
+        removed: false,
+        disabled: false,
+        productId: productId || current.homeShowcase[slot]?.productId || 'prod_duo_03',
+        customImage: customImage || (prodObj && prodObj.images ? (typeof prodObj.images === 'string' ? JSON.parse(prodObj.images)[0] : prodObj.images[0]) : (current.homeShowcase[slot]?.customImage || '')),
+        price: (price !== undefined && price !== '') ? Number(price) : (prodObj ? Number(prodObj.price) : current.homeShowcase[slot]?.price || 0),
+        mrp: (mrp !== undefined && mrp !== '') ? Number(mrp) : (prodObj ? Number(prodObj.mrp) : current.homeShowcase[slot]?.mrp || 0),
+        title: title || (prodObj ? prodObj.name : current.homeShowcase[slot]?.title || ''),
+        subtitle: subtitle || (prodObj ? prodObj.subtitle : current.homeShowcase[slot]?.subtitle || ''),
+        description: description !== undefined ? description : (prodObj ? prodObj.description : current.homeShowcase[slot]?.description || ''),
+        tag: tag !== undefined ? tag : (current.homeShowcase[slot]?.tag || ''),
+        features: features || current.homeShowcase[slot]?.features || [],
+        selectedProductIds: (slot === 'combo' && Array.isArray(selectedProductIds)) ? selectedProductIds : (current.homeShowcase[slot]?.selectedProductIds || ['prod_oil_01', 'prod_shampoo_02']),
+        updatedAt: new Date().toISOString()
+      };
+
+      // If updating combo and we have an associated product, sync prices and images in products table
+      if (slot === 'combo' && productId) {
+        try {
+          const comboImg = customImage ? JSON.stringify([customImage]) : undefined;
+          await query(`
+            UPDATE products 
+            SET price = COALESCE($1, price),
+                mrp = COALESCE($2, mrp),
+                name = COALESCE($3, name),
+                images = COALESCE($4, images),
+                description = COALESCE($5, description),
+                updated_at = NOW()
+            WHERE id = $6
+          `, [
+            (price !== undefined && price !== '') ? Number(price) : null,
+            (mrp !== undefined && mrp !== '') ? Number(mrp) : null,
+            title || null,
+            comboImg || null,
+            description || null,
+            productId
+          ]);
+        } catch (e) {
+          console.warn('Sync combo product warning:', e.message);
+        }
+      }
+    }
+
+    current.homeShowcase.updatedAt = new Date().toISOString();
+
+    await query(`
+      INSERT INTO site_settings (id, data) VALUES (1, $1)
+      ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data
+    `, [JSON.stringify(current)]);
+
+    res.json({
+      success: true,
+      message: remove ? `Removed ${slot} from Home Page showcase.` : `Home showcase ${slot} updated successfully.`,
+      homeShowcase: current.homeShowcase
+    });
+  } catch (err) {
+    console.error('Error updating home showcase:', err);
     res.status(500).json({ success: false, message: err.message });
   }
 });
