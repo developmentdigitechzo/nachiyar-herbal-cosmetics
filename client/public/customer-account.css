@@ -284,6 +284,7 @@
   position: absolute;
   top: 14px;
   left: 20px;
+  max-width: calc(100% - 40px);
   height: 3px;
   background: linear-gradient(90deg, #10B981 0%, #7C5AAB 100%);
   z-index: 2;

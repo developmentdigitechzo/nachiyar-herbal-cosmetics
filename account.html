@@ -582,40 +582,64 @@
       gap: 28px;
     }
 
-    /* 5-Stage Modern Order Tracking Timeline */
+    /* Modern Order Tracking Timeline (Flipkart / Amazon Style) */
     .timeline-5-stage {
       background: #FAF8FC;
       border: 1px solid rgba(124, 90, 171, 0.15);
       border-radius: 18px;
       padding: 24px 20px 20px;
+      overflow: hidden; /* Strict clipping so line never pokes out of card */
+      box-sizing: border-box;
+      flex-shrink: 0; /* Prevents flex container from collapsing/shrinking this card */
+      min-height: min-content;
+      height: auto;
     }
 
     .timeline-stepper {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: space-between;
       position: relative;
       margin-bottom: 12px;
+      padding-inline: 16px;
+      box-sizing: border-box;
+    }
+
+    .timeline-stepper--cancelled {
+      max-width: 360px;
+      margin-inline: auto;
+      padding-inline: 24px;
+    }
+
+    .timeline-track-wrapper {
+      position: absolute;
+      top: 17px;
+      left: 34px;
+      right: 34px;
+      height: 3px;
+      overflow: hidden; /* FIX: Line is strictly contained between circles */
+      border-radius: 999px;
+      pointer-events: none;
+      z-index: 1;
     }
 
     .timeline-line-back {
       position: absolute;
-      top: 16px;
-      left: 30px;
-      right: 30px;
-      height: 3px;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
       background: #E5E1EC;
-      z-index: 1;
     }
 
     .timeline-line-fill {
       position: absolute;
-      top: 16px;
-      left: 30px;
-      height: 3px;
+      top: 0;
+      left: 0;
+      height: 100%;
       background: linear-gradient(90deg, #10B981 0%, #7C5AAB 100%);
-      z-index: 2;
       transition: width 0.6s ease;
+      border-radius: 999px;
     }
 
     .timeline-step {
@@ -654,6 +678,20 @@
       border-color: #7C5AAB;
       color: #FFFFFF;
       box-shadow: 0 0 0 5px rgba(124, 90, 171, 0.2);
+    }
+
+    .timeline-step.is-cancelled .timeline-circle {
+      background: #DC2626;
+      border-color: #DC2626;
+      color: #FFFFFF;
+      box-shadow: 0 0 0 5px rgba(220, 38, 38, 0.2);
+    }
+
+    .timeline-step.is-warning .timeline-circle {
+      background: #EA580C;
+      border-color: #EA580C;
+      color: #FFFFFF;
+      box-shadow: 0 0 0 5px rgba(234, 88, 12, 0.2);
     }
 
     .timeline-label {
@@ -1099,11 +1137,11 @@
 
           <div class="hero-stat-tiles">
             <div class="hero-stat-tile">
-              <strong id="statTotalOrders">4</strong>
+              <strong id="statTotalOrders">0</strong>
               <span>Total Orders</span>
             </div>
             <div class="hero-stat-tile">
-              <strong id="statActiveDeliveries" style="color:#10B981;">2</strong>
+              <strong id="statActiveDeliveries" style="color:#10B981;">0</strong>
               <span>In Transit</span>
             </div>
             <div class="hero-stat-tile">
@@ -1128,7 +1166,7 @@
                   <span>📦</span>
                   <span>My Orders</span>
                 </span>
-                <span class="menu-badge" id="sidebarOrdersBadge">4</span>
+                <span class="menu-badge" id="sidebarOrdersBadge">0</span>
               </button>
             </li>
             <li>
@@ -1187,9 +1225,9 @@
             <!-- Toolbar: Filter Pills + Search -->
             <div class="orders-toolbar" style="margin-bottom: 24px;">
               <div class="orders-filter-tabs">
-                <button class="order-filter-pill is-active" onclick="filterOrdersByStatus('all')">All Orders (<span id="countAll">4</span>)</button>
-                <button class="order-filter-pill" onclick="filterOrdersByStatus('active')">In Transit / Active (<span id="countActive">2</span>)</button>
-                <button class="order-filter-pill" onclick="filterOrdersByStatus('delivered')">Delivered (<span id="countDelivered">2</span>)</button>
+                <button class="order-filter-pill is-active" onclick="filterOrdersByStatus('all')">All Orders (<span id="countAll">0</span>)</button>
+                <button class="order-filter-pill" onclick="filterOrdersByStatus('active')">In Transit / Active (<span id="countActive">0</span>)</button>
+                <button class="order-filter-pill" onclick="filterOrdersByStatus('delivered')">Delivered (<span id="countDelivered">0</span>)</button>
               </div>
               <input type="text" id="orderSearchInput" class="orders-search-input" placeholder="Search by Order ID or item..." oninput="handleOrderSearch(this.value)">
             </div>
@@ -1276,8 +1314,8 @@
             </svg>
             <span>Sign in with Google</span>
           </button>
-          <button type="button" class="btn-order-view" style="width:100%; justify-content:center; height:50px;" onclick="window.location.href='/nimda-login/'">
-            <span>Sign In to Account →</span>
+          <button type="button" class="btn-order-view" style="width:100%; justify-content:center; height:50px;" onclick="if (window.openCustomerAccountDrawer) { window.openCustomerAccountDrawer(); } else { window.location.href='/?open_account=true'; }">
+            <span>Sign In / Create Account →</span>
           </button>
           <button type="button" id="btnQuickDemoGuest" style="width:100%; height:46px; border-radius:999px; background:#A37F14; color:#FFF; font-weight:700; border:none; cursor:pointer;">
             <span>Sign In as Pooja Madhavan (Has 4 Orders)</span>
@@ -1299,53 +1337,9 @@
       </div>
 
       <div class="order-modal-body">
-        <!-- 5-Stage Modern Order Tracking Timeline -->
-        <div class="timeline-5-stage">
-          <div class="timeline-stepper">
-            <div class="timeline-line-back"></div>
-            <div class="timeline-line-fill" id="modalTimelineFill" style="width: 50%;"></div>
-
-            <!-- Step 1: Ordered -->
-            <div class="timeline-step is-done" id="tStep1">
-              <div class="timeline-circle">✓</div>
-              <span class="timeline-label">Ordered</span>
-            </div>
-
-            <!-- Step 2: Packed -->
-            <div class="timeline-step is-done" id="tStep2">
-              <div class="timeline-circle">✓</div>
-              <span class="timeline-label">Packed</span>
-            </div>
-
-            <!-- Step 3: Shipped -->
-            <div class="timeline-step is-active" id="tStep3">
-              <div class="timeline-circle">🚚</div>
-              <span class="timeline-label">Shipped</span>
-            </div>
-
-            <!-- Step 4: Out for Delivery -->
-            <div class="timeline-step" id="tStep4">
-              <div class="timeline-circle">📍</div>
-              <span class="timeline-label">Out for Delivery</span>
-            </div>
-
-            <!-- Step 5: Delivered -->
-            <div class="timeline-step" id="tStep5">
-              <div class="timeline-circle">📦</div>
-              <span class="timeline-label">Delivered</span>
-            </div>
-          </div>
-
-          <!-- Live Courier Scan Update -->
-          <div class="timeline-status-log">
-            <span style="font-size:1.1rem;">⚡</span>
-            <div>
-              <strong id="modalTrackingStatusTitle">In Transit via BlueDart Express Air (AWBNH94829103)</strong>
-              <p id="modalTrackingStatusDesc" style="margin:2px 0 0; color:var(--color-text-muted); font-size:0.78rem;">
-                Latest Scan: Sorted at Chennai Central Apothecary Hub. Expected Delivery: Friday, Oct 10.
-              </p>
-            </div>
-          </div>
+        <!-- Modern Order Tracking Timeline (Flipkart Style) -->
+        <div class="timeline-5-stage" id="modalTimelineContainer">
+          <!-- Dynamically rendered by updateModalTimeline(order) -->
         </div>
 
         <!-- Product List -->
@@ -1533,16 +1527,7 @@
         } catch (e) {}
       }
 
-      // If no active customer in storage, inspect if any order was placed recently
-      if (!activeCustomer) {
-        try {
-          const recentOrders = JSON.parse(localStorage.getItem('nachiyar_customer_orders') || '[]');
-          if (recentOrders.length > 0 && recentOrders[0].customer) {
-            activeCustomer = recentOrders[0].customer;
-            localStorage.setItem('nachiyar_customer', JSON.stringify(activeCustomer));
-          }
-        } catch (e) {}
-      }
+      // User is guest if not in storage
 
       // If still not logged in, offer quick demo or redirect
       if (!activeCustomer) {
@@ -1563,10 +1548,16 @@
       loadCustomerOrders();
 
       // Sign out handler
-      document.getElementById('btnCustomerLogout').onclick = () => {
-        localStorage.removeItem('nachiyar_customer');
-        window.location.replace('/');
-      };
+      const logoutBtn = document.getElementById('btnCustomerLogout');
+      if (logoutBtn) {
+        logoutBtn.onclick = () => {
+          localStorage.removeItem('nachiyar_customer');
+          localStorage.removeItem('nachiyar_customer_orders');
+          localStorage.removeItem('nachiyar_token');
+          sessionStorage.clear();
+          window.location.replace('/?logged_out=1');
+        };
+      }
     });
 
     function initCustomerUI() {
@@ -1591,87 +1582,57 @@
     async function loadCustomerOrders() {
       try {
         const orderMap = new Map();
+        const userPhoneClean = (activeCustomer?.phone || '').replace(/\D/g, '').slice(-10);
+        const userEmailClean = (activeCustomer?.email || '').trim().toLowerCase();
 
         // 1. Fetch orders from backend matching active customer
-        if (activeCustomer && (activeCustomer.email || activeCustomer.phone)) {
+        if (activeCustomer && (userEmailClean || userPhoneClean)) {
           try {
-            const res = await fetch(`/api/customer/orders?email=${encodeURIComponent(activeCustomer.email || '')}&phone=${encodeURIComponent(activeCustomer.phone || '')}`);
+            const res = await fetch(`/api/customer/orders?email=${encodeURIComponent(userEmailClean)}&phone=${encodeURIComponent(userPhoneClean)}`);
             if (res.ok) {
               const json = await res.json();
-              (json.data || []).forEach(o => orderMap.set(o.orderNumber, o));
+              (json.data || []).forEach(o => {
+                if (o && o.orderNumber) orderMap.set(o.orderNumber, o);
+              });
             }
           } catch (e) {
             console.warn('API customer orders fetch error:', e);
           }
         }
 
-        // 2. Also check any orders stored in nachiyar_placed_orders
-        const placedNums = (() => {
-          try { return JSON.parse(localStorage.getItem('nachiyar_placed_orders') || '[]'); } catch(e) { return []; }
-        })();
-
-        for (const ordNum of placedNums) {
-          if (!orderMap.has(ordNum)) {
-            try {
-              const res = await fetch(`/api/orders/${encodeURIComponent(ordNum)}`);
-              if (res.ok) {
-                const json = await res.json();
-                if (json.success && json.data) {
-                  orderMap.set(json.data.orderNumber, json.data);
-                }
-              }
-            } catch (e) {}
-          }
-        }
-
-        // 3. Also merge from local cached orders (nachiyar_customer_orders)
+        // 2. Also check any orders placed locally by THIS specific customer
         try {
           const localStored = JSON.parse(localStorage.getItem('nachiyar_customer_orders') || '[]');
           localStored.forEach(o => {
-            if (o.orderNumber && !orderMap.has(o.orderNumber)) {
+            const c = o.customer || {};
+            const oPhone = (c.phone || '').replace(/\D/g, '').slice(-10);
+            const oEmail = (c.email || '').trim().toLowerCase();
+
+            const isMatch = (userEmailClean && oEmail && userEmailClean === oEmail) ||
+                            (userPhoneClean && oPhone && userPhoneClean === oPhone);
+
+            if (isMatch && o.orderNumber && !orderMap.has(o.orderNumber)) {
               orderMap.set(o.orderNumber, o);
             }
           });
         } catch (e) {}
 
-        // 4. Also check if activeCustomer phone (last 10 digits) or email matches any orders in /api/orders
-        try {
-          const resAll = await fetch('/api/orders');
-          if (resAll.ok) {
-            const jsonAll = await resAll.json();
-            const allDbOrders = jsonAll.data || [];
-            const userPhoneClean = (activeCustomer?.phone || '').replace(/\D/g, '').slice(-10);
-            const userEmailClean = (activeCustomer?.email || '').trim().toLowerCase();
-
-            allDbOrders.forEach(o => {
-              const c = o.customer || {};
-              const oPhone = (c.phone || '').replace(/\D/g, '').slice(-10);
-              const oEmail = (c.email || '').trim().toLowerCase();
-
-              if ((userPhoneClean && oPhone && userPhoneClean === oPhone) ||
-                  (userEmailClean && oEmail && userEmailClean === oEmail)) {
-                orderMap.set(o.orderNumber, o);
-              }
-            });
-          }
-        } catch (e) {}
+        // 3. ONLY if explicit demo customer (Pooja Madhavan) was selected and has 0 orders, load sample test orders
+        if (orderMap.size === 0 && activeCustomer && activeCustomer.email === 'pooja.m@example.com' && activeCustomer.id === 'cust_01') {
+          getFallbackOrders().forEach(o => orderMap.set(o.orderNumber, o));
+        }
 
         allCustomerOrders = Array.from(orderMap.values());
 
         // Sort newest first
         allCustomerOrders.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
 
-        // If no orders returned anywhere, only then fall back to rich demo orders list
-        if (allCustomerOrders.length === 0) {
-          allCustomerOrders = getFallbackOrders();
-        }
-
         updateOrderCounters();
         renderOrdersList();
 
       } catch (err) {
         console.error('Error loading orders:', err);
-        allCustomerOrders = getFallbackOrders();
+        allCustomerOrders = [];
         updateOrderCounters();
         renderOrdersList();
       }
@@ -1786,14 +1747,21 @@
       });
 
       if (filtered.length === 0) {
+        const isSearchOrFilter = searchQuery || currentFilterStatus !== 'all';
         container.innerHTML = `
-          <div style="background:#FFFFFF; border-radius:20px; padding:48px 24px; text-align:center; border:1px solid var(--color-border);">
-            <div style="font-size:2.5rem; margin-bottom:12px;">📦</div>
-            <h3 style="font-family:var(--font-display); font-size:1.25rem; margin-bottom:6px;">No Orders Matching Criteria</h3>
-            <p style="color:var(--color-text-muted); font-size:0.875rem; max-width:400px; margin:0 auto 20px;">
-              Try clearing your search query or explore our handcrafted Ayurvedic rituals in the apothecary.
+          <div style="background:#FFFFFF; border-radius:20px; padding:48px 24px; text-align:center; border:1px solid var(--color-border); box-shadow:0 4px 16px rgba(0,0,0,0.03);">
+            <div style="font-size:2.8rem; margin-bottom:12px;">📦</div>
+            <h3 style="font-family:var(--font-display); font-size:1.35rem; margin-bottom:6px; color:var(--color-text-main);">
+              ${isSearchOrFilter ? 'No Orders Matching Criteria' : 'No Orders Placed Yet'}
+            </h3>
+            <p style="color:var(--color-text-muted); font-size:0.875rem; max-width:440px; margin:0 auto 20px; line-height:1.5;">
+              ${isSearchOrFilter 
+                ? 'Try clearing your search query or filter tab to view all orders.' 
+                : "You haven't placed any orders yet. Discover our handcrafted Ayurvedic hair oils, botanical cleansers, and bespoke wellness rituals."}
             </p>
-            <a href="/shop/" class="btn-order-view" style="display:inline-flex;">Explore Formulations →</a>
+            <a href="/shop/" class="btn-order-view" style="display:inline-flex; border-radius:999px; background:var(--color-lavender-primary); color:#FFF; padding:12px 28px; text-decoration:none; font-weight:700;">
+              <span>Explore Apothecary & Shop Rituals →</span>
+            </a>
           </div>
         `;
         document.getElementById('ordersPaginationBar').style.display = 'none';
@@ -1949,7 +1917,7 @@
       document.getElementById('modalOrderDateSubtitle').textContent = `Placed on ${new Date(order.createdAt).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' })} • ${itemCount} ${itemCount === 1 ? 'Item' : 'Items'}`;
 
       // Set 5-stage tracking timeline
-      updateModalTimeline(order.status);
+      updateModalTimeline(order);
 
       // Cancel button visibility
       const cancelBtn = document.getElementById('modalBtnCancelOrder');
@@ -1986,7 +1954,12 @@
 
       // Shipping info
       const cust = order.customer || activeCustomer;
-      document.getElementById('modalShipName').textContent = cust.name || activeCustomer.name;
+      const isMyOrder = activeCustomer && (
+        (activeCustomer.email && cust.email && activeCustomer.email.toLowerCase() === cust.email.toLowerCase()) ||
+        (activeCustomer.phone && cust.phone && activeCustomer.phone.replace(/\D/g, '').slice(-10) === cust.phone.replace(/\D/g, '').slice(-10))
+      );
+      const shipName = (isMyOrder && activeCustomer.name) ? activeCustomer.name : (cust.name || activeCustomer?.name || 'Customer');
+      document.getElementById('modalShipName').textContent = shipName;
       document.getElementById('modalShipAddress').textContent = cust.address || '42, Besant Avenue, Adyar';
       document.getElementById('modalShipCityState').textContent = `${cust.city || 'Chennai'}, ${cust.state || 'Tamil Nadu'} - ${cust.pincode || '600020'}`;
       document.getElementById('modalShipPhone').textContent = cust.phone || activeCustomer.phone || '+91 98401 23456';
@@ -2007,70 +1980,178 @@
       document.body.style.overflow = '';
     };
 
-    function updateModalTimeline(rawStatus) {
-      const status = (rawStatus || 'placed').toLowerCase();
-      const fillLine = document.getElementById('modalTimelineFill');
-      const step1 = document.getElementById('tStep1');
-      const step2 = document.getElementById('tStep2');
-      const step3 = document.getElementById('tStep3');
-      const step4 = document.getElementById('tStep4');
-      const step5 = document.getElementById('tStep5');
+    function updateModalTimeline(orderOrStatus) {
+      const order = typeof orderOrStatus === 'object' && orderOrStatus !== null ? orderOrStatus : { status: orderOrStatus };
+      const status = (order.status || 'placed').toLowerCase();
+      const container = document.getElementById('modalTimelineContainer');
+      if (!container) return;
 
-      const title = document.getElementById('modalTrackingStatusTitle');
-      const desc = document.getElementById('modalTrackingStatusDesc');
+      const placedDateStr = order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Confirmed';
 
-      // Reset
-      [step1, step2, step3, step4, step5].forEach(s => s.className = 'timeline-step');
-      fillLine.style.background = 'linear-gradient(90deg, #10B981 0%, #7C5AAB 100%)';
+      if (status === 'cancelled') {
+        // FLIPKART STYLE: 2-STEP CANCELLED TIMELINE (Ordered -> Cancelled)
+        container.innerHTML = `
+          <div class="timeline-stepper timeline-stepper--cancelled">
+            <div class="timeline-track-wrapper">
+              <div class="timeline-line-back" style="background:#FEE2E2;"></div>
+              <div class="timeline-line-fill" style="width: 100%; background: #DC2626;"></div>
+            </div>
+
+            <!-- Step 1: Ordered -->
+            <div class="timeline-step is-done">
+              <div class="timeline-circle" style="background:#10B981; border-color:#10B981; color:#FFF;">✓</div>
+              <span class="timeline-label" style="color:#10B981; font-weight:700;">Ordered</span>
+              <small style="font-size:0.65rem; color:#6B7280; font-weight:600;">${placedDateStr}</small>
+            </div>
+
+            <!-- Step 2: Cancelled -->
+            <div class="timeline-step is-cancelled">
+              <div class="timeline-circle" style="background:#DC2626; border-color:#DC2626; color:#FFF; box-shadow: 0 0 0 5px rgba(220, 38, 38, 0.2);">✕</div>
+              <span class="timeline-label" style="color:#DC2626; font-weight:800;">Cancelled</span>
+              <small style="font-size:0.65rem; color:#DC2626; font-weight:700;">Refund Initiated</small>
+            </div>
+          </div>
+
+          <!-- Live Courier Scan Update -->
+          <div class="timeline-status-log" style="background:#FEF2F2; border-color:#FECACA; border-left: 4px solid #DC2626;">
+            <span style="font-size:1.3rem; line-height:1;">🚫</span>
+            <div>
+              <strong style="color:#991B1B; font-size:0.875rem;">Order Cancelled & Restocked</strong>
+              <p style="margin:2px 0 0; color:#B91C1C; font-size:0.78rem; line-height:1.45;">
+                This order was cancelled and inventory restocked. Any online payments are refunded directly to your original payment source within 2-4 business days.
+              </p>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      if (status === 'cancel_requested') {
+        // FLIPKART STYLE: 2-STEP CANCELLATION REQUESTED TIMELINE (Ordered -> Cancellation Under Review)
+        container.innerHTML = `
+          <div class="timeline-stepper timeline-stepper--cancelled">
+            <div class="timeline-track-wrapper">
+              <div class="timeline-line-back" style="background:#FFEDD5;"></div>
+              <div class="timeline-line-fill" style="width: 100%; background: #EA580C;"></div>
+            </div>
+
+            <!-- Step 1: Ordered -->
+            <div class="timeline-step is-done">
+              <div class="timeline-circle" style="background:#10B981; border-color:#10B981; color:#FFF;">✓</div>
+              <span class="timeline-label" style="color:#10B981; font-weight:700;">Ordered</span>
+              <small style="font-size:0.65rem; color:#6B7280; font-weight:600;">${placedDateStr}</small>
+            </div>
+
+            <!-- Step 2: Cancel Requested -->
+            <div class="timeline-step is-warning">
+              <div class="timeline-circle" style="background:#EA580C; border-color:#EA580C; color:#FFF; box-shadow: 0 0 0 5px rgba(234, 88, 12, 0.2);">⏳</div>
+              <span class="timeline-label" style="color:#C2410C; font-weight:800;">Cancellation Requested</span>
+              <small style="font-size:0.65rem; color:#EA580C; font-weight:700;">Under Review</small>
+            </div>
+          </div>
+
+          <!-- Live Courier Scan Update -->
+          <div class="timeline-status-log" style="background:#FFF7ED; border-color:#FED7AA; border-left: 4px solid #EA580C;">
+            <span style="font-size:1.3rem; line-height:1;">⏳</span>
+            <div>
+              <strong style="color:#9A3412; font-size:0.875rem;">Cancellation Request Under Review</strong>
+              <p style="margin:2px 0 0; color:#C2410C; font-size:0.78rem; line-height:1.45;">
+                Your cancellation request has been submitted. Our apothecary dispatch team is reviewing and approving the request.
+              </p>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // NORMAL ACTIVE / DELIVERED 5-STEP TIMELINE
+      let fillPercent = '10%';
+      let stepStates = [false, false, false, false, false];
+      let activeIndex = 0;
+      let titleText = 'Order Confirmed & Payment Verified';
+      let descText = 'Our master herbalists will begin cold-press infusion within 4 hours.';
 
       if (status === 'placed') {
-        fillLine.style.width = '10%';
-        step1.classList.add('is-active');
-        title.textContent = 'Order Confirmed & Payment Verified';
-        desc.textContent = 'Our master herbalists will begin cold-press infusion within 4 hours.';
+        fillPercent = '10%';
+        stepStates = [true, false, false, false, false];
+        activeIndex = 0;
+        titleText = 'Order Confirmed & Payment Verified';
+        descText = 'Our master herbalists will begin cold-press infusion within 4 hours.';
       } else if (status === 'processing' || status === 'packed') {
-        fillLine.style.width = '35%';
-        step1.classList.add('is-done');
-        step2.classList.add('is-active');
-        title.textContent = 'Apothecary Batch Prepared & Bottle Sealed';
-        desc.textContent = 'Quality tested and packed in eco-luxe tamper-evident shipping packaging.';
+        fillPercent = '35%';
+        stepStates = [true, true, false, false, false];
+        activeIndex = 1;
+        titleText = 'Apothecary Batch Prepared & Bottle Sealed';
+        descText = 'Quality tested and packed in eco-luxe tamper-evident shipping packaging.';
       } else if (status === 'shipped' || status === 'in_transit') {
-        fillLine.style.width = '60%';
-        step1.classList.add('is-done');
-        step2.classList.add('is-done');
-        step3.classList.add('is-active');
-        title.textContent = 'In Transit via BlueDart Express Air (AWBNH94829103)';
-        desc.textContent = 'Dispatched from Madurai Heritage Depot. Estimated Arrival: Within 24-48 Hours.';
+        fillPercent = '62%';
+        stepStates = [true, true, true, false, false];
+        activeIndex = 2;
+        titleText = 'In Transit via BlueDart Express Air (AWBNH94829103)';
+        descText = 'Dispatched from Madurai Heritage Depot. Estimated Arrival: Within 24-48 Hours.';
       } else if (status === 'out_for_delivery') {
-        fillLine.style.width = '85%';
-        step1.classList.add('is-done');
-        step2.classList.add('is-done');
-        step3.classList.add('is-done');
-        step4.classList.add('is-active');
-        title.textContent = 'Out for Delivery Today!';
-        desc.textContent = 'Our delivery partner is en route to your doorstep.';
+        fillPercent = '85%';
+        stepStates = [true, true, true, true, false];
+        activeIndex = 3;
+        titleText = 'Out for Delivery Today!';
+        descText = 'Our delivery partner is en route to your doorstep.';
       } else if (status === 'delivered') {
-        fillLine.style.width = '100%';
-        step1.classList.add('is-done');
-        step2.classList.add('is-done');
-        step3.classList.add('is-done');
-        step4.classList.add('is-done');
-        step5.classList.add('is-done');
-        title.textContent = 'Delivered Successfully to Your Doorstep';
-        desc.textContent = 'Package received in good condition. Thank you for revering your hair with Nachiyar.';
-      } else if (status === 'cancel_requested') {
-        fillLine.style.width = '30%';
-        fillLine.style.background = '#F97316';
-        step1.classList.add('is-done');
-        title.textContent = 'Cancellation Request Under Review ⏳';
-        desc.textContent = 'Your request to cancel this order has been submitted. Our team is reviewing and processing refund if applicable.';
-      } else if (status === 'cancelled') {
-        fillLine.style.width = '100%';
-        fillLine.style.background = '#DC2626';
-        step1.classList.add('is-done');
-        title.textContent = 'Order Cancelled 🚫';
-        desc.textContent = 'This order was cancelled and items restocked. Any online payments are refunded to your original source.';
+        fillPercent = '100%';
+        stepStates = [true, true, true, true, true];
+        activeIndex = 4;
+        titleText = 'Delivered Successfully to Your Doorstep';
+        descText = 'Package received in good condition. Thank you for revering your hair with Nachiyar.';
       }
+
+      container.innerHTML = `
+        <div class="timeline-stepper">
+          <div class="timeline-track-wrapper">
+            <div class="timeline-line-back"></div>
+            <div class="timeline-line-fill" style="width: ${fillPercent};"></div>
+          </div>
+
+          <!-- Step 1: Ordered -->
+          <div class="timeline-step ${stepStates[0] ? (activeIndex === 0 ? 'is-active' : 'is-done') : ''}">
+            <div class="timeline-circle">${stepStates[0] && activeIndex > 0 ? '✓' : '✓'}</div>
+            <span class="timeline-label">Ordered</span>
+          </div>
+
+          <!-- Step 2: Packed -->
+          <div class="timeline-step ${stepStates[1] ? (activeIndex === 1 ? 'is-active' : 'is-done') : ''}">
+            <div class="timeline-circle">${stepStates[1] && activeIndex > 1 ? '✓' : '📦'}</div>
+            <span class="timeline-label">Packed</span>
+          </div>
+
+          <!-- Step 3: Shipped -->
+          <div class="timeline-step ${stepStates[2] ? (activeIndex === 2 ? 'is-active' : 'is-done') : ''}">
+            <div class="timeline-circle">${stepStates[2] && activeIndex > 2 ? '✓' : '🚚'}</div>
+            <span class="timeline-label">Shipped</span>
+          </div>
+
+          <!-- Step 4: Out for Delivery -->
+          <div class="timeline-step ${stepStates[3] ? (activeIndex === 3 ? 'is-active' : 'is-done') : ''}">
+            <div class="timeline-circle">${stepStates[3] && activeIndex > 3 ? '✓' : '📍'}</div>
+            <span class="timeline-label">Out for Delivery</span>
+          </div>
+
+          <!-- Step 5: Delivered -->
+          <div class="timeline-step ${stepStates[4] ? 'is-done' : ''}">
+            <div class="timeline-circle">🎁</div>
+            <span class="timeline-label">Delivered</span>
+          </div>
+        </div>
+
+        <!-- Live Courier Scan Update -->
+        <div class="timeline-status-log">
+          <span style="font-size:1.1rem;">⚡</span>
+          <div>
+            <strong id="modalTrackingStatusTitle">${titleText}</strong>
+            <p id="modalTrackingStatusDesc" style="margin:2px 0 0; color:var(--color-text-muted); font-size:0.78rem;">
+              ${descText}
+            </p>
+          </div>
+        </div>
+      `;
     }
 
     // ==================== CANCELLATION CONTROLLER (FLIPKART / AMAZON STYLE) ====================

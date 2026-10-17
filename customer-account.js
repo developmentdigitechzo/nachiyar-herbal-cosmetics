@@ -139,15 +139,13 @@
 
   document.addEventListener('DOMContentLoaded', () => {
     ensureMobileCurvedBottomNav();
-    if (!window.location.pathname.includes('account')) {
-      injectAccountUI();
-      bindNavbarAccountButton();
-    }
+    injectAccountUI();
+    bindNavbarAccountButton();
     updateNavbarUserState();
 
-    // Auto open drawer if redirected from login/register
+    // Auto open drawer if redirected with open_account=true
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('open_account') === 'true' && !window.location.pathname.includes('account')) {
+    if (urlParams.get('open_account') === 'true') {
       setTimeout(openAccountDrawer, 300);
     }
   });
@@ -314,13 +312,28 @@
   // 1. Update navbar button state
   function updateNavbarUserState() {
     const navLabel = document.getElementById('navAccountLabel');
-    if (!navLabel) return;
+    const btn = document.getElementById('accountTriggerBtn');
+
+    try {
+      const saved = localStorage.getItem('nachiyar_customer');
+      currentCustomer = saved ? JSON.parse(saved) : null;
+    } catch (e) {
+      currentCustomer = null;
+    }
 
     if (currentCustomer && currentCustomer.name) {
       const firstName = currentCustomer.name.split(' ')[0];
-      navLabel.textContent = `Hi, ${firstName}`;
+      if (navLabel) navLabel.textContent = `Hi, ${firstName}`;
+      if (btn) {
+        btn.href = '/account/';
+        btn.setAttribute('aria-label', `Account of ${currentCustomer.name}`);
+      }
     } else {
-      navLabel.textContent = 'Sign In';
+      if (navLabel) navLabel.textContent = 'Sign In';
+      if (btn) {
+        btn.href = 'javascript:void(0);';
+        btn.setAttribute('aria-label', 'Sign In or Create Account');
+      }
     }
   }
 
@@ -331,7 +344,8 @@
     if (!btn) {
       const headerActions = document.querySelector('.header-actions');
       if (headerActions) {
-        btn = document.createElement('a'); btn.href = '/account/';
+        btn = document.createElement('a');
+        btn.href = 'javascript:void(0);';
         btn.id = 'accountTriggerBtn';
         btn.className = 'account-trigger-btn';
         btn.setAttribute('aria-label', 'Customer Account');
@@ -340,7 +354,7 @@
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
             <circle cx="12" cy="7" r="4"></circle>
           </svg>
-          <span class="user-label" id="navAccountLabel">${currentCustomer ? 'Hi, ' + currentCustomer.name.split(' ')[0] : 'Sign In'}</span>
+          <span class="user-label" id="navAccountLabel">Sign In</span>
         `;
         // Insert before cart trigger button
         const cartBtn = headerActions.querySelector('.cart-trigger-btn');
@@ -354,8 +368,27 @@
 
     if (btn) {
       btn.onclick = (e) => {
-        // Direct navigation to dedicated /account/ dashboard (image 2)
-        window.location.href = '/account/';
+        // Refresh customer state from localStorage
+        try {
+          const saved = localStorage.getItem('nachiyar_customer');
+          currentCustomer = saved ? JSON.parse(saved) : null;
+        } catch (err) {
+          currentCustomer = null;
+        }
+
+        if (currentCustomer && currentCustomer.name) {
+          // Logged in user -> Navigate to full account dashboard page (/account/)
+          if (window.location.pathname.includes('account')) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            return;
+          }
+          window.location.href = '/account/';
+        } else {
+          // Not logged in -> Open side drawer for Sign In & Account Creation
+          e.preventDefault();
+          e.stopPropagation();
+          openAccountDrawer();
+        }
       };
     }
   }
@@ -489,9 +522,16 @@
 
       document.getElementById('customerLogoutBtn').onclick = () => {
         localStorage.removeItem('nachiyar_customer');
+        localStorage.removeItem('nachiyar_customer_orders');
+        localStorage.removeItem('nachiyar_token');
+        sessionStorage.clear();
         currentCustomer = null;
         updateNavbarUserState();
         renderDrawerContent();
+        showSideToast({ title: 'Signed Out', message: 'You have been safely signed out.', type: 'info' });
+        if (window.location.pathname.includes('account')) {
+          window.location.replace('/');
+        }
       };
 
       // Fetch customer orders from backend
@@ -595,20 +635,44 @@
     if (!container) return;
 
     try {
-      const res = await fetch(`/api/customer/orders?email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone || '')}`);
+      const cleanEmail = (email || '').trim().toLowerCase();
+      const cleanPhone = (phone || '').replace(/\D/g, '').slice(-10);
+
+      const res = await fetch(`/api/customer/orders?email=${encodeURIComponent(cleanEmail)}&phone=${encodeURIComponent(cleanPhone)}`);
       const json = await res.json();
       const dbOrders = json.data || [];
       const orderMap = new Map();
-      dbOrders.forEach(o => orderMap.set(o.orderNumber, o));
+      dbOrders.forEach(o => {
+        if (o && o.orderNumber) orderMap.set(o.orderNumber, o);
+      });
 
       try {
         const localStored = JSON.parse(localStorage.getItem('nachiyar_customer_orders') || '[]');
         localStored.forEach(o => {
-          if (o.orderNumber && !orderMap.has(o.orderNumber)) {
+          const c = o.customer || {};
+          const oPhone = (c.phone || '').replace(/\D/g, '').slice(-10);
+          const oEmail = (c.email || '').trim().toLowerCase();
+          const matches = (cleanEmail && oEmail && cleanEmail === oEmail) ||
+                          (cleanPhone && oPhone && cleanPhone === oPhone);
+          if (matches && o.orderNumber && !orderMap.has(o.orderNumber)) {
             orderMap.set(o.orderNumber, o);
           }
         });
       } catch (e) {}
+
+      // Only if demo user Pooja Madhavan test account has 0 orders, show demo order
+      if (orderMap.size === 0 && cleanEmail === 'pooja.m@example.com') {
+        orderMap.set('NH-ON-1001', {
+          orderNumber: 'NH-ON-1001',
+          total: 999,
+          status: 'shipped',
+          createdAt: new Date().toISOString(),
+          items: [
+            { name: 'Herbal Hair Oil (200ml)', qty: 1, img: 'assets/hero-bottle-oil-transparent.png' },
+            { name: 'Hibiscus Flower Shampoo (250ml)', qty: 1, img: 'assets/hero-bottle-shampoo-transparent.png' }
+          ]
+        });
+      }
 
       const orders = Array.from(orderMap.values());
       orders.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
@@ -621,7 +685,7 @@
             <span style="font-size:2rem; display:block; margin-bottom:8px;">📦</span>
             <strong style="display:block; font-size:0.9375rem; color:#191319; margin-bottom:4px;">No Orders Placed Yet</strong>
             <p style="font-size:0.8125rem; color:#6B626A; margin-bottom:14px;">Explore our handcrafted Ayurvedic oils and gentle hair cleansers.</p>
-            <a href="shop.html" style="display:inline-block; padding:8px 18px; border-radius:999px; background:#7C5AAB; color:#FFF; font-size:0.75rem; font-weight:700;">Explore Apothecary →</a>
+            <a href="shop.html" style="display:inline-block; padding:8px 18px; border-radius:999px; background:#7C5AAB; color:#FFF; font-size:0.75rem; font-weight:700; text-decoration:none;">Explore Apothecary →</a>
           </div>
         `;
         return;
@@ -631,18 +695,15 @@
 
     } catch (e) {
       console.error('Could not fetch orders:', e);
-      if (countPill) countPill.textContent = '1 Order';
-      // Fallback display demo order
-      container.innerHTML = renderTrackingOrderCard({
-        orderNumber: 'NH-ON-1001',
-        total: 999,
-        status: 'shipped',
-        createdAt: new Date().toISOString(),
-        items: [
-          { name: 'Herbal Hair Oil (200ml)', qty: 1, img: 'assets/hero-bottle-oil-transparent.png' },
-          { name: 'Hibiscus Flower Shampoo (250ml)', qty: 1, img: 'assets/hero-bottle-shampoo-transparent.png' }
-        ]
-      });
+      if (countPill) countPill.textContent = '0 Orders';
+      container.innerHTML = `
+        <div style="background:#FFFFFF; border-radius:14px; padding:24px; text-align:center; border:1px solid rgba(0,0,0,0.06);">
+          <span style="font-size:2rem; display:block; margin-bottom:8px;">📦</span>
+          <strong style="display:block; font-size:0.9375rem; color:#191319; margin-bottom:4px;">No Orders Placed Yet</strong>
+          <p style="font-size:0.8125rem; color:#6B626A; margin-bottom:14px;">Explore our handcrafted Ayurvedic oils and gentle hair cleansers.</p>
+          <a href="shop.html" style="display:inline-block; padding:8px 18px; border-radius:999px; background:#7C5AAB; color:#FFF; font-size:0.75rem; font-weight:700; text-decoration:none;">Explore Apothecary →</a>
+        </div>
+      `;
     }
   }
 
@@ -704,36 +765,72 @@
           <span class="order-total-badge">₹${ord.total}</span>
         </div>
 
-        <!-- Flipkart / Amazon 4-Step Visual Tracker -->
+        <!-- Flipkart Style Visual Tracker (2-step for Cancelled, 4-step for Active) -->
         <div class="tracking-stepper-wrap">
-          <div class="stepper-progress-bar">
-            <div class="stepper-track-line"></div>
-            <div class="stepper-track-fill" style="width: ${trackFillPercent}; ${status === 'cancelled' ? 'background:#DC2626;' : ''}"></div>
+          ${status === 'cancelled' ? `
+            <div class="stepper-progress-bar" style="max-width: 260px; margin: 0 auto 10px; overflow: hidden;">
+              <div class="stepper-track-line" style="background:#FEE2E2; left:18px; right:18px;"></div>
+              <div class="stepper-track-fill" style="width: 100%; max-width: calc(100% - 36px); background: #DC2626; left:18px;"></div>
 
-            <!-- Step 1: Placed -->
-            <div class="stepper-node ${stepIndex >= 1 ? (stepIndex === 1 ? 'is-active' : 'is-done') : ''}">
-              <div class="stepper-circle">${stepIndex > 1 ? '✓' : (status === 'cancelled' ? '✕' : '1')}</div>
-              <span class="stepper-label">${status === 'cancelled' ? 'Cancelled' : 'Placed'}</span>
-            </div>
+              <!-- Step 1: Ordered -->
+              <div class="stepper-node is-done">
+                <div class="stepper-circle" style="background:#10B981; border-color:#10B981; color:#FFF;">✓</div>
+                <span class="stepper-label" style="color:#10B981; font-weight:700;">Ordered</span>
+              </div>
 
-            <!-- Step 2: Prepared -->
-            <div class="stepper-node ${stepIndex >= 2 ? (stepIndex === 2 ? 'is-active' : 'is-done') : ''}">
-              <div class="stepper-circle">${stepIndex > 2 ? '✓' : '2'}</div>
-              <span class="stepper-label">Prepared</span>
+              <!-- Step 2: Cancelled -->
+              <div class="stepper-node">
+                <div class="stepper-circle" style="background:#DC2626; border-color:#DC2626; color:#FFF; box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.2);">✕</div>
+                <span class="stepper-label" style="color:#DC2626; font-weight:800;">Cancelled</span>
+              </div>
             </div>
+          ` : status === 'cancel_requested' ? `
+            <div class="stepper-progress-bar" style="max-width: 260px; margin: 0 auto 10px; overflow: hidden;">
+              <div class="stepper-track-line" style="background:#FFEDD5; left:18px; right:18px;"></div>
+              <div class="stepper-track-fill" style="width: 100%; max-width: calc(100% - 36px); background: #EA580C; left:18px;"></div>
 
-            <!-- Step 3: Shipped -->
-            <div class="stepper-node ${stepIndex >= 3 ? (stepIndex === 3 ? 'is-active' : 'is-done') : ''}">
-              <div class="stepper-circle">${stepIndex > 3 ? '✓' : '🚚'}</div>
-              <span class="stepper-label">Shipped</span>
-            </div>
+              <!-- Step 1: Ordered -->
+              <div class="stepper-node is-done">
+                <div class="stepper-circle" style="background:#10B981; border-color:#10B981; color:#FFF;">✓</div>
+                <span class="stepper-label" style="color:#10B981; font-weight:700;">Ordered</span>
+              </div>
 
-            <!-- Step 4: Delivered -->
-            <div class="stepper-node ${stepIndex === 4 ? 'is-done' : ''}">
-              <div class="stepper-circle">📦</div>
-              <span class="stepper-label">Delivered</span>
+              <!-- Step 2: In Review -->
+              <div class="stepper-node">
+                <div class="stepper-circle" style="background:#EA580C; border-color:#EA580C; color:#FFF; box-shadow: 0 0 0 4px rgba(234, 88, 12, 0.2);">⏳</div>
+                <span class="stepper-label" style="color:#C2410C; font-weight:800;">Cancel Review</span>
+              </div>
             </div>
-          </div>
+          ` : `
+            <div class="stepper-progress-bar" style="overflow: hidden;">
+              <div class="stepper-track-line" style="left:20px; right:20px;"></div>
+              <div class="stepper-track-fill" style="width: ${trackFillPercent}; max-width: calc(100% - 40px); left:20px;"></div>
+
+              <!-- Step 1: Placed -->
+              <div class="stepper-node ${stepIndex >= 1 ? (stepIndex === 1 ? 'is-active' : 'is-done') : ''}">
+                <div class="stepper-circle">${stepIndex > 1 ? '✓' : '1'}</div>
+                <span class="stepper-label">Placed</span>
+              </div>
+
+              <!-- Step 2: Prepared -->
+              <div class="stepper-node ${stepIndex >= 2 ? (stepIndex === 2 ? 'is-active' : 'is-done') : ''}">
+                <div class="stepper-circle">${stepIndex > 2 ? '✓' : '2'}</div>
+                <span class="stepper-label">Prepared</span>
+              </div>
+
+              <!-- Step 3: Shipped -->
+              <div class="stepper-node ${stepIndex >= 3 ? (stepIndex === 3 ? 'is-active' : 'is-done') : ''}">
+                <div class="stepper-circle">${stepIndex > 3 ? '✓' : '🚚'}</div>
+                <span class="stepper-label">Shipped</span>
+              </div>
+
+              <!-- Step 4: Delivered -->
+              <div class="stepper-node ${stepIndex === 4 ? 'is-done' : ''}">
+                <div class="stepper-circle">📦</div>
+                <span class="stepper-label">Delivered</span>
+              </div>
+            </div>
+          `}
         </div>
 
         <!-- Live Status Notice Box -->
@@ -776,7 +873,11 @@
         currentCustomer = data.customer;
         localStorage.setItem('nachiyar_customer', JSON.stringify(data.customer));
         updateNavbarUserState();
-        renderDrawerContent();
+        closeAccountDrawer();
+        showSideToast({ title: 'Welcome Back!', message: `Signed in as ${data.customer.name}`, type: 'success' });
+        if (window.location.pathname.includes('account')) {
+          setTimeout(() => window.location.reload(), 300);
+        }
       } else {
         alert(data.message || 'Invalid credentials');
       }
@@ -817,7 +918,11 @@
         currentCustomer = data.customer;
         localStorage.setItem('nachiyar_customer', JSON.stringify(data.customer));
         updateNavbarUserState();
-        renderDrawerContent();
+        closeAccountDrawer();
+        showSideToast({ title: 'Account Created!', message: `Welcome to Nachiyar Herbals, ${data.customer.name}!`, type: 'success' });
+        if (window.location.pathname.includes('account')) {
+          setTimeout(() => window.location.reload(), 300);
+        }
       } else {
         alert(data.message || 'Registration failed');
       }
@@ -840,10 +945,10 @@
         localStorage.setItem('nachiyar_customer', JSON.stringify(data.customer));
         updateNavbarUserState();
         closeGoogleAccountPicker();
-        renderDrawerContent();
-        showAuthToast(`✓ Signed in with Google as ${data.customer.name}`);
-        if (window.location.pathname.includes('account.html')) {
-          setTimeout(() => window.location.reload(), 400);
+        closeAccountDrawer();
+        showSideToast({ title: 'Welcome!', message: `Signed in with Google as ${data.customer.name}`, type: 'success' });
+        if (window.location.pathname.includes('account')) {
+          setTimeout(() => window.location.reload(), 300);
         }
         return true;
       } else {

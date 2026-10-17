@@ -11,8 +11,8 @@
       "mrp": "699.00",
       "stock": 100,
       "initial_stock": 100,
-      "online_sold": 26,
-      "offline_sold": 14,
+      "online_sold": 0,
+      "offline_sold": 0,
       "sku": "NH-OIL-200ML",
       "images": [
         "assets/new-oil-bottle-card.jpg"
@@ -81,8 +81,8 @@
       "mrp": "649.00",
       "stock": 90,
       "initial_stock": 90,
-      "online_sold": 8,
-      "offline_sold": 15,
+      "online_sold": 0,
+      "offline_sold": 0,
       "sku": "NH-SHAMP-250ML",
       "images": [
         "assets/new-shampoo-bottle-card.jpg"
@@ -143,8 +143,8 @@
       "mrp": "1148.00",
       "stock": 55,
       "initial_stock": 55,
-      "online_sold": 7,
-      "offline_sold": 6,
+      "online_sold": 0,
+      "offline_sold": 0,
       "sku": "NH-DUO-SET",
       "images": [
         "assets/duo-ritual-new.jpg"
