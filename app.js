@@ -165,11 +165,10 @@ async function initStorefrontApp() {
     if (!p) return;
     const pId = p.id || '';
     const pSlug = p.slug || '';
-    const pName = (p.name || '').toLowerCase();
-
-    const isDuo = pId === 'prod_duo_03' || pSlug === 'royal-hair-ritual-duo' || pName.includes('ritual') || pName.includes('duo');
-    const isOil = !isDuo && (pId === 'prod_oil_01' || pSlug === 'herbal-hair-oil' || pName.includes('oil'));
-    const isShampoo = !isDuo && (pId === 'prod_shampoo_02' || pSlug === 'hibiscus-flower-shampoo' || pName.includes('shampoo'));
+    // Strict matching for core flagship formulations only (never overwrite with new products)
+    const isDuo = pId === 'prod_duo_03' || pSlug === 'royal-hair-ritual-duo';
+    const isOil = pId === 'prod_oil_01' || pSlug === 'herbal-hair-oil';
+    const isShampoo = pId === 'prod_shampoo_02' || pSlug === 'hibiscus-flower-shampoo';
 
     const parsedPrice = Number(p.price);
     const parsedMrp = Number(p.mrp) || Math.round(parsedPrice * 1.2);
@@ -239,9 +238,10 @@ async function initStorefrontApp() {
       const pId = p.id || '';
       const pSlug = p.slug || '';
 
-      const isDuo = pId === 'prod_duo_03' || pSlug === 'royal-hair-ritual-duo' || pName.toLowerCase().includes('ritual') || pName.toLowerCase().includes('duo');
-      const isOil = !isDuo && (pId === 'prod_oil_01' || pSlug === 'herbal-hair-oil' || pName.toLowerCase().includes('oil'));
-      const isShampoo = !isDuo && (pId === 'prod_shampoo_02' || pSlug === 'hibiscus-flower-shampoo' || pName.toLowerCase().includes('shampoo'));
+      // Strict matching for flagship core formulations on the home page
+      const isDuo = pId === 'prod_duo_03' || pSlug === 'royal-hair-ritual-duo';
+      const isOil = pId === 'prod_oil_01' || pSlug === 'herbal-hair-oil';
+      const isShampoo = pId === 'prod_shampoo_02' || pSlug === 'hibiscus-flower-shampoo';
 
       // 1. Header Mega Menu
       if (isOil) {
