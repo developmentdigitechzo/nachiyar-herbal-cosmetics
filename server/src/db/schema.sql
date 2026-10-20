@@ -3,6 +3,14 @@
 -- Fully idempotent schema with automatic table & index creation
 -- ==============================================================================
 
+-- 0. CATEGORIES TABLE
+CREATE TABLE IF NOT EXISTS categories (
+  id VARCHAR(100) PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  slug VARCHAR(255) UNIQUE NOT NULL,
+  count INT DEFAULT 0
+);
+
 -- 1. PRODUCTS TABLE
 CREATE TABLE IF NOT EXISTS products (
   id VARCHAR(100) PRIMARY KEY,
@@ -131,6 +139,20 @@ CREATE TABLE IF NOT EXISTS site_settings (
   data JSONB NOT NULL
 );
 
+-- 9. CONTACT INQUIRY MESSAGES
+CREATE TABLE IF NOT EXISTS contact_messages (
+  id VARCHAR(100) PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL,
+  phone VARCHAR(50),
+  subject VARCHAR(255) DEFAULT 'General Inquiry',
+  message TEXT NOT NULL,
+  status VARCHAR(50) DEFAULT 'unread',
+  admin_notes TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 -- PERFORMANCE INDEXES
 CREATE INDEX IF NOT EXISTS idx_products_slug ON products (slug);
 CREATE INDEX IF NOT EXISTS idx_products_category ON products (category);
@@ -157,3 +179,7 @@ VALUES
   ('prod_shampoo_02', 'Hibiscus Flower Shampoo', 'hibiscus-flower-shampoo', 249.00, 549.00, 90, 'Hair Care', '["scalp-cleanser", "hibiscus", "sulphate-free"]'::jsonb, '["assets/new-shampoo-bottle-card.jpg"]'::jsonb, 'Gentle scalp cleanser infused with fresh handpicked red hibiscus flowers and natural coconut surfactants.'),
   ('prod_duo_03', 'The Royal Hair Ritual (Duo Set)', 'royal-hair-ritual-duo', 499.00, 1148.00, 85, 'Ritual Combos', '["complete-ritual", "bestseller", "ayurvedic-duo"]'::jsonb, '["assets/duo-ritual-new.jpg"]'::jsonb, 'The complete 2-step royal restorative haircare routine featuring our Herbal Hair Oil and Hibiscus Shampoo.')
 ON CONFLICT (id) DO NOTHING;
+
+
+-- FIX FOR TAGS COLUMN
+ALTER TABLE products ADD COLUMN IF NOT EXISTS tags JSONB DEFAULT '[]'::jsonb;

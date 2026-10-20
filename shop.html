@@ -250,11 +250,11 @@
           if (res && res.success && Array.isArray(res.data)) {
             allProducts = res.data;
           } else {
-            allProducts = DEFAULT_PRODUCTS;
+            allProducts = [];
           }
         } catch (e) {
-          console.warn('API unavailable, rendering catalog from default catalog:', e);
-          allProducts = DEFAULT_PRODUCTS;
+          console.warn('API unavailable, rendering empty catalog:', e);
+          allProducts = [];
         }
         renderCatalog(document.querySelector('.filter-btn.active')?.dataset.cat || 'all');
       }

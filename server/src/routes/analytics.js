@@ -205,41 +205,95 @@ router.get('/', async (req, res) => {
 
     const topSellingProducts = Object.values(productSalesMap).sort((a, b) => b.totalSold - a.totalSold);
 
-    // 7. Customer Purchase Analytics
-    const customerAnalytics = customers.map(c => {
-      const cleanEmail = (c.email || '').toLowerCase().trim();
-      const cleanPhone = (c.phone || '').trim();
+    // 7. Customer Purchase Analytics (100% Real Live Purchases & Verified Customers)
+    const customerMap = new Map();
 
-      const custOrders = orders.filter(o => {
-        const cust = typeof o.customer === 'string' ? JSON.parse(o.customer) : (o.customer || {});
-        return (cust.email && cust.email.toLowerCase().trim() === cleanEmail) ||
-               (cust.phone && cust.phone.trim() === cleanPhone);
-      });
+    // Aggregate from online orders
+    orders.forEach(o => {
+      const cust = typeof o.customer === 'string' ? JSON.parse(o.customer) : (o.customer || {});
+      const email = (cust.email || '').trim().toLowerCase();
+      const phone = (cust.phone || '').trim();
+      const name = (cust.name || cust.fullName || 'Patron').trim();
+      const key = email || phone || o.id;
 
-      const custInvoices = invoices.filter(inv => {
-        const cust = typeof inv.customer === 'string' ? JSON.parse(inv.customer) : (inv.customer || {});
-        return (cust.email && cust.email.toLowerCase().trim() === cleanEmail) ||
-               (cust.phone && cust.phone.trim() === cleanPhone);
-      });
+      // Filter out dummy demo seeds
+      if (email.includes('example.com') || email.includes('pooja.m') || email.includes('ananya.s')) return;
 
-      const onlineSpent = custOrders.reduce((sum, o) => sum + Number(o.total || 0), 0);
-      const offlineSpent = custInvoices.reduce((sum, inv) => sum + Number(inv.total || 0), 0);
-      const totalSpent = onlineSpent + offlineSpent;
-      const orderCount = custOrders.length + custInvoices.length;
+      if (!customerMap.has(key)) {
+        customerMap.set(key, {
+          id: cust.id || `cust_${key}`,
+          name: name,
+          email: email || 'N/A',
+          phone: phone || 'N/A',
+          city: cust.city || 'Online Buyer',
+          onlineOrders: 0,
+          offlineInvoices: 0,
+          totalSpent: 0,
+          joinedAt: o.created_at
+        });
+      }
 
-      return {
-        id: c.id,
-        name: c.name,
-        email: c.email,
-        phone: c.phone || 'N/A',
-        city: c.city || 'N/A',
-        orderCount,
-        onlineOrders: custOrders.length,
-        offlineInvoices: custInvoices.length,
-        totalSpent,
-        joinedAt: c.created_at
-      };
-    }).sort((a, b) => b.totalSpent - a.totalSpent);
+      const entry = customerMap.get(key);
+      entry.onlineOrders += 1;
+      entry.totalSpent += Number(o.total || 0);
+      if (cust.city && entry.city === 'Online Buyer') entry.city = cust.city;
+      if (name && entry.name === 'Patron') entry.name = name;
+    });
+
+    // Aggregate from retail POS invoices
+    invoices.forEach(inv => {
+      const cust = typeof inv.customer === 'string' ? JSON.parse(inv.customer) : (inv.customer || {});
+      const email = (cust.email || '').trim().toLowerCase();
+      const phone = (cust.phone || '').trim();
+      const name = (cust.name || 'Store Walk-in').trim();
+      const key = phone || email || inv.id;
+
+      if (email.includes('example.com')) return;
+
+      if (!customerMap.has(key)) {
+        customerMap.set(key, {
+          id: `cust_${key}`,
+          name: name,
+          email: email || 'Counter Walk-in',
+          phone: phone || 'N/A',
+          city: cust.city || 'Retail Storefront',
+          onlineOrders: 0,
+          offlineInvoices: 0,
+          totalSpent: 0,
+          joinedAt: inv.createdAt || inv.created_at
+        });
+      }
+
+      const entry = customerMap.get(key);
+      entry.offlineInvoices += 1;
+      entry.totalSpent += Number(inv.total || 0);
+    });
+
+    // Add any registered customers if genuine
+    customers.forEach(c => {
+      const email = (c.email || '').trim().toLowerCase();
+      const phone = (c.phone || '').trim();
+      if (email.includes('example.com') || email.includes('pooja.m') || email.includes('ananya.s')) return;
+      const key = email || phone || c.id;
+      if (!customerMap.has(key)) {
+        customerMap.set(key, {
+          id: c.id,
+          name: c.name,
+          email: email || 'N/A',
+          phone: phone || 'N/A',
+          city: c.city || 'N/A',
+          onlineOrders: 0,
+          offlineInvoices: 0,
+          totalSpent: 0,
+          joinedAt: c.created_at
+        });
+      }
+    });
+
+    const customerAnalytics = Array.from(customerMap.values()).map(c => ({
+      ...c,
+      orderCount: c.onlineOrders + c.offlineInvoices
+    })).sort((a, b) => b.totalSpent - a.totalSpent);
 
     // 8. Return Comprehensive Real-Time Payload
     res.json({

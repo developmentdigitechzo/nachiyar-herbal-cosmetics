@@ -146,7 +146,7 @@ app.use('/api/customer', customersRouter);
 app.use('/api/products', productsRouter);
 app.use('/api/orders', ordersRouter);
 app.use('/api/reviews', reviewsRouter);
-app.use('/api/messages', messagesRouter);
+app.use(['/api/messages', '/api/contact/messages'], messagesRouter);
 
 // Public storefront settings (announcements & enabled checkout payment methods)
 const { query: dbQuery } = require('./config/db');

@@ -248,9 +248,23 @@ async function initStorefrontApp() {
     const isSlot2Removed = !!(slot2Cfg && (slot2Cfg.removed === true || slot2Cfg.disabled === true));
     const isComboRemoved = !!(comboCfg && (comboCfg.removed === true || comboCfg.disabled === true));
 
-    const slot1TargetId = isSlot1Removed ? null : (slot1Cfg?.productId || 'prod_oil_01');
-    const slot2TargetId = isSlot2Removed ? null : (slot2Cfg?.productId || 'prod_shampoo_02');
-    const comboTargetId = isComboRemoved ? null : (comboCfg?.productId || 'prod_duo_03');
+    const availableProds = productsList.filter(p => p.status !== 'inactive');
+    
+    // Intelligently fallback to real active database products if configured targets don't exist
+    let slot1TargetId = isSlot1Removed ? null : (slot1Cfg?.productId || 'prod_oil_01');
+    let slot2TargetId = isSlot2Removed ? null : (slot2Cfg?.productId || 'prod_shampoo_02');
+    let comboTargetId = isComboRemoved ? null : (comboCfg?.productId || 'prod_duo_03');
+
+    if (!isSlot1Removed && (!slot1TargetId || !availableProds.some(p => p.id === slot1TargetId || p.slug === slot1TargetId))) {
+      slot1TargetId = availableProds[0]?.id || 'prod_oil_01';
+    }
+    if (!isSlot2Removed && (!slot2TargetId || !availableProds.some(p => p.id === slot2TargetId || p.slug === slot2TargetId))) {
+      slot2TargetId = availableProds.length > 1 ? availableProds[1].id : null;
+    }
+    if (!isComboRemoved && (!comboTargetId || !availableProds.some(p => p.id === comboTargetId || p.slug === comboTargetId))) {
+      const duoMatch = availableProds.find(p => p.category === 'Ritual Sets' || p.category === 'Ritual Combos' || (p.name && p.name.includes('Combo')));
+      comboTargetId = duoMatch ? duoMatch.id : (availableProds.length > 2 ? availableProds[2].id : availableProds[0]?.id);
+    }
 
     // 1. Enforce live storefront visibility for Flagship collection cards & combo banner
     const cardOilEl = document.getElementById('card-oil');
@@ -629,6 +643,41 @@ async function initStorefrontApp() {
       });
     });
 
+    // 5.5. Dynamically hydrate header hover mega-menu (.nav-dropdown-mega .mega-grid)
+    const megaGrids = document.querySelectorAll('.nav-dropdown-mega .mega-grid');
+    megaGrids.forEach(megaGrid => {
+      if (!Array.isArray(productsList) || productsList.length === 0) {
+        megaGrid.innerHTML = `
+          <div style="padding: 24px; text-align: center; color: var(--color-text-muted); grid-column: 1 / -1;">
+            <p style="margin: 0; font-size: 0.875rem;">Apothecary formulations being prepared in small solar batches.</p>
+            <a href="/shop/" style="display: inline-block; margin-top: 8px; font-weight: 700; color: var(--color-lavender-primary); text-decoration: none;">View Shop Catalog →</a>
+          </div>
+        `;
+        return;
+      }
+      megaGrid.innerHTML = productsList.slice(0, 3).map((prod, idx) => {
+        const pSlug = prod.slug || prod.id;
+        const tag = prod.subtitle || prod.category || 'Ayurvedic Care';
+        const img = (prod.images && prod.images[0]) || prod.imageUrl || 'assets/new-oil-bottle-card.jpg';
+        const price = Number(prod.price) || 299;
+        const mrp = Number(prod.mrp) || Number(prod.comparePrice) || Math.round(price * 1.2);
+        const saveTxt = mrp > price ? `<s class="old-price" style="text-decoration: line-through; opacity: 0.6; font-size: 0.8em; margin-left: 4px;">₹${mrp}</s>` : '';
+        return `
+          <a href="/product/?slug=${encodeURIComponent(pSlug)}" class="mega-card mega-card--dynamic mega-card--${idx}">
+            <div class="mega-card-thumb">
+              <img src="${img}" alt="${prod.name || 'Product'}">
+            </div>
+            <div class="mega-card-info">
+              <span class="mega-tag">${tag}</span>
+              <h4>${prod.name || 'Product'}</h4>
+              <p class="mega-price">₹${price} ${saveTxt}</p>
+              <span class="mega-cta">View & Buy →</span>
+            </div>
+          </a>
+        `;
+      }).join('');
+    });
+
     // 6. Refresh any items already in the user's cart with updated prices
     if (Array.isArray(cart) && cart.length > 0) {
       let cartChanged = false;
@@ -679,10 +728,16 @@ async function initStorefrontApp() {
 
   window.reloadLiveProducts = reloadLiveProducts;
 
-  // Cross-tab real-time listener: when admin updates any product, instantly update storefront without page refresh!
+  // Cross-tab real-time listener: when admin updates any product or settings, instantly update storefront without page refresh!
   window.addEventListener('storage', (e) => {
     if (e.key === 'nachiyar_products_updated' || e.key === 'nachiyar_store_products') {
       reloadLiveProducts();
+    }
+    if (e.key === 'nachiyar_store_settings') {
+      try {
+        const s = JSON.parse(e.newValue);
+        if (s) updateStorefrontBusinessDetails(s);
+      } catch (err) {}
     }
   });
 
@@ -690,8 +745,9 @@ async function initStorefrontApp() {
   try {
     const storeChannel = new BroadcastChannel('nachiyar_store_channel');
     storeChannel.onmessage = (event) => {
-      if (event.data && (event.data.type === 'PRODUCTS_UPDATED' || event.data.type === 'SETTINGS_UPDATED')) {
+      if (event.data && (event.data.type === 'PRODUCTS_UPDATED' || event.data.type === 'SETTINGS_UPDATED' || event.data.type === 'settings_updated')) {
         reloadLiveProducts();
+        if (event.data.settings) updateStorefrontBusinessDetails(event.data.settings);
       }
     };
   } catch (e) {}
@@ -1623,7 +1679,7 @@ async function initStorefrontApp() {
     if (!reviewsScrollerTrack) return;
 
     let reviews = [];
-    let stats = { average: '5.0', total: 4 };
+    let stats = { average: '5.0', total: 0 };
 
     try {
       const res = await fetch('/api/reviews');
@@ -1633,13 +1689,13 @@ async function initStorefrontApp() {
         reviews = data.data.reviews;
         stats = data.data.stats || { average: '5.0', total: reviews.length };
       } else {
-        reviews = DEFAULT_REVIEWS;
-        stats = { average: '5.0', total: 4 };
+        reviews = [];
+        stats = { average: '5.0', total: 0 };
       }
     } catch (e) {
-      console.warn('Backend reviews API offline, using default patron reviews:', e);
-      reviews = DEFAULT_REVIEWS;
-      stats = { average: '5.0', total: 4 };
+      console.warn('Backend reviews API offline:', e);
+      reviews = [];
+      stats = { average: '5.0', total: 0 };
     }
 
     if (reviews && reviews.length > 0) {

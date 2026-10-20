@@ -832,6 +832,18 @@
           return;
         }
 
+        // 🔒 MANDATORY CUSTOMER LOGIN CHECK
+        const savedCustStr = localStorage.getItem('nachiyar_customer');
+        let currentAuthCustomer = null;
+        try {
+          if (savedCustStr) currentAuthCustomer = JSON.parse(savedCustStr);
+        } catch (e) {}
+
+        if (!currentAuthCustomer || (!currentAuthCustomer.email && !currentAuthCustomer.phone)) {
+          openSignInRequiredModal();
+          return;
+        }
+
         const { subtotal, shipping, total } = calculateTotals();
 
         // Validate specific method details if applicable
@@ -902,15 +914,25 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
           });
-          if (res.ok && res.headers.get('content-type')?.includes('application/json')) {
-            const data = await res.json();
-            if (data.success && data.data) {
-              orderId = data.data.id || orderId;
-              orderNumber = data.data.orderNumber || orderNumber;
-            }
+          const data = await res.json().catch(() => null);
+
+          if (!res.ok || !data || !data.success) {
+            btnPlaceOrder.disabled = false;
+            btnPlaceOrder.innerHTML = '<span>Proceed To Complete Order</span><span class="btn-arrow">→</span>';
+            const errMsg = (data && data.message) || 'Unable to place order. Please check product stock or connection.';
+            alert('⚠️ Order placement failed: ' + errMsg);
+            return;
+          }
+
+          if (data && data.data) {
+            orderId = data.data.id || orderId;
+            orderNumber = data.data.orderNumber || orderNumber;
           }
         } catch (apiErr) {
-          console.warn('Backend API unavailable, saving order to local session:', apiErr);
+          btnPlaceOrder.disabled = false;
+          btnPlaceOrder.innerHTML = '<span>Proceed To Complete Order</span><span class="btn-arrow">→</span>';
+          alert('⚠️ Network connection issue. Could not transmit order to server. Please try again.');
+          return;
         }
 
         // Always save order and customer into session stores
@@ -958,6 +980,96 @@
 
       renderCheckout();
     });
-  </script>
+  
+    function openSignInRequiredModal() {
+      const modal = document.getElementById('signInRequiredModal');
+      if (modal) {
+        modal.style.display = 'flex';
+      } else {
+        if (confirm('⚠️ Sign In Required: Please sign in or register to place your order. Would you like to sign in now?')) {
+          window.location.href = '/account/?redirect=checkout.html';
+        }
+      }
+    }
+
+    function closeSignInRequiredModal() {
+      const modal = document.getElementById('signInRequiredModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    // Prefill customer details and show auth banner on load
+    document.addEventListener('DOMContentLoaded', () => {
+      try {
+        const savedCustStr = localStorage.getItem('nachiyar_customer');
+        if (savedCustStr) {
+          const cust = JSON.parse(savedCustStr);
+          if (cust) {
+            const firstNameInput = document.getElementById('chkFirstName');
+            const lastNameInput = document.getElementById('chkLastName');
+            const emailInput = document.getElementById('chkEmail');
+            const phoneInput = document.getElementById('chkPhone');
+            const addressInput = document.getElementById('chkAddress');
+            const cityInput = document.getElementById('chkCity');
+            const stateInput = document.getElementById('chkState');
+            const pincodeInput = document.getElementById('chkPincode');
+
+            if (cust.name) {
+              const nameParts = cust.name.trim().split(' ');
+              if (firstNameInput && !firstNameInput.value) firstNameInput.value = nameParts[0] || '';
+              if (lastNameInput && !lastNameInput.value) lastNameInput.value = nameParts.slice(1).join(' ') || '';
+            }
+            if (emailInput && !emailInput.value && cust.email) emailInput.value = cust.email;
+            if (phoneInput && !phoneInput.value && cust.phone) phoneInput.value = cust.phone.replace(/[^0-9]/g, '').slice(-10);
+            if (addressInput && !addressInput.value && cust.address) addressInput.value = cust.address;
+            if (cityInput && !cityInput.value && cust.city) cityInput.value = cust.city;
+            if (stateInput && !stateInput.value && cust.state) stateInput.value = cust.state;
+            if (pincodeInput && !pincodeInput.value && cust.pincode) pincodeInput.value = cust.pincode;
+
+            // Show signed-in badge in header
+            const customerSection = document.querySelector('.checkout-section');
+            if (customerSection && !document.getElementById('checkoutAuthBanner')) {
+              const banner = document.createElement('div');
+              banner.id = 'checkoutAuthBanner';
+              banner.style.cssText = 'background: #F3E8FF; border: 1.5px solid #C4B5FD; border-radius: 10px; padding: 12px 16px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem;';
+              banner.innerHTML = `<div><strong style="color: #6B21A8;">👑 Signed In:</strong> <span style="color: #4C1D95; font-weight: 700;">${cust.name || 'Valued Member'}</span> <small style="color: #6D28D9;">(${cust.email || cust.phone || ''})</small></div><span style="color: #10B981; font-weight: 700; font-size: 0.78rem;">● Verified</span>`;
+              customerSection.insertBefore(banner, customerSection.firstChild);
+            }
+          }
+        } else {
+          // Show guest warning banner
+          const customerSection = document.querySelector('.checkout-section');
+          if (customerSection && !document.getElementById('checkoutGuestNotice')) {
+            const notice = document.createElement('div');
+            notice.id = 'checkoutGuestNotice';
+            notice.style.cssText = 'background: #FEF3C7; border: 1.5px solid #FCD34D; border-radius: 10px; padding: 12px 16px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; font-size: 0.85rem;';
+            notice.innerHTML = `<div><strong style="color: #92400E;">⚠️ Sign In Required:</strong> <span style="color: #B45309;">Please sign in or create an account to complete checkout.</span></div><a href="/account/?redirect=checkout.html" style="background: #D97706; color: #FFF; padding: 5px 12px; border-radius: 6px; font-weight: 700; font-size: 0.78rem; text-decoration: none;">Sign In / Register ↗</a>`;
+            customerSection.insertBefore(notice, customerSection.firstChild);
+          }
+        }
+      } catch (e) {}
+    });
+    </script>
+
+
+  <!-- ==================== SIGN IN REQUIRED MODAL ==================== -->
+  <div class="modal-overlay" id="signInRequiredModal" style="display: none; position: fixed; inset: 0; background: rgba(26,11,38,0.75); backdrop-filter: blur(8px); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+    <div style="background: #FFF; border-radius: 16px; max-width: 440px; width: 100%; padding: 32px 24px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.25); border: 1.5px solid #E2E8F0; position: relative;">
+      <button type="button" onclick="closeSignInRequiredModal()" style="position: absolute; top: 14px; right: 16px; background: none; border: none; font-size: 1.3rem; cursor: pointer; color: #64748B;">✕</button>
+      <div style="width: 56px; height: 56px; border-radius: 50%; background: #F3E8FF; color: #7C5AAB; font-size: 1.8rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto;">👑</div>
+      <h3 style="font-size: 1.25rem; font-weight: 800; color: #1E293B; margin: 0 0 8px 0; font-family: 'Cinzel', serif;">Sign In Required to Place Order</h3>
+      <p style="font-size: 0.88rem; color: #64748B; margin: 0 0 20px 0; line-height: 1.5;">
+        To ensure secure order placement, live delivery tracking, and order history, please sign in or register with your mobile number or Google account.
+      </p>
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <a href="/account/?redirect=checkout.html" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px; border-radius: 10px; background: linear-gradient(135deg, #2D1A3B 0%, #7C5AAB 100%); color: #FFF; font-weight: 700; font-size: 0.95rem; text-decoration: none; box-shadow: 0 4px 12px rgba(124, 90, 171, 0.35);">
+          <span>👑 Sign In / Register Account</span>
+        </a>
+        <button type="button" onclick="closeSignInRequiredModal()" style="padding: 10px; border-radius: 10px; background: #F1F5F9; color: #475569; font-weight: 600; font-size: 0.88rem; border: none; cursor: pointer;">
+          Continue Reviewing Bag
+        </button>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>

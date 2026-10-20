@@ -3,6 +3,30 @@ const router = express.Router();
 const { query } = require('../config/db');
 const { requireAdminAuth } = require('./auth');
 
+// Self-healing: verify or create reviews table on startup
+async function ensureReviewsTable() {
+  try {
+    await query(`
+      CREATE TABLE IF NOT EXISTS reviews (
+        id VARCHAR(100) PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255),
+        product_name VARCHAR(255) DEFAULT 'Herbal Hair Care',
+        rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
+        title VARCHAR(255),
+        comment TEXT NOT NULL,
+        status VARCHAR(50) DEFAULT 'pending',
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE INDEX IF NOT EXISTS idx_reviews_status ON reviews (status);
+    `);
+  } catch (err) {
+    console.warn('Reviews table verify note:', err.message);
+  }
+}
+ensureReviewsTable();
+
 // GET /api/reviews - Public endpoint returning ONLY admin-approved reviews
 router.get('/', async (req, res) => {
   try {
@@ -73,7 +97,7 @@ router.post('/', async (req, res) => {
 });
 
 // GET /api/reviews/admin/all - Admin only: view all reviews with status counts
-router.get('/admin/all', requireAdminAuth, async (req, res) => {
+router.get(['/admin', '/admin/all', '/all'], requireAdminAuth, async (req, res) => {
   try {
     const statusFilter = req.query.status;
     let sql = 'SELECT * FROM reviews';

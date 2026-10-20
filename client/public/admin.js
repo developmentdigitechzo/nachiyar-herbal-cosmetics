@@ -4231,6 +4231,19 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnMsgReplyEmail && msg.email) {
       btnMsgReplyEmail.href = `mailto:${msg.email}?subject=${encodeURIComponent(`Re: ${msg.subject || 'Nachiyar Herbals Inquiry'}`)}&body=${encodeURIComponent(`Dear ${msg.name},\n\nThank you for reaching out to Nachiyar Herbals & Cosmetics.\n\nRegarding your inquiry:\n"${msg.message}"\n\n`)}`;
       btnMsgReplyEmail.style.display = 'inline-flex';
+      btnMsgReplyEmail.onclick = (e) => {
+        e.preventDefault();
+        const toEmail = msg.email;
+        const subj = encodeURIComponent(`Re: ${msg.subject || 'Nachiyar Herbals Inquiry'}`);
+        const bodyTxt = encodeURIComponent(`Dear ${msg.name},\n\nThank you for reaching out to Nachiyar Herbals & Cosmetics.\n\nRegarding your inquiry:\n"${msg.message}"\n\nKind regards,\nCustomer Concierge Desk\nNachiyar Herbals & Cosmetics`);
+        try { navigator.clipboard.writeText(toEmail); } catch (err) {}
+        const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(toEmail)}&su=${subj}&body=${bodyTxt}`;
+        const win = window.open(gmailUrl, '_blank');
+        if (!win || win.closed || typeof win.closed === 'undefined') {
+          window.location.href = `mailto:${toEmail}?subject=${subj}&body=${bodyTxt}`;
+        }
+        showToast(`Email opened & copied to clipboard: ${toEmail}`);
+      };
     } else if (btnMsgReplyEmail) {
       btnMsgReplyEmail.style.display = 'none';
     }
@@ -4280,6 +4293,23 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function updateMessageStatus(id, newStatus, notes, showToastNotification = true) {
+    // Optimistic update
+    const msg = customerMessages.find(m => String(m.id) === String(id));
+    if (msg) {
+      msg.status = newStatus;
+      if (notes !== undefined) msg.admin_notes = notes;
+    }
+    if (activeViewingMessage && String(activeViewingMessage.id) === String(id)) {
+      activeViewingMessage.status = newStatus;
+      if (notes !== undefined) activeViewingMessage.admin_notes = notes;
+      updateModalStatusBadge(newStatus);
+      if (btnMsgToggleStatus) {
+        btnMsgToggleStatus.textContent = newStatus === 'resolved' ? '🔄 Re-open Inquiry' : 'Mark as Resolved ✅';
+      }
+    }
+    updateMessageKpiCounters();
+    renderAdminMessages();
+
     try {
       const res = await authFetch(`/api/messages/${id}/status`, {
         method: 'PATCH',
@@ -4287,39 +4317,13 @@ document.addEventListener('DOMContentLoaded', () => {
         body: JSON.stringify({ status: newStatus, admin_notes: notes })
       }).then(r => r.json());
 
-      if (res.success) {
-        // Update local object
-        const msg = customerMessages.find(m => String(m.id) === String(id));
-        if (msg) {
-          msg.status = newStatus;
-          msg.admin_notes = notes;
-        }
-
-        updateMessageKpiCounters();
-        renderAdminMessages();
-        if (activeViewingMessage && String(activeViewingMessage.id) === String(id)) {
-          activeViewingMessage.status = newStatus;
-          activeViewingMessage.admin_notes = notes;
-          updateModalStatusBadge(newStatus);
-          if (btnMsgToggleStatus) {
-            btnMsgToggleStatus.textContent = newStatus === 'resolved' ? '🔄 Re-open Inquiry' : 'Mark as Resolved ✅';
-          }
-        }
-
+      if (res && res.success) {
         if (showToastNotification) {
           showToast(`Inquiry status updated to ${newStatus.toUpperCase()}`);
         }
       }
     } catch (err) {
       console.error('Failed to update message status:', err);
-      // Fallback local update
-      const msg = customerMessages.find(m => String(m.id) === String(id));
-      if (msg) {
-        msg.status = newStatus;
-        msg.admin_notes = notes;
-        updateMessageKpiCounters();
-        renderAdminMessages();
-      }
     }
   }
 
@@ -5955,12 +5959,16 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const [ordRes, revRes, msgRes] = await Promise.all([
         authFetch('/api/orders').then(r => r.json()).catch(() => null),
-        authFetch('/api/reviews/admin').then(r => r.json()).catch(() => null),
-        authFetch('/api/contact/messages').then(r => r.json()).catch(() => null)
+        authFetch('/api/reviews/admin/all').then(r => r.json()).catch(() => null),
+        authFetch('/api/messages').then(r => r.json()).catch(() => null)
       ]);
       if (ordRes && ordRes.success && ordRes.data) orders = ordRes.data;
-      if (revRes && revRes.success && revRes.data) adminReviews = revRes.data;
-      if (msgRes && msgRes.success && msgRes.data) customerMessages = msgRes.data;
+      if (revRes && revRes.success && revRes.data) {
+        adminReviews = Array.isArray(revRes.data) ? revRes.data : (revRes.data.reviews || []);
+      }
+      if (msgRes && msgRes.success && msgRes.data) {
+        customerMessages = Array.isArray(msgRes.data) ? msgRes.data : (msgRes.data.messages || []);
+      }
       if (typeof updateNotificationBadges === 'function') updateNotificationBadges();
     } catch (e) {}
   }, 25000);

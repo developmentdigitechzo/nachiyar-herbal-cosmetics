@@ -17,15 +17,12 @@ async function initCustomers() {
       );
     `);
 
+    // Clean up sample demo customers
     await pool.query(`
-      INSERT INTO customers (id, name, email, phone, password, address, city, state, pincode)
-      VALUES 
-        ('cust_01', 'Pooja Madhavan', 'pooja.m@example.com', '+91 98401 23456', 'pooja123', '42, Besant Avenue, Adyar', 'Chennai', 'Tamil Nadu', '600020'),
-        ('cust_02', 'Ananya Sharma', 'ananya.s@example.com', '+91 98200 98765', 'ananya123', 'Flat 804, Oberoi Springs, Andheri West', 'Mumbai', 'Maharashtra', '400053')
-      ON CONFLICT (email) DO NOTHING;
+      DELETE FROM customers WHERE email LIKE '%example.com' OR id LIKE 'cust_0%'
     `);
 
-    console.log('✅ Customers table created and seeded successfully.');
+    console.log('✅ Customers table created and verified without dummy records.');
   } catch (err) {
     console.error('Error creating customers table:', err);
   } finally {

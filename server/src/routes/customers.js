@@ -286,24 +286,26 @@ router.get('/orders', async (req, res) => {
     if (cleanEmail && cleanDigits) {
       sql = `
         SELECT * FROM orders 
-        WHERE LOWER(customer->>'email') = $1 
-           OR REGEXP_REPLACE(customer->>'phone', '\\D', '', 'g') LIKE '%' || $2
-           OR LOWER(customer->>'email') LIKE '%' || $1 || '%'
+        WHERE LOWER(TRIM(COALESCE(customer->>'email', ''))) = $1 
+           OR (LENGTH($2) >= 8 AND REGEXP_REPLACE(COALESCE(customer->>'phone', ''), '[^0-9]', '', 'g') LIKE '%' || $2)
+           OR (LENGTH($1) > 3 AND LOWER(COALESCE(customer->>'email', '')) LIKE '%' || $1 || '%')
+           OR LOWER(COALESCE(customer->>'id', '')) = $1
         ORDER BY created_at DESC
       `;
       params.push(cleanEmail, cleanDigits);
     } else if (cleanEmail) {
       sql = `
         SELECT * FROM orders 
-        WHERE LOWER(customer->>'email') = $1 
-           OR LOWER(customer->>'email') LIKE '%' || $1 || '%'
+        WHERE LOWER(TRIM(COALESCE(customer->>'email', ''))) = $1 
+           OR (LENGTH($1) > 3 AND LOWER(COALESCE(customer->>'email', '')) LIKE '%' || $1 || '%')
+           OR LOWER(COALESCE(customer->>'id', '')) = $1
         ORDER BY created_at DESC
       `;
       params.push(cleanEmail);
     } else if (cleanDigits) {
       sql = `
         SELECT * FROM orders 
-        WHERE REGEXP_REPLACE(customer->>'phone', '\\D', '', 'g') LIKE '%' || $1
+        WHERE (LENGTH($1) >= 8 AND REGEXP_REPLACE(COALESCE(customer->>'phone', ''), '[^0-9]', '', 'g') LIKE '%' || $1)
         ORDER BY created_at DESC
       `;
       params.push(cleanDigits);

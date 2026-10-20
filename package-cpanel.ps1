@@ -6,29 +6,33 @@ if (Test-Path $destination) {
 }
 
 $items = @()
-Get-ChildItem -Path . -Filter "*.html" | ForEach-Object { $items += $_.FullName }
-Get-ChildItem -Path . -Filter "*.css" | ForEach-Object { $items += $_.FullName }
-Get-ChildItem -Path . -Filter "favicon.*" | ForEach-Object { $items += $_.FullName }
-$items += (Get-Item "app.js").FullName
-$items += (Get-Item "server.js").FullName
-if (Test-Path "customer-account.js") { $items += (Get-Item "customer-account.js").FullName }
-if (Test-Path "admin.js") { $items += (Get-Item "admin.js").FullName }
-if (Test-Path "view-reviews.js") { $items += (Get-Item "view-reviews.js").FullName }
-$items += (Get-Item "package.json").FullName
-if (Test-Path ".htaccess") { $items += (Get-Item ".htaccess").FullName }
-if (Test-Path ".env") { $items += (Get-Item ".env").FullName }
-if (Test-Path "firebase-config.js") { $items += (Get-Item "firebase-config.js").FullName }
-if (Test-Path ".env.production") { $items += (Get-Item ".env.production").FullName }
-if (Test-Path ".env.development") { $items += (Get-Item ".env.development").FullName }
-if (Test-Path "assets") { $items += (Get-Item "assets").FullName }
-if (Test-Path "data") { $items += (Get-Item "data").FullName }
-if (Test-Path "uploads") { $items += (Get-Item "uploads").FullName }
-if (Test-Path "server") { $items += (Get-Item "server").FullName }
-if (Test-Path "node_modules") { $items += (Get-Item "node_modules").FullName }
+Get-ChildItem -Path . -Filter "*.html" | ForEach-Object { $items += $_.Name }
+Get-ChildItem -Path . -Filter "*.css" | ForEach-Object { $items += $_.Name }
+Get-ChildItem -Path . -Filter "favicon.*" | ForEach-Object { $items += $_.Name }
+$items += "app.js"
+$items += "server.js"
+if (Test-Path "customer-account.js") { $items += "customer-account.js" }
+if (Test-Path "admin.js") { $items += "admin.js" }
+if (Test-Path "view-reviews.js") { $items += "view-reviews.js" }
+$items += "package.json"
+if (Test-Path ".htaccess") { $items += ".htaccess" }
+if (Test-Path ".env") { $items += ".env" }
+if (Test-Path "firebase-config.js") { $items += "firebase-config.js" }
+if (Test-Path ".env.production") { $items += ".env.production" }
+if (Test-Path ".env.development") { $items += ".env.development" }
+if (Test-Path "assets") { $items += "assets" }
+if (Test-Path "data") { $items += "data" }
+if (Test-Path "uploads") { $items += "uploads" }
+if (Test-Path "server") { $items += "server" }
+if (Test-Path "node_modules") { $items += "node_modules" }
 
-Write-Host "Compressing $($items.Count) files/folders into $destination..."
-Compress-Archive -Path $items -DestinationPath $destination -CompressionLevel Optimal -Force
+Write-Host "Compressing $($items.Count) files/folders into $destination with tar..."
+& tar.exe -a -cf $destination @items
 
-$zip = Get-Item $destination
-$sizeMb = [math]::Round(($zip.Length / 1MB), 2)
-Write-Host "SUCCESS: $destination created! Size: $sizeMb MB"
+if (Test-Path $destination) {
+    $zip = Get-Item $destination
+    $sizeMb = [math]::Round(($zip.Length / 1MB), 2)
+    Write-Host "SUCCESS: $destination created! Size: $sizeMb MB"
+} else {
+    Write-Error "Failed to create $destination"
+}

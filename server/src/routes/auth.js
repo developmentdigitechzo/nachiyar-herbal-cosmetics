@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
 const { query } = require('../config/db');
 
 const config = require('../config/environment');
@@ -16,6 +18,55 @@ const DEFAULT_PASSWORDS = {
   nimda: config.auth.adminPassword,
   admin: config.auth.adminPassword
 };
+
+// Path to local JSON fallback database
+const DB_JSON_PATH = path.join(__dirname, '..', '..', '..', 'data', 'db.json');
+
+function readLocalUsersFallback() {
+  try {
+    if (fs.existsSync(DB_JSON_PATH)) {
+      const raw = fs.readFileSync(DB_JSON_PATH, 'utf-8');
+      const data = JSON.parse(raw);
+      return Array.isArray(data.users) ? data.users : [];
+    }
+  } catch (e) {
+    console.warn('readLocalUsersFallback error:', e.message);
+  }
+  return [];
+}
+
+function saveLocalUserFallback(newUser) {
+  try {
+    if (fs.existsSync(DB_JSON_PATH)) {
+      const raw = fs.readFileSync(DB_JSON_PATH, 'utf-8');
+      const data = JSON.parse(raw);
+      if (!Array.isArray(data.users)) data.users = [];
+      const idx = data.users.findIndex(u => u.username === newUser.username || (newUser.email && u.email === newUser.email));
+      if (idx >= 0) {
+        data.users[idx] = { ...data.users[idx], ...newUser };
+      } else {
+        data.users.unshift(newUser);
+      }
+      fs.writeFileSync(DB_JSON_PATH, JSON.stringify(data, null, 2), 'utf-8');
+    }
+  } catch (e) {
+    console.warn('saveLocalUserFallback error:', e.message);
+  }
+}
+
+function deleteLocalUserFallback(idOrUsername) {
+  try {
+    if (fs.existsSync(DB_JSON_PATH)) {
+      const raw = fs.readFileSync(DB_JSON_PATH, 'utf-8');
+      const data = JSON.parse(raw);
+      if (Array.isArray(data.users)) {
+        const clean = String(idOrUsername || '').toLowerCase();
+        data.users = data.users.filter(u => u.id !== idOrUsername && String(u.username || '').toLowerCase() !== clean);
+        fs.writeFileSync(DB_JSON_PATH, JSON.stringify(data, null, 2), 'utf-8');
+      }
+    }
+  } catch (e) {}
+}
 
 function generateToken() {
   return crypto.randomBytes(32).toString('hex');
@@ -45,15 +96,32 @@ let columnsEnsured = false;
 async function ensureUserColumns() {
   if (columnsEnsured) return;
   try {
+    await query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id VARCHAR(100) PRIMARY KEY,
+        username VARCHAR(100) UNIQUE NOT NULL,
+        email VARCHAR(255),
+        phone VARCHAR(50),
+        password VARCHAR(255),
+        name VARCHAR(255) NOT NULL,
+        role VARCHAR(100) NOT NULL DEFAULT 'super_admin',
+        permissions JSONB DEFAULT '["all"]'::jsonb,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
     await query('ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR(255)');
     await query('ALTER TABLE users ADD COLUMN IF NOT EXISTS password VARCHAR(255)');
     await query('ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(50)');
+    await query('ALTER TABLE users ADD COLUMN IF NOT EXISTS name VARCHAR(255)');
+    await query('ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(100) DEFAULT \'super_admin\'');
+    await query('ALTER TABLE users ADD COLUMN IF NOT EXISTS permissions JSONB DEFAULT \'["all"]\'::jsonb');
     await query('ALTER TABLE users ADD COLUMN IF NOT EXISTS created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP');
     columnsEnsured = true;
   } catch (err) {
     console.warn('ensureUserColumns warning:', err.message);
   }
 }
+ensureUserColumns();
 
 // POST /api/auth/register (Create Admin / Staff Account)
 router.post('/register', async (req, res) => {
@@ -93,11 +161,11 @@ router.post('/register', async (req, res) => {
     const userRole = 'super_admin';
     const permissions = ['all'];
 
-    // Insert user into PostgreSQL database
+    // Insert user into PostgreSQL database with explicit ::jsonb cast
     try {
       await query(`
         INSERT INTO users (id, username, email, phone, password, name, role, permissions, created_at)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, CURRENT_TIMESTAMP)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, CURRENT_TIMESTAMP)
       `, [
         userId,
         cleanUser,
@@ -109,18 +177,22 @@ router.post('/register', async (req, res) => {
         JSON.stringify(permissions)
       ]);
     } catch (dbErr) {
-      console.warn('DB user insert warning:', dbErr.message);
+      console.warn('DB user insert warning, writing to fallback:', dbErr.message);
     }
 
     const user = {
       id: userId,
       username: cleanUser,
       email: cleanEmail,
-      phone: phone || null,
+      phone: cleanPhone || phone || null,
+      password: password,
       name: name.trim(),
       role: userRole,
       permissions: permissions
     };
+
+    // Save to local JSON fallback database as guaranteed persistence
+    saveLocalUserFallback(user);
 
     // Generate token (expires in 24 hours)
     const token = generateToken();
@@ -139,7 +211,14 @@ router.post('/register', async (req, res) => {
       success: true,
       message: 'Nimda account created successfully! Redirecting...',
       token: token,
-      user: user,
+      user: {
+        id: userId,
+        username: cleanUser,
+        email: cleanEmail,
+        name: name.trim(),
+        role: userRole,
+        permissions: permissions
+      },
       role: 'super_admin',
       redirectTo: '/nimda/'
     });
@@ -199,7 +278,7 @@ router.post('/login', async (req, res) => {
       // 2. Query user from database by username or email and match password
       try {
         const result = await query(
-          'SELECT * FROM users WHERE (LOWER(username) = $1 OR (email IS NOT NULL AND LOWER(email) = $1)) AND password = $2',
+          'SELECT * FROM users WHERE (LOWER(TRIM(username)) = $1 OR (email IS NOT NULL AND LOWER(TRIM(email)) = $1) OR phone = $1) AND password = $2',
           [trimmedUser, password]
         );
         if (result.rows.length > 0) {
@@ -216,6 +295,25 @@ router.post('/login', async (req, res) => {
         }
       } catch (e) {
         console.warn('DB query error during login:', e.message);
+      }
+
+      // 3. Fallback to local db.json if database had no record
+      if (!user) {
+        const localUsers = readLocalUsersFallback();
+        const matched = localUsers.find(u => 
+          (String(u.username || '').toLowerCase() === trimmedUser || String(u.email || '').toLowerCase() === trimmedUser || String(u.phone || '').includes(trimmedUser)) &&
+          String(u.password) === password
+        );
+        if (matched) {
+          user = {
+            id: matched.id || `user_${matched.username}`,
+            username: matched.username,
+            name: matched.name || 'Nimda Staff',
+            email: matched.email || '',
+            role: 'super_admin',
+            permissions: matched.permissions || ['all']
+          };
+        }
       }
     }
 
@@ -269,13 +367,27 @@ router.get('/verify', (req, res) => {
 router.get('/users', requireAdminAuth, async (req, res) => {
   try {
     await ensureUserColumns();
-    const result = await query(
-      'SELECT id, username, email, phone, name, password, role, permissions, created_at FROM users ORDER BY created_at DESC'
-    );
-    const mappedUsers = result.rows.map(u => ({
-      ...u,
-      password: u.password || (u.username.toLowerCase() === 'nimda' ? (config.auth.adminPassword || 'admin123') : '')
-    }));
+    let mappedUsers = [];
+    try {
+      const result = await query(
+        'SELECT id, username, email, phone, name, password, role, permissions, created_at FROM users ORDER BY created_at DESC'
+      );
+      mappedUsers = result.rows.map(u => ({
+        ...u,
+        password: u.password || (u.username.toLowerCase() === 'nimda' ? (config.auth.adminPassword || 'admin123') : '')
+      }));
+    } catch (dbErr) {
+      console.warn('DB fetch users warning:', dbErr.message);
+    }
+
+    // Merge with fallback users from db.json
+    const localUsers = readLocalUsersFallback();
+    localUsers.forEach(lu => {
+      if (!mappedUsers.some(mu => mu.username === lu.username || mu.id === lu.id)) {
+        mappedUsers.push(lu);
+      }
+    });
+
     res.json({ success: true, users: mappedUsers });
   } catch (err) {
     console.error('Error fetching users:', err);
@@ -309,12 +421,18 @@ router.delete('/users/:id', requireAdminAuth, async (req, res) => {
     } catch (e) {}
 
     // Permanent delete from PostgreSQL database
-    await query(
-      'DELETE FROM users WHERE id = $1 OR LOWER(username) = $2 OR (NULLIF($3, \'\') IS NOT NULL AND LOWER(username) = $3)',
-      [id, cleanId, queryUsername]
-    );
+    try {
+      await query(
+        'DELETE FROM users WHERE id = $1 OR LOWER(username) = $2 OR (NULLIF($3, \'\') IS NOT NULL AND LOWER(username) = $3)',
+        [id, cleanId, queryUsername]
+      );
+    } catch (e) {}
 
-    // Also invalidate any active sessions belonging to this user
+    // Also delete from local db.json
+    deleteLocalUserFallback(id);
+    if (queryUsername) deleteLocalUserFallback(queryUsername);
+
+    // Invalidate active sessions belonging to this user
     for (const [sToken, sData] of activeSessions.entries()) {
       if (sData.user) {
         const uName = (sData.user.username || '').toLowerCase();
@@ -336,7 +454,7 @@ router.post('/logout', (req, res) => {
   const token = (req.cookies && req.cookies.nachiyar_admin_token) || 
                 (req.headers['authorization'] && req.headers['authorization'].replace('Bearer ', '')) || 
                 req.headers['x-admin-token'] || 
-                req.body.token;
+                req.body?.token;
 
   if (token) {
     activeSessions.delete(token);

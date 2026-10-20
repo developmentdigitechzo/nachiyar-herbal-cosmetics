@@ -1609,18 +1609,14 @@
             const oEmail = (c.email || '').trim().toLowerCase();
 
             const isMatch = (userEmailClean && oEmail && userEmailClean === oEmail) ||
-                            (userPhoneClean && oPhone && userPhoneClean === oPhone);
+                            (userPhoneClean && oPhone && userPhoneClean === oPhone) ||
+                            (activeCustomer && activeCustomer.id && c.id && activeCustomer.id === c.id);
 
             if (isMatch && o.orderNumber && !orderMap.has(o.orderNumber)) {
               orderMap.set(o.orderNumber, o);
             }
           });
         } catch (e) {}
-
-        // 3. ONLY if explicit demo customer (Pooja Madhavan) was selected and has 0 orders, load sample test orders
-        if (orderMap.size === 0 && activeCustomer && activeCustomer.email === 'pooja.m@example.com' && activeCustomer.id === 'cust_01') {
-          getFallbackOrders().forEach(o => orderMap.set(o.orderNumber, o));
-        }
 
         allCustomerOrders = Array.from(orderMap.values());
 
@@ -2326,8 +2322,8 @@
         <body>
           <div class="inv-header">
             <div>
-              <div class="inv-title">NACHIYAR HERBALS & COSMETICS</div>
-              <div style="font-size:12px; color:#666; margin-top:4px;">No. 18 Temple Ring Road, Madurai, Tamil Nadu - 625001<br>GSTIN: 33AAACN8492K1Z8 • care@nachiyarherbals.com</div>
+              <div class="inv-title">${(window.__NACHIYAR_SETTINGS?.brandName || 'Nachiyar Herbals & Cosmetics').toUpperCase()}</div>
+              <div style="font-size:12px; color:#666; margin-top:4px;">${window.__NACHIYAR_SETTINGS?.storeAddress || 'No. 18 Temple Ring Road, Madurai, Tamil Nadu - 625001'}<br>GSTIN: ${window.__NACHIYAR_SETTINGS?.gstin || '33AAACN8492K1Z8'} • ${window.__NACHIYAR_SETTINGS?.supportEmail || 'care@nachiyarherbals.com'} • ${window.__NACHIYAR_SETTINGS?.supportPhone || '+91 94440 88990'}</div>
             </div>
             <div class="inv-meta">
               <strong>TAX INVOICE</strong><br>

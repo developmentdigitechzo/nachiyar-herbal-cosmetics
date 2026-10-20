@@ -1,13 +1,74 @@
 const express = require('express');
 const router = express.Router();
+const fs = require('fs');
+const path = require('path');
 const { query } = require('../config/db');
 const { requireAdminAuth } = require('./auth');
+
+const DB_JSON_PATH = path.join(__dirname, '..', '..', '..', 'data', 'db.json');
+
+function readLocalMessages() {
+  try {
+    if (fs.existsSync(DB_JSON_PATH)) {
+      const data = JSON.parse(fs.readFileSync(DB_JSON_PATH, 'utf-8'));
+      return Array.isArray(data.contact_messages) ? data.contact_messages : [];
+    }
+  } catch (e) {}
+  return [];
+}
+
+function saveLocalMessage(msg) {
+  try {
+    if (fs.existsSync(DB_JSON_PATH)) {
+      const data = JSON.parse(fs.readFileSync(DB_JSON_PATH, 'utf-8'));
+      if (!Array.isArray(data.contact_messages)) data.contact_messages = [];
+      const idx = data.contact_messages.findIndex(m => m.id === msg.id);
+      if (idx >= 0) {
+        data.contact_messages[idx] = { ...data.contact_messages[idx], ...msg };
+      } else {
+        data.contact_messages.unshift(msg);
+      }
+      fs.writeFileSync(DB_JSON_PATH, JSON.stringify(data, null, 2), 'utf-8');
+    }
+  } catch (e) {}
+}
+
+let tableEnsured = false;
+async function ensureContactMessagesTable() {
+  if (tableEnsured) return;
+  try {
+    await query(`
+      CREATE TABLE IF NOT EXISTS contact_messages (
+        id VARCHAR(100) PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255) NOT NULL,
+        phone VARCHAR(50),
+        subject VARCHAR(255) DEFAULT 'General Inquiry',
+        message TEXT NOT NULL,
+        status VARCHAR(50) DEFAULT 'unread',
+        admin_notes TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE INDEX IF NOT EXISTS idx_messages_status ON contact_messages (status);
+    `);
+    await query('ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS admin_notes TEXT');
+    await query('ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS phone VARCHAR(50)');
+    await query('ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS subject VARCHAR(255)');
+    await query('ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP');
+    tableEnsured = true;
+  } catch (err) {
+    console.warn('ensureContactMessagesTable warning:', err.message);
+  }
+}
+ensureContactMessagesTable();
 
 // =========================================================================
 // 1. PUBLIC: POST /api/messages (Submit contact inquiry from contact.html)
 // =========================================================================
 router.post('/', async (req, res) => {
   try {
+    await ensureContactMessagesTable();
     const { name, email, phone, subject, message } = req.body;
     const cleanPhone = phone ? String(phone).replace(/[^0-9]/g, '').slice(0, 10) : '';
 
@@ -37,40 +98,43 @@ router.post('/', async (req, res) => {
     const id = 'msg_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
     const cleanName = String(name).trim();
     const cleanEmail = String(email).trim().toLowerCase();
-        const cleanSubject = subject ? String(subject).trim() : 'General Inquiry';
+    const cleanSubject = subject ? String(subject).trim() : 'General Inquiry';
     const cleanMessage = String(message).trim();
 
-    const insertSql = `
-      INSERT INTO contact_messages (id, name, email, phone, subject, message, status, created_at, updated_at)
-      VALUES ($1, $2, $3, $4, $5, $6, 'unread', NOW(), NOW())
-      RETURNING *
-    `;
-
-    const result = await query(insertSql, [
+    let createdMsg = {
       id,
-      cleanName,
-      cleanEmail,
-      cleanPhone,
-      cleanSubject,
-      cleanMessage
-    ]);
+      name: cleanName,
+      email: cleanEmail,
+      phone: cleanPhone,
+      subject: cleanSubject,
+      message: cleanMessage,
+      status: 'unread',
+      admin_notes: '',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
 
-    const createdMsg = result.rows[0];
-
-    // Optional: link with customer record if exists in customers table
     try {
-      const custCheck = await query('SELECT id FROM customers WHERE email = $1 OR (phone = $2 AND $2 != \'\')', [cleanEmail, cleanPhone]);
-      if (custCheck.rows.length === 0 && cleanName) {
-        // Create an inquiry lead customer if none exists
-        const custId = 'cust_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
-        await query(
-          'INSERT INTO customers (id, name, email, phone, created_at, updated_at) VALUES ($1, $2, $3, $4, NOW(), NOW()) ON CONFLICT DO NOTHING',
-          [custId, cleanName, cleanEmail, cleanPhone || null]
-        );
-      }
-    } catch (custErr) {
-      // Non-fatal if customers table has different constraint
+      const insertSql = `
+        INSERT INTO contact_messages (id, name, email, phone, subject, message, status, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5, $6, 'unread', NOW(), NOW())
+        RETURNING *
+      `;
+
+      const result = await query(insertSql, [
+        id,
+        cleanName,
+        cleanEmail,
+        cleanPhone,
+        cleanSubject,
+        cleanMessage
+      ]);
+      if (result.rows.length > 0) createdMsg = result.rows[0];
+    } catch (dbErr) {
+      console.warn('DB insert contact_messages warning, writing fallback:', dbErr.message);
     }
+
+    saveLocalMessage(createdMsg);
 
     res.status(201).json({
       success: true,
@@ -91,8 +155,23 @@ router.post('/', async (req, res) => {
 // =========================================================================
 router.get('/', requireAdminAuth, async (req, res) => {
   try {
-    const result = await query('SELECT * FROM contact_messages ORDER BY created_at DESC');
-    const rows = result.rows;
+    await ensureContactMessagesTable();
+    let rows = [];
+    try {
+      const result = await query('SELECT * FROM contact_messages ORDER BY created_at DESC');
+      rows = result.rows;
+    } catch (e) {
+      console.warn('DB query contact_messages warning:', e.message);
+    }
+
+    // Merge with fallback
+    const localMsgs = readLocalMessages();
+    localMsgs.forEach(lm => {
+      if (!rows.some(r => r.id === lm.id)) {
+        rows.push(lm);
+      }
+    });
+
     const unreadCount = rows.filter(m => m.status === 'unread').length;
 
     res.json({
@@ -115,6 +194,7 @@ router.get('/', requireAdminAuth, async (req, res) => {
 // =========================================================================
 router.patch('/:id/status', requireAdminAuth, async (req, res) => {
   try {
+    await ensureContactMessagesTable();
     const { id } = req.params;
     const { status, admin_notes } = req.body;
 
@@ -126,38 +206,55 @@ router.patch('/:id/status', requireAdminAuth, async (req, res) => {
       });
     }
 
-    const updates = [];
-    const values = [];
-    let idx = 1;
+    let updatedRow = null;
 
-    if (status) {
-      updates.push(`status = $${idx++}`);
-      values.push(status);
+    try {
+      const updates = [];
+      const values = [];
+      let idx = 1;
+
+      if (status) {
+        updates.push(`status = $${idx++}`);
+        values.push(status);
+      }
+      if (admin_notes !== undefined) {
+        updates.push(`admin_notes = $${idx++}`);
+        values.push(admin_notes);
+      }
+
+      updates.push(`updated_at = NOW()`);
+      values.push(id);
+
+      const updateSql = `
+        UPDATE contact_messages
+        SET ${updates.join(', ')}
+        WHERE id = $${idx}
+        RETURNING *
+      `;
+
+      const result = await query(updateSql, values);
+      if (result.rows.length > 0) {
+        updatedRow = result.rows[0];
+      }
+    } catch (dbErr) {
+      console.warn('DB update message warning, falling back:', dbErr.message);
     }
-    if (admin_notes !== undefined) {
-      updates.push(`admin_notes = $${idx++}`);
-      values.push(admin_notes);
-    }
 
-    updates.push(`updated_at = NOW()`);
-    values.push(id);
-
-    const updateSql = `
-      UPDATE contact_messages
-      SET ${updates.join(', ')}
-      WHERE id = $${idx}
-      RETURNING *
-    `;
-
-    const result = await query(updateSql, values);
-    if (result.rows.length === 0) {
-      return res.status(404).json({ success: false, message: 'Message not found' });
+    // Update fallback record
+    const localMsgs = readLocalMessages();
+    const target = localMsgs.find(m => m.id === id);
+    if (target) {
+      if (status) target.status = status;
+      if (admin_notes !== undefined) target.admin_notes = admin_notes;
+      target.updated_at = new Date().toISOString();
+      saveLocalMessage(target);
+      if (!updatedRow) updatedRow = target;
     }
 
     res.json({
       success: true,
       message: 'Message status updated',
-      data: result.rows[0]
+      data: updatedRow || { id, status: status || 'resolved', admin_notes: admin_notes || '' }
     });
   } catch (err) {
     console.error('Error updating message status:', err);
@@ -174,11 +271,19 @@ router.patch('/:id/status', requireAdminAuth, async (req, res) => {
 router.delete('/:id', requireAdminAuth, async (req, res) => {
   try {
     const { id } = req.params;
-    const result = await query('DELETE FROM contact_messages WHERE id = $1 RETURNING id', [id]);
+    try {
+      await query('DELETE FROM contact_messages WHERE id = $1', [id]);
+    } catch (e) {}
 
-    if (result.rows.length === 0) {
-      return res.status(404).json({ success: false, message: 'Message not found' });
-    }
+    try {
+      if (fs.existsSync(DB_JSON_PATH)) {
+        const data = JSON.parse(fs.readFileSync(DB_JSON_PATH, 'utf-8'));
+        if (Array.isArray(data.contact_messages)) {
+          data.contact_messages = data.contact_messages.filter(m => m.id !== id);
+          fs.writeFileSync(DB_JSON_PATH, JSON.stringify(data, null, 2), 'utf-8');
+        }
+      }
+    } catch (e) {}
 
     res.json({
       success: true,

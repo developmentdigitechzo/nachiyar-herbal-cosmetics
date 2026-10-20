@@ -653,26 +653,13 @@
           const oPhone = (c.phone || '').replace(/\D/g, '').slice(-10);
           const oEmail = (c.email || '').trim().toLowerCase();
           const matches = (cleanEmail && oEmail && cleanEmail === oEmail) ||
-                          (cleanPhone && oPhone && cleanPhone === oPhone);
+                          (cleanPhone && oPhone && cleanPhone === oPhone) ||
+                          (currentCustomer && currentCustomer.id && c.id && currentCustomer.id === c.id);
           if (matches && o.orderNumber && !orderMap.has(o.orderNumber)) {
             orderMap.set(o.orderNumber, o);
           }
         });
       } catch (e) {}
-
-      // Only if demo user Pooja Madhavan test account has 0 orders, show demo order
-      if (orderMap.size === 0 && cleanEmail === 'pooja.m@example.com') {
-        orderMap.set('NH-ON-1001', {
-          orderNumber: 'NH-ON-1001',
-          total: 999,
-          status: 'shipped',
-          createdAt: new Date().toISOString(),
-          items: [
-            { name: 'Herbal Hair Oil (200ml)', qty: 1, img: 'assets/hero-bottle-oil-transparent.png' },
-            { name: 'Hibiscus Flower Shampoo (250ml)', qty: 1, img: 'assets/hero-bottle-shampoo-transparent.png' }
-          ]
-        });
-      }
 
       const orders = Array.from(orderMap.values());
       orders.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));

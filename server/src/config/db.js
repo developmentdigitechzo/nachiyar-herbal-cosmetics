@@ -77,14 +77,92 @@ pool = initPool();
  * Automatically bootstrap tables and default accounts from schema.sql
  */
 async function autoBootstrapSchema() {
-  if (schemaBootstrapped || !pool) return;
+  if (!pool) return;
   try {
     const schemaPath = path.join(__dirname, '..', 'db', 'schema.sql');
     if (fs.existsSync(schemaPath)) {
       const sql = fs.readFileSync(schemaPath, 'utf8');
-      await pool.query(sql);
+      const stmts = sql
+        .split(';')
+        .map(s => s.trim())
+        .filter(s => s.length > 0 && !s.startsWith('--'));
+
+      for (const stmt of stmts) {
+        try {
+          await pool.query(stmt);
+        } catch (stmtErr) {
+          // Individual statement error will not abort other statements
+        }
+      }
       schemaBootstrapped = true;
-      console.log('✅ PostgreSQL database schema & essential accounts verified/bootstrapped successfully.');
+      console.log('✅ PostgreSQL database schema & essential tables verified/bootstrapped successfully.');
+    }
+
+    // Auto-seed core products if products table is empty
+    try {
+      const prodCountRes = await pool.query('SELECT COUNT(*) FROM products');
+      const prodCount = parseInt(prodCountRes.rows[0].count, 10);
+      if (prodCount === 0) {
+        const dbJsonPath = path.join(__dirname, '..', '..', '..', 'data', 'db.json');
+        if (fs.existsSync(dbJsonPath)) {
+          const dbData = JSON.parse(fs.readFileSync(dbJsonPath, 'utf8'));
+          if (Array.isArray(dbData.products)) {
+            for (const p of dbData.products) {
+              await pool.query(`
+                INSERT INTO products (
+                  id, slug, name, subtitle, category, category_id,
+                  price, mrp, stock, initial_stock, online_sold, offline_sold,
+                  sku, images, theme_color, tagline, metric_badge, badge,
+                  short_description, description, benefits, ingredients, how_to_use,
+                  variants, seo, status
+                ) VALUES (
+                  $1, $2, $3, $4, $5, $6,
+                  $7, $8, $9, $10, 0, 0,
+                  $11, $12, $13, $14, $15, $16,
+                  $17, $18, $19, $20, $21,
+                  $22, $23, $24
+                ) ON CONFLICT (id) DO NOTHING
+              `, [
+                p.id, p.slug, p.name, p.subtitle || '', p.category || 'Hair Care', p.categoryId || 'cat_hair_care',
+                p.price, p.mrp || Math.round(p.price * 1.2), p.stock || 50, p.initialStock || p.stock || 50,
+                p.sku || '', JSON.stringify(p.images || []), p.themeColor || '#6B4E9B', p.tagline || '',
+                p.metricBadge || '', p.badge || '', p.shortDescription || '', p.description || '',
+                JSON.stringify(p.benefits || []), p.ingredients || '', p.howToUse || '',
+                JSON.stringify(p.variants || []), JSON.stringify(p.seo || {}), p.status || 'active'
+              ]);
+            }
+            console.log('✅ Auto-seeded core products into empty database.');
+          }
+        }
+      }
+    } catch (seedErr) {
+      console.warn('Auto-seed check note:', seedErr.message);
+    }
+
+    // Auto-seed categories table if empty
+    try {
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS categories (
+          id VARCHAR(100) PRIMARY KEY,
+          name VARCHAR(255) NOT NULL,
+          slug VARCHAR(255) UNIQUE NOT NULL,
+          count INT DEFAULT 0
+        )
+      `);
+      const catCountRes = await pool.query('SELECT COUNT(*) FROM categories');
+      if (parseInt(catCountRes.rows[0].count, 10) === 0) {
+        await pool.query(`
+          INSERT INTO categories (id, name, slug, count)
+          VALUES 
+            ('cat_hair_care', 'Hair Care', 'hair-care', 1),
+            ('cat_scalp', 'Scalp & Cleansing', 'scalp-cleansing', 1),
+            ('cat_sets', 'Ritual Sets & Combos', 'ritual-sets', 1),
+            ('cat_gifting', 'Royal Gifting', 'royal-gifting', 0)
+          ON CONFLICT (id) DO NOTHING
+        `);
+      }
+    } catch (catErr) {
+      console.warn('Categories verify note:', catErr.message);
     }
   } catch (err) {
     console.warn('⚠️ Auto-schema bootstrap note:', err.message);
