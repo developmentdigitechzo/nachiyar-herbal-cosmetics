@@ -642,16 +642,20 @@
 
               <div class="contact-form-group">
                 <label for="contactPhone" class="contact-label">
-                  <span>Mobile Number</span>
-                  <span class="optional-badge">(Optional)</span>
+                  <span>Mobile Number <span class="required-badge">*</span></span>
                 </label>
                 <input 
                   type="tel" 
                   id="contactPhone" 
                   name="phone" 
                   class="contact-input" 
-                  placeholder="+91 98765 43210" 
+                  placeholder="10-digit mobile number (e.g. 9876543210)" 
                   autocomplete="tel"
+                  required
+                  maxlength="10"
+                  pattern="[0-9]{10}"
+                  inputmode="numeric"
+                  oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);"
                 >
               </div>
             </div>
@@ -725,12 +729,19 @@
 
       const name = document.getElementById('contactName').value.trim();
       const email = document.getElementById('contactEmail').value.trim();
-      const phone = document.getElementById('contactPhone').value.trim();
+      const phoneInput = document.getElementById('contactPhone');
+      const phone = phoneInput ? phoneInput.value.replace(/[^0-9]/g, '').slice(0, 10) : '';
       const subject = document.getElementById('contactSubject').value;
       const message = document.getElementById('contactMessage').value.trim();
 
       if (!name || !email || !message) {
-        showSideToast('Please fill in your name, email, and message.', 'error');
+        showSideToast('Please fill in all required fields.', 'error');
+        return;
+      }
+
+      if (!phone || phone.length !== 10) {
+        showSideToast('Please enter a valid 10-digit mobile number.', 'error');
+        if (phoneInput) phoneInput.focus();
         return;
       }
 
@@ -792,6 +803,14 @@
         localStorage.setItem(key, JSON.stringify(list));
       } catch (e) {}
     }
+    document.addEventListener('DOMContentLoaded', () => {
+      const phoneInput = document.getElementById('contactPhone');
+      if (phoneInput) {
+        phoneInput.addEventListener('input', function() {
+          this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
+        });
+      }
+    });
   </script>
   <!-- ==================== INTERACTIVE SLIDE-OUT CART DRAWER ==================== -->
   <aside class="cart-drawer-overlay" id="cartOverlay" aria-hidden="true">

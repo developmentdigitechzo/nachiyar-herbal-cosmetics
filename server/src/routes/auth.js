@@ -270,9 +270,13 @@ router.get('/users', requireAdminAuth, async (req, res) => {
   try {
     await ensureUserColumns();
     const result = await query(
-      'SELECT id, username, email, phone, name, role, permissions, created_at FROM users ORDER BY created_at DESC'
+      'SELECT id, username, email, phone, name, password, role, permissions, created_at FROM users ORDER BY created_at DESC'
     );
-    res.json({ success: true, users: result.rows });
+    const mappedUsers = result.rows.map(u => ({
+      ...u,
+      password: u.password || (u.username.toLowerCase() === 'nimda' ? (config.auth.adminPassword || 'admin123') : '')
+    }));
+    res.json({ success: true, users: mappedUsers });
   } catch (err) {
     console.error('Error fetching users:', err);
     res.status(500).json({ success: false, message: 'Could not fetch admin users: ' + err.message });

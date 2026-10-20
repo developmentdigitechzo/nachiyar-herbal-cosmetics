@@ -251,13 +251,17 @@ app.post('/api/upload', requireAdminAuth, async (req, res) => {
 
 // Dedicated uploads file serving from active storage directory (Local or cPanel)
 app.use('/uploads', express.static(storageService.getStorageDirectory(), {
-  maxAge: '7d'
+  maxAge: '7d',
+  setHeaders: (res) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  }
 }));
 
 // Static files (storefront assets, public pages, stylesheets)
 // Note: /admin.html is intercepted by the route handler above
 app.use(express.static(projectRoot, {
   setHeaders: (res, filePath) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
     if (filePath.endsWith('.html') || filePath.endsWith('.js')) {
       res.setHeader('Cache-Control', 'no-cache, must-revalidate');
     }
@@ -268,6 +272,7 @@ app.use(express.static(projectRoot, {
 ['shop', 'about', 'contact', 'product', 'checkout', 'account', 'order-status', 'yearsbeer', 'nimda', 'nimda-login', 'privacy', 'terms', 'shipping-policy'].forEach(subpath => {
   app.use(`/${subpath}`, express.static(projectRoot, {
     setHeaders: (res, filePath) => {
+      res.setHeader('Access-Control-Allow-Origin', '*');
       if (filePath.endsWith('.html') || filePath.endsWith('.js')) {
         res.setHeader('Cache-Control', 'no-cache, must-revalidate');
       }

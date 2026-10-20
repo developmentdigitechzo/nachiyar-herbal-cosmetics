@@ -9,11 +9,19 @@ const { requireAdminAuth } = require('./auth');
 router.post('/', async (req, res) => {
   try {
     const { name, email, phone, subject, message } = req.body;
+    const cleanPhone = phone ? String(phone).replace(/[^0-9]/g, '').slice(0, 10) : '';
 
-    if (!name || !email || !message) {
+    if (!name || !email || !cleanPhone || !message) {
       return res.status(400).json({
         success: false,
-        message: 'Name, email, and message are required fields.'
+        message: 'Name, email, 10-digit mobile number, and message are required fields.'
+      });
+    }
+
+    if (cleanPhone.length !== 10) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide a valid 10-digit mobile number.'
       });
     }
 
@@ -29,8 +37,7 @@ router.post('/', async (req, res) => {
     const id = 'msg_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
     const cleanName = String(name).trim();
     const cleanEmail = String(email).trim().toLowerCase();
-    const cleanPhone = phone ? String(phone).trim() : '';
-    const cleanSubject = subject ? String(subject).trim() : 'General Inquiry';
+        const cleanSubject = subject ? String(subject).trim() : 'General Inquiry';
     const cleanMessage = String(message).trim();
 
     const insertSql = `

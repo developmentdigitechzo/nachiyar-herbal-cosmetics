@@ -41,6 +41,18 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Invoice must contain at least one product' });
     }
 
+    const customer = body.customer || {};
+    const custName = String(customer.name || '').trim();
+    const custPhone = String(customer.phone || '').replace(/[^0-9]/g, '').slice(0, 10);
+
+    if (!custName) {
+      return res.status(400).json({ success: false, message: 'Customer full name is required for billing' });
+    }
+
+    if (!custPhone || custPhone.length !== 10) {
+      return res.status(400).json({ success: false, message: 'A valid 10-digit customer mobile number is required for billing' });
+    }
+
     await client.query('BEGIN');
 
     // Check stock for all items

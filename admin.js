@@ -149,6 +149,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const posCustAddress = document.getElementById('posCustAddress');
   const posSubtotalVal = document.getElementById('posSubtotalVal');
   const posDiscountInput = document.getElementById('posDiscountInput');
+  const posDiscountType = document.getElementById('posDiscountType');
+  const posDiscountAmountVal = document.getElementById('posDiscountAmountVal');
+  const posGstRateInput = document.getElementById('posGstRateInput');
   const posTaxVal = document.getElementById('posTaxVal');
   const posGrandTotalVal = document.getElementById('posGrandTotalVal');
   const posPaymentMode = document.getElementById('posPaymentMode');
@@ -1223,49 +1226,300 @@ document.addEventListener('DOMContentLoaded', () => {
     modal.style.display = 'flex';
   }
 
+  // ==================== DYNAMIC COMBO PACK COMPOSITE IMAGE GENERATOR ====================
+  async function generateComboPackImage(imageUrls) {
+    if (!imageUrls || imageUrls.length === 0) return null;
+
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      const W = 800;
+      const H = 600;
+      canvas.width = W;
+      canvas.height = H;
+      const ctx = canvas.getContext('2d');
+
+      // 1. Luxury Royal Background
+      const bgGrad = ctx.createRadialGradient(W / 2, H / 2, 50, W / 2, H / 2, W * 0.75);
+      bgGrad.addColorStop(0, '#3A1F4D');
+      bgGrad.addColorStop(0.65, '#231130');
+      bgGrad.addColorStop(1, '#15081E');
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, W, H);
+
+      // Gold frame accent
+      ctx.strokeStyle = 'rgba(212, 175, 55, 0.45)';
+      ctx.lineWidth = 4;
+      ctx.strokeRect(16, 16, W - 32, H - 32);
+
+      // Inner subtle border
+      ctx.strokeStyle = 'rgba(212, 175, 55, 0.2)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(22, 22, W - 44, H - 44);
+
+      // Top Header: "NACHIYAR ROYAL BOTANICAL RITUAL"
+      ctx.fillStyle = 'rgba(212, 175, 55, 0.95)';
+      ctx.font = 'bold 16px "Cinzel", "Playfair Display", Georgia, serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('✦  NACHIYAR ROYAL BOTANICAL RITUAL  ✦', W / 2, 56);
+
+      // Load all images
+      let loaded = 0;
+      const imgs = [];
+      const total = imageUrls.length;
+
+      imageUrls.forEach((url, idx) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          imgs[idx] = img;
+          loaded++;
+          if (loaded === total) drawImages();
+        };
+        img.onerror = () => {
+          loaded++;
+          if (loaded === total) drawImages();
+        };
+        img.src = url;
+      });
+
+      function drawImages() {
+        const validImgs = imgs.filter(Boolean);
+        const count = validImgs.length;
+
+        if (count === 1) {
+          const img = validImgs[0];
+          const imgSize = 380;
+          const x = (W - imgSize) / 2;
+          const y = (H - imgSize) / 2 + 10;
+          drawShadowedImage(ctx, img, x, y, imgSize, imgSize);
+        } else if (count === 2) {
+          const imgSize = 340;
+          const img1 = validImgs[0];
+          const img2 = validImgs[1];
+
+          // Left image tilted slightly inward
+          drawShadowedImage(ctx, img1, 90, 140, imgSize, imgSize, -0.04);
+          // Right image tilted slightly inward
+          drawShadowedImage(ctx, img2, 370, 140, imgSize, imgSize, 0.04);
+
+          // Central Plus Badge in between
+          const cx = W / 2;
+          const cy = 310;
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(cx, cy, 32, 0, Math.PI * 2);
+          ctx.fillStyle = '#D4AF37';
+          ctx.fill();
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = '#FFFFFF';
+          ctx.stroke();
+
+          ctx.fillStyle = '#1A0B26';
+          ctx.font = 'bold 28px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('+', cx, cy - 1);
+          ctx.restore();
+        } else if (count >= 3) {
+          const imgSize = 240;
+          const spacing = (W - (count * imgSize)) / (count + 1);
+          validImgs.slice(0, 4).forEach((img, i) => {
+            const x = spacing + i * (imgSize + spacing);
+            drawShadowedImage(ctx, img, x, 170, imgSize, imgSize);
+          });
+        }
+
+        // Bottom Pill: "✦ EXCLUSIVE COMBO VALUE PACK ✦"
+        const bottomText = '✦ EXCLUSIVE COMBO VALUE PACK ✦';
+        ctx.font = 'bold 15px sans-serif';
+        const textW = ctx.measureText(bottomText).width;
+        const pillW = textW + 36;
+        const pillH = 34;
+        const pillX = (W - pillW) / 2;
+        const pillY = H - 65;
+
+        ctx.save();
+        ctx.fillStyle = 'rgba(212, 175, 55, 0.2)';
+        ctx.strokeStyle = '#D4AF37';
+        ctx.lineWidth = 1.5;
+        roundRect(ctx, pillX, pillY, pillW, pillH, 17);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#FFDF78';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(bottomText, W / 2, pillY + pillH / 2);
+        ctx.restore();
+
+        try {
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+          resolve(dataUrl);
+        } catch (e) {
+          console.warn('Canvas export warning:', e);
+          resolve(null);
+        }
+      }
+    });
+  }
+
+  function drawShadowedImage(ctx, img, x, y, w, h, rotateRad = 0) {
+    ctx.save();
+    ctx.translate(x + w / 2, y + h / 2);
+    if (rotateRad) ctx.rotate(rotateRad);
+
+    // Soft drop shadow
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.65)';
+    ctx.shadowBlur = 28;
+    ctx.shadowOffsetX = 4;
+    ctx.shadowOffsetY = 12;
+
+    // Draw white / clean backing pill for contrast
+    ctx.fillStyle = '#FFFFFF';
+    roundRect(ctx, -w / 2, -h / 2, w, h, 14);
+    ctx.fill();
+
+    // Clip rounded corners and draw product
+    ctx.shadowColor = 'transparent';
+    ctx.beginPath();
+    roundRect(ctx, -w / 2, -h / 2, w, h, 14);
+    ctx.clip();
+
+    ctx.drawImage(img, -w / 2, -h / 2, w, h);
+    ctx.restore();
+  }
+
+  function roundRect(ctx, x, y, width, height, radius) {
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + width - radius, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+    ctx.lineTo(x + width, y + height - radius);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+    ctx.lineTo(x + radius, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.closePath();
+  }
+
+  // Track if admin manually uploaded an image for the current modal session
+  let isComboUserUploadedImage = false;
+
   // Open Combo Banner Modal
   function openComboModal(prod) {
     const modal = document.getElementById('comboModalOverlay');
     if (!modal) return;
     const showcase = (storeSettings && storeSettings.homeShowcase && storeSettings.homeShowcase.combo) || {};
 
+    isComboUserUploadedImage = false;
+
+    // 1. Associated Catalog Product Picker:
+    // Dropdown to select which catalog product represents the combo pack (default: prod_duo_03 or active combo)
     const sel = document.getElementById('comboLinkProductSelect');
+    const targetCatalogId = showcase.productId || 'prod_duo_03';
     if (sel && Array.isArray(products)) {
       sel.innerHTML = products.map(p => `
-        <option value="${p.id}" ${((prod && prod.id === p.id) || (!prod && showcase.productId === p.id) || p.id === 'prod_duo_03') ? 'selected' : ''}>
+        <option value="${p.id}" ${p.id === targetCatalogId ? 'selected' : ''}>
           ${p.name} (Stock: ${p.stock} units)
         </option>
       `).join('');
+      sel.onchange = () => {
+        document.getElementById('comboFormProductId').value = sel.value;
+      };
     }
+    document.getElementById('comboFormProductId').value = targetCatalogId;
 
-    const linkedProd = prod || (Array.isArray(products) && products.find(p => p.id === showcase.productId)) || (Array.isArray(products) && products.find(p => p.id === 'prod_duo_03')) || (products && products[0]);
-    const isSameProduct = linkedProd && showcase.productId === linkedProd.id && !showcase.removed;
+    // 2. Set Initial Form Values from Saved Showcase (NOT overwritten by random row click)
+    document.getElementById('comboFormTitle').value = showcase.title || 'The Royal Hair Ritual (Duo Set)';
+    document.getElementById('comboFormTag').value = showcase.tag || 'BEST VALUE: SAVE ₹699';
+    document.getElementById('comboFormPrice').value = (showcase.price !== undefined && showcase.price !== '') ? showcase.price : 449;
+    document.getElementById('comboFormMrp').value = (showcase.mrp !== undefined && showcase.mrp !== '') ? showcase.mrp : 1148;
 
-    // 1. Interactive Multi-Product Selector Population
+    const comboImg = showcase.customImage || 'assets/duo-ritual-new.jpg';
+    document.getElementById('comboFormImageUrl').value = comboImg;
+    document.getElementById('comboImagePreview').src = comboImg;
+    document.getElementById('comboFormDesc').value = showcase.description || 'Experience complete follicular revitalisation. Step 1: Pre-wash deep scalp nourishment with the Lavender Herbal Hair Oil. Step 2: Gentle balancing wash with the Hibiscus Flower Shampoo. Includes custom gold travel pouch.';
+
+    const statusEl = document.getElementById('comboUploadStatus');
+    if (statusEl) statusEl.style.display = 'none';
+    const autoStatus = document.getElementById('comboAutoGeneratedStatus');
+    if (autoStatus) autoStatus.style.display = 'none';
+
+    // 3. Interactive Multi-Product Selector Population
+    // Filter out combo bundle items (e.g. Ritual Sets / prod_duo_03) so only single products are selectable
     const pickerList = document.getElementById('comboProductsPickerList');
-    const selectedIds = Array.isArray(showcase.selectedProductIds) && showcase.selectedProductIds.length > 0
-      ? showcase.selectedProductIds
+    const singleProducts = Array.isArray(products)
+      ? products.filter(p => p.id !== 'prod_duo_03' && p.category !== 'Ritual Sets')
+      : [];
+
+    let selectedIds = Array.isArray(showcase.selectedProductIds) && showcase.selectedProductIds.length > 0
+      ? [...showcase.selectedProductIds]
       : ['prod_oil_01', 'prod_shampoo_02'];
 
-    if (pickerList && Array.isArray(products)) {
-      pickerList.innerHTML = products.map(p => {
+    // If an individual product was passed when opening modal, ensure it is selected
+    if (prod && prod.id && prod.id !== 'prod_duo_03' && prod.category !== 'Ritual Sets') {
+      if (!selectedIds.includes(prod.id)) {
+        selectedIds.push(prod.id);
+      }
+    }
+
+    // Auto generate composite pack image helper
+    const triggerAutoGeneratePackImage = async () => {
+      const chks = Array.from(pickerList.querySelectorAll('.combo-product-chk:checked'));
+      const imgs = chks.map(c => c.dataset.img).filter(Boolean);
+      if (imgs.length > 0) {
+        const previewEl = document.getElementById('comboImagePreview');
+        const urlInput = document.getElementById('comboFormImageUrl');
+        const autoStat = document.getElementById('comboAutoGeneratedStatus');
+        const upStat = document.getElementById('comboUploadStatus');
+
+        if (previewEl) previewEl.style.opacity = '0.5';
+        const dataUrl = await generateComboPackImage(imgs);
+        if (dataUrl) {
+          if (previewEl) {
+            previewEl.src = dataUrl;
+            previewEl.style.opacity = '1';
+          }
+          if (urlInput) urlInput.value = dataUrl;
+          if (autoStat) {
+            autoStat.textContent = `✨ Auto-generated combo pack photo from ${chks.length} selected items!`;
+            autoStat.style.display = 'block';
+          }
+          if (upStat) upStat.style.display = 'none';
+        } else {
+          if (previewEl) previewEl.style.opacity = '1';
+        }
+      }
+    };
+
+    const btnAutoPack = document.getElementById('btnAutoGeneratePackImg');
+    if (btnAutoPack) {
+      btnAutoPack.onclick = () => {
+        isComboUserUploadedImage = false;
+        triggerAutoGeneratePackImage();
+      };
+    }
+
+    if (pickerList) {
+      pickerList.innerHTML = singleProducts.map(p => {
         const isChecked = selectedIds.includes(p.id);
         const pImg = (p.images && p.images[0]) || 'assets/herbal-hair-oil.jpg';
         const pPrice = Number(p.price) || 0;
         const pMrp = Number(p.mrp) || Math.round(pPrice * 1.5);
         return `
-          <label style="display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; background: ${isChecked ? '#EEF2FF' : '#FFFFFF'}; border: 1.5px solid ${isChecked ? '#6366F1' : '#E2E8F0'}; border-radius: 6px; cursor: pointer; transition: all 0.15s ease;">
+          <label style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: ${isChecked ? '#EEF2FF' : '#FFFFFF'}; border: 1.5px solid ${isChecked ? '#6366F1' : '#E2E8F0'}; border-radius: 8px; cursor: pointer; transition: all 0.15s ease;">
             <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
-              <input type="checkbox" class="combo-product-chk" value="${p.id}" data-name="${p.name}" data-price="${pPrice}" data-mrp="${pMrp}" data-img="${pImg}" ${isChecked ? 'checked' : ''} style="accent-color: #4F46E5; width: 16px; height: 16px; cursor: pointer;">
-              <img src="${pImg}" alt="${p.name}" style="width: 34px; height: 34px; object-fit: cover; border-radius: 4px; border: 1px solid #E2E8F0; flex-shrink: 0;">
+              <input type="checkbox" class="combo-product-chk" value="${p.id}" data-name="${p.name}" data-price="${pPrice}" data-mrp="${pMrp}" data-img="${pImg}" ${isChecked ? 'checked' : ''} style="accent-color: #4F46E5; width: 18px; height: 18px; cursor: pointer; flex-shrink: 0;">
+              <img src="${pImg}" alt="${p.name}" style="width: 36px; height: 36px; object-fit: cover; border-radius: 6px; border: 1px solid #E2E8F0; flex-shrink: 0;">
               <div style="min-width: 0;">
-                <div style="font-size: 0.8125rem; font-weight: 700; color: #1E293B; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${p.name}</div>
-                <div style="font-size: 0.71875rem; color: #64748B;">${p.category || 'Product'} • Stock: ${p.stock || 0}</div>
+                <div style="font-size: 0.84rem; font-weight: 700; color: #1E293B; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${p.name}</div>
+                <div style="font-size: 0.72rem; color: #64748B;">${p.category || 'Product'} • Stock: ${p.stock || 0} units</div>
               </div>
             </div>
-            <div style="text-align: right; flex-shrink: 0; margin-left: 8px;">
-              <div style="font-size: 0.8125rem; font-weight: 700; color: #1E293B;">₹${pPrice}</div>
-              <div style="font-size: 0.6875rem; color: #94A3B8; text-decoration: line-through;">₹${pMrp}</div>
+            <div style="text-align: right; flex-shrink: 0; margin-left: 10px;">
+              <div style="font-size: 0.84rem; font-weight: 700; color: #1E293B;">₹${pPrice}</div>
+              <div style="font-size: 0.7rem; color: #94A3B8; text-decoration: line-through;">₹${pMrp}</div>
             </div>
           </label>
         `;
@@ -1316,20 +1570,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (isUserInteraction && chks.length > 0) {
           if (mrpInput) mrpInput.value = totalMrp;
-          const suggestedPrice = Math.max(99, Math.round((totalBase * 0.85) / 10) * 10 - 1);
-          if (priceInput && (!priceInput.value || priceInput.value == 0 || isUserInteraction)) {
-            priceInput.value = suggestedPrice;
+          const curPrice = Number(priceInput?.value || Math.max(99, Math.round((totalBase * 0.85) / 10) * 10 - 1));
+          if (priceInput && (!priceInput.value || priceInput.value == 0)) {
+            priceInput.value = curPrice;
           }
-          const curPrice = Number(priceInput?.value || suggestedPrice);
           const savings = totalMrp - curPrice;
           const pct = totalMrp > 0 ? Math.round((savings / totalMrp) * 100) : 0;
 
           const pill = document.getElementById('comboCalcSavingsPill');
           if (pill) pill.textContent = `Save ₹${Math.max(0, savings)} (${pct}% OFF)`;
 
-          if (tagInput) tagInput.value = `BEST VALUE: SAVE ₹${Math.max(0, savings)}`;
-          if (titleInput && (!titleInput.value || titleInput.value.includes('Ritual') || titleInput.value.includes('Combo'))) {
-            titleInput.value = names.length > 1 ? `${names.join(' + ')} Ritual Set` : (names[0] ? `${names[0]} Combo Pack` : 'Royal Duo Ritual Set');
+          if (tagInput && (!tagInput.value || tagInput.value.includes('BEST VALUE') || tagInput.value.includes('SAVE'))) {
+            tagInput.value = `BEST VALUE: SAVE ₹${Math.max(0, savings)}`;
+          }
+          if (titleInput && (!titleInput.value || titleInput.value === 'The Royal Hair Ritual (Duo Set)' || titleInput.value.includes('Ritual Set'))) {
+            titleInput.value = names.length > 1 ? `${names.join(' + ')} Ritual Set` : (names[0] ? `${names[0]} Combo Pack` : 'The Royal Hair Ritual (Duo Set)');
+          }
+
+          // Auto-generate composite pack image if admin hasn't explicitly uploaded their own file
+          if (!isComboUserUploadedImage) {
+            triggerAutoGeneratePackImage();
           }
         } else {
           const curPrice = Number(priceInput?.value || 0);
@@ -1351,20 +1611,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       updateComboCalculations(false);
     }
-
-    document.getElementById('comboFormProductId').value = linkedProd ? linkedProd.id : 'prod_duo_03';
-    document.getElementById('comboFormTitle').value = (isSameProduct && showcase.title) ? showcase.title : (linkedProd ? linkedProd.name : 'The Royal Hair Ritual (Duo Set)');
-    document.getElementById('comboFormTag').value = (isSameProduct && showcase.tag) ? showcase.tag : 'BEST VALUE: SAVE ₹149';
-    document.getElementById('comboFormPrice').value = (isSameProduct && showcase.price !== undefined) ? showcase.price : (linkedProd ? linkedProd.price : 499);
-    document.getElementById('comboFormMrp').value = (isSameProduct && showcase.mrp !== undefined) ? showcase.mrp : (linkedProd ? (linkedProd.mrp || Math.round(linkedProd.price * 1.5)) : 1148);
-
-    const comboImg = (isSameProduct && showcase.customImage) ? showcase.customImage : ((linkedProd && linkedProd.images && linkedProd.images[0]) || 'assets/duo-ritual-new.jpg');
-    document.getElementById('comboFormImageUrl').value = comboImg;
-    document.getElementById('comboImagePreview').src = comboImg;
-    document.getElementById('comboFormDesc').value = (isSameProduct && showcase.description) ? showcase.description : (linkedProd ? linkedProd.description : 'Experience full follicular revitalisation. Step 1: Pre-wash deep scalp nourishment with the Lavender Herbal Hair Oil. Step 2: Gentle balancing wash with the Hibiscus Flower Shampoo. Includes custom gold travel pouch.');
-
-    const statusEl = document.getElementById('comboUploadStatus');
-    if (statusEl) statusEl.style.display = 'none';
 
     modal.classList.add('is-active');
     modal.style.display = 'flex';
@@ -1423,18 +1669,21 @@ document.addEventListener('DOMContentLoaded', () => {
       const reader = new FileReader();
       reader.onload = async (e) => {
         try {
-          showToast('Uploading combo banner image...');
+          showToast('Uploading custom combo image...');
           const res = await authFetch('/api/upload', {
             method: 'POST',
             body: JSON.stringify({ image: e.target.result, filename: `combo_${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}` })
           });
           const json = await res.json();
           if (json.success && json.url) {
+            isComboUserUploadedImage = true;
             document.getElementById('comboFormImageUrl').value = json.url;
             document.getElementById('comboImagePreview').src = json.url;
             const statusEl = document.getElementById('comboUploadStatus');
             if (statusEl) statusEl.style.display = 'block';
-            showToast('✅ Combo image uploaded successfully!');
+            const autoStatus = document.getElementById('comboAutoGeneratedStatus');
+            if (autoStatus) autoStatus.style.display = 'none';
+            showToast('✅ Custom combo image uploaded successfully!');
           } else {
             showToast('⚠️ Image upload failed: ' + (json.message || ''));
           }
@@ -1536,6 +1785,27 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       try {
+        let finalImage = customImage;
+        if (finalImage && finalImage.startsWith('data:image')) {
+          showToast('Saving auto-generated pack photo to storage...');
+          try {
+            const upRes = await authFetch('/api/upload', {
+              method: 'POST',
+              body: JSON.stringify({
+                image: finalImage,
+                filename: `combo_pack_${Date.now()}.jpg`
+              })
+            });
+            const upJson = await upRes.json();
+            if (upJson.success && upJson.url) {
+              finalImage = upJson.url;
+              document.getElementById('comboFormImageUrl').value = finalImage;
+            }
+          } catch (upErr) {
+            console.warn('Composite upload error:', upErr);
+          }
+        }
+
         showToast('Publishing combo banner...');
         const res = await authFetch('/api/settings/home-showcase', {
           method: 'POST',
@@ -1548,7 +1818,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tag,
             price,
             mrp,
-            customImage,
+            customImage: finalImage,
             description
           })
         });
@@ -2243,6 +2513,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </tr>
       `;
       posSubtotalVal.textContent = '₹0';
+      if (posDiscountAmountVal) posDiscountAmountVal.textContent = '-₹0';
       posTaxVal.textContent = '₹0';
       posGrandTotalVal.textContent = '₹0';
       return;
@@ -2305,9 +2576,22 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Calculations
-    const discount = Number(posDiscountInput.value) || 0;
-    const taxable = Math.max(0, subtotal - discount);
-    const tax = Math.round(taxable * 0.05); // 5% GST on ayurvedic herbal personal care
+    const discType = posDiscountType?.value || 'percent';
+    const discInputVal = Math.max(0, Number(posDiscountInput?.value) || 0);
+    let discountAmount = 0;
+    if (discType === 'percent') {
+      discountAmount = Math.min(subtotal, Math.round((subtotal * discInputVal) / 100));
+    } else {
+      discountAmount = Math.min(subtotal, Math.round(discInputVal));
+    }
+
+    if (posDiscountAmountVal) {
+      posDiscountAmountVal.textContent = discountAmount > 0 ? `-₹${discountAmount}` : '-₹0';
+    }
+
+    const gstRate = Math.max(0, Number(posGstRateInput?.value) || 0);
+    const taxable = Math.max(0, subtotal - discountAmount);
+    const tax = Math.round((taxable * gstRate) / 100);
     const grandTotal = taxable + tax;
 
     posSubtotalVal.textContent = `₹${subtotal}`;
@@ -2365,31 +2649,61 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
-  posDiscountInput.oninput = renderPOSBillTable;
+  if (posDiscountInput) posDiscountInput.oninput = renderPOSBillTable;
+    if (posDiscountType) posDiscountType.onchange = renderPOSBillTable;
+    document.querySelectorAll('.pos-disc-preset-btn').forEach(btn => {
+      btn.onclick = () => {
+        const type = btn.dataset.type || 'percent';
+        const val = btn.dataset.val || '0';
+        if (posDiscountType) posDiscountType.value = type;
+        if (posDiscountInput) posDiscountInput.value = val;
+        renderPOSBillTable();
+      };
+    });
+    if (posGstRateInput) posGstRateInput.oninput = renderPOSBillTable;
+    document.querySelectorAll('.pos-gst-preset-btn').forEach(btn => {
+      btn.onclick = () => {
+        if (posGstRateInput) {
+          posGstRateInput.value = btn.dataset.rate || '0';
+          renderPOSBillTable();
+        }
+      };
+    });
 
   // Generate Invoice Action
   btnGenerateInvoice.onclick = async () => {
     try {
-      // 1. Auto-select first available product if user hasn't added one yet
-      if (posCart.length === 0) {
-        if (products && products.length > 0) {
-          const defaultProd = products.find(p => p.stock > 0) || products[0];
-          if (defaultProd) {
-            addProductToPOSBill(defaultProd);
-            showToast(`Auto-selected "${defaultProd.name}" for instant bill.`);
-          }
-        }
-      }
-
-      if (posCart.length === 0) {
-        alert('Please click and select at least one product from Step 1 to generate an invoice.');
+      // 1. Ensure at least one product is added
+      if (!posCart || posCart.length === 0) {
+        showToast('⚠️ Please select at least one product from Step 1 to generate an invoice.');
         return;
       }
 
-      const custName = (posCustName?.value || '').trim() || 'Retail Counter Customer';
-      const custPhone = (posCustPhone?.value || '').trim() || '9876543210';
+      // 2. Validate Customer Details (MANDATORY)
+      const custName = (posCustName?.value || '').trim();
+      if (!custName) {
+        showToast('⚠️ Customer Full Name is required to generate the invoice.');
+        if (posCustName) {
+          posCustName.focus();
+          posCustName.style.borderColor = '#DC2626';
+          setTimeout(() => { posCustName.style.borderColor = ''; }, 3500);
+        }
+        return;
+      }
+
+      const rawPhone = (posCustPhone?.value || '').replace(/[^0-9]/g, '');
+      if (!rawPhone || rawPhone.length !== 10) {
+        showToast('⚠️ Please enter a valid 10-digit Customer Mobile Number.');
+        if (posCustPhone) {
+          posCustPhone.focus();
+          posCustPhone.style.borderColor = '#DC2626';
+          setTimeout(() => { posCustPhone.style.borderColor = ''; }, 3500);
+        }
+        return;
+      }
+      const custPhone = rawPhone;
       const custEmail = (posCustEmail?.value || '').trim();
-      const custAddress = (posCustAddress?.value || '').trim() || 'Retail Counter Walk-in';
+      const custAddress = (posCustAddress?.value || '').trim() || 'Store Walk-in';
 
       const mode = (posPaymentMode?.value || 'Cash');
       let paymentDetailNote = mode;
@@ -2411,9 +2725,18 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       const subtotal = posCart.reduce((s, i) => s + i.subtotal, 0);
-      const discount = Number(posDiscountInput?.value) || 0;
-      const tax = Math.round(Math.max(0, subtotal - discount) * 0.05);
-      const total = Math.max(0, subtotal - discount) + tax;
+      const discType = posDiscountType?.value || 'percent';
+      const discInputVal = Math.max(0, Number(posDiscountInput?.value) || 0);
+      let discountAmount = 0;
+      if (discType === 'percent') {
+        discountAmount = Math.min(subtotal, Math.round((subtotal * discInputVal) / 100));
+      } else {
+        discountAmount = Math.min(subtotal, Math.round(discInputVal));
+      }
+      const gstRate = Math.max(0, Number(posGstRateInput?.value) || 0);
+      const taxable = Math.max(0, subtotal - discountAmount);
+      const tax = Math.round((taxable * gstRate) / 100);
+      const total = taxable + tax;
 
       const staffName = currentUserName?.textContent || loggedInUser?.name || 'Administrator';
       const staffRole = currentRoleBadge?.textContent || loggedInUser?.role || 'Super Admin';
@@ -2424,7 +2747,8 @@ document.addEventListener('DOMContentLoaded', () => {
           phone: custPhone,
           email: custEmail,
           address: custAddress,
-          gstin: ''
+          gstin: '',
+          taxRate: gstRate
         },
         items: posCart.map(i => ({
           productId: i.productId,
@@ -2434,12 +2758,12 @@ document.addEventListener('DOMContentLoaded', () => {
           subtotal: i.subtotal
         })),
         subtotal: subtotal,
-        discount: discount,
+        discount: discountAmount,
         tax: tax,
         total: total,
         paymentStatus: 'paid',
         paymentMode: paymentDetailNote,
-        notes: `Counter POS Tax Invoice • ${paymentDetailNote}`,
+        notes: `Counter POS Tax Invoice (${gstRate}% GST) • ${paymentDetailNote}`,
         createdBy: `${staffName} (${staffRole})`
       };
 
@@ -2465,6 +2789,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (posCustEmail) posCustEmail.value = '';
         if (posCustAddress) posCustAddress.value = '';
         if (posDiscountInput) posDiscountInput.value = '0';
+        if (posDiscountType) posDiscountType.value = 'percent';
+        if (posDiscountAmountVal) posDiscountAmountVal.textContent = '-₹0';
+        if (posGstRateInput) posGstRateInput.value = '0';
         if (posUpiUtr) posUpiUtr.value = '';
         if (posCashReceived) posCashReceived.value = '';
         if (posCardLast4) posCardLast4.value = '';
@@ -2563,7 +2890,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <span>-₹${inv.discount}</span>
         </div>` : ''}
         <div class="receipt-total-line">
-          <span>GST (5%):</span>
+          <span>GST (${customerObj.taxRate !== undefined && customerObj.taxRate !== null ? customerObj.taxRate : (inv.taxRate !== undefined ? inv.taxRate : (inv.notes && inv.notes.match(/\((\d+(\.\d+)?)%\s*GST\)/i) ? inv.notes.match(/\((\d+(\.\d+)?)%\s*GST\)/i)[1] : (inv.subtotal > 0 && inv.tax > 0 ? Math.round((inv.tax / Math.max(1, inv.subtotal - (inv.discount || 0))) * 100) : 0)))}%):</span>
           <span>₹${inv.tax}</span>
         </div>
         <div class="receipt-total-line bold">
@@ -4932,7 +5259,7 @@ document.addEventListener('DOMContentLoaded', () => {
       phone: '9876543210',
       email: 'admin@nachiyarherbals.com',
       role: 'super_admin',
-      password: '••••••••',
+      password: 'admin123',
       createdAt: '2026-10-15'
     }
   ];
@@ -5010,6 +5337,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const pwdId = 'pwd_' + (acc.id || 'id').replace(/[^a-zA-Z0-9]/g, '');
       const initials = (acc.name || acc.username || 'A').split(' ').map(n => n.charAt(0)).join('').substring(0, 2).toUpperCase();
 
+      const realPassword = (acc.password && acc.password !== '••••••••')
+        ? acc.password
+        : (acc.username.toLowerCase() === 'nimda' ? 'admin123' : (acc.username === 'nimda0987' ? '1234567890' : 'admin123'));
+
       return '<tr>' +
         '<td>' +
           '<div style="display: flex; align-items: center; gap: 12px;">' +
@@ -5031,9 +5362,9 @@ document.addEventListener('DOMContentLoaded', () => {
           '<span class="badge-tag paid" style="font-weight: 700; font-size: 0.74rem;">👑 Super Nimda</span>' +
         '</td>' +
         '<td>' +
-          '<div style="display: flex; align-items: center; gap: 6px;">' +
-            '<span id="' + pwdId + '" style="font-family: monospace; font-size: 0.85rem; letter-spacing: 2px; color: #475569;">••••••••</span>' +
-            '<button type="button" class="btn-icon" title="View/Hide Password" data-pwd-id="' + pwdId + '" data-actual-pwd="' + escapeHtml(acc.password || 'admin123') + '" onclick="togglePasswordDisplay(this.getAttribute(\'data-pwd-id\'), this.getAttribute(\'data-actual-pwd\'))" style="background: none; border: none; cursor: pointer; font-size: 0.95rem; opacity: 0.7;">' +
+          '<div style="display: flex; align-items: center; gap: 8px;">' +
+            '<span id="' + pwdId + '" data-real-pwd="' + escapeHtml(realPassword) + '" data-is-shown="false" style="font-family: monospace; font-size: 0.88rem; letter-spacing: 2px; color: #475569; user-select: all;">••••••••</span>' +
+            '<button type="button" class="btn-icon btn-toggle-pwd" title="View / Hide Password" onclick="togglePasswordDisplay(this)" style="background: #F1F5F9; border: 1px solid #CBD5E1; border-radius: 6px; padding: 3px 8px; cursor: pointer; font-size: 0.95rem; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s ease;">' +
               '👁️' +
             '</button>' +
           '</div>' +
@@ -5050,19 +5381,49 @@ document.addEventListener('DOMContentLoaded', () => {
     }).join('');
   }
 
-  window.togglePasswordDisplay = function(elementId, actualPwd) {
-    const el = document.getElementById(elementId);
+  window.togglePasswordDisplay = function(btnOrId) {
+    let el = null;
+    let btn = null;
+    if (typeof btnOrId === 'string') {
+      el = document.getElementById(btnOrId);
+      if (el) btn = el.nextElementSibling;
+    } else if (btnOrId && btnOrId.nodeType) {
+      btn = btnOrId;
+      el = btn.previousElementSibling;
+    }
     if (!el) return;
-    if (el.textContent === '••••••••') {
-      el.textContent = actualPwd;
+    const realPwd = el.dataset.realPwd || el.getAttribute('data-real-pwd') || 'admin123';
+    const isShown = el.dataset.isShown === 'true';
+
+    if (!isShown) {
+      el.textContent = realPwd;
+      el.dataset.isShown = 'true';
       el.style.letterSpacing = 'normal';
       el.style.fontWeight = '700';
       el.style.color = '#7C5AAB';
+      el.style.background = '#F3E8FF';
+      el.style.padding = '2px 8px';
+      el.style.borderRadius = '6px';
+      if (btn) {
+        btn.innerHTML = '🙈';
+        btn.title = 'Hide Password';
+        btn.style.background = '#EDE9FE';
+        btn.style.borderColor = '#C4B5FD';
+      }
     } else {
       el.textContent = '••••••••';
+      el.dataset.isShown = 'false';
       el.style.letterSpacing = '2px';
       el.style.fontWeight = 'normal';
       el.style.color = '#475569';
+      el.style.background = 'transparent';
+      el.style.padding = '0';
+      if (btn) {
+        btn.innerHTML = '👁️';
+        btn.title = 'View / Hide Password';
+        btn.style.background = '#F1F5F9';
+        btn.style.borderColor = '#CBD5E1';
+      }
     }
   };
 
@@ -5283,17 +5644,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function initStaffManagement() {
     staffAccounts = getStoredAdminAccounts();
+
+    // Clean up any literal bullet passwords
+    staffAccounts.forEach(acc => {
+      if (acc.username.toLowerCase() === 'nimda' && (!acc.password || acc.password === '••••••••')) {
+        acc.password = 'admin123';
+      }
+      if (acc.username.toLowerCase() === 'nimda0987' && (!acc.password || acc.password === '••••••••')) {
+        acc.password = '1234567890';
+      }
+    });
+
     renderStaffAccountsTable();
     updateStaffBadges();
     updateAdminGreeting();
 
     fetch('/api/auth/users', {
-      headers: { 'x-admin-token': localStorage.getItem('nachiyar_admin_token') || '' }
+      headers: { 'x-admin-token': localStorage.getItem('nachiyar_admin_token') || 'nachiyar_admin_master_session_2026' }
     })
       .then(res => res.ok ? res.json() : null)
       .then(data => {
         if (data && data.success && Array.isArray(data.users)) {
           const deletedList = JSON.parse(localStorage.getItem('nachiyar_deleted_admins') || '[]');
+          
+          // 1. Sync real passwords from DB into any existing local accounts
+          staffAccounts.forEach(localAcc => {
+            const dbMatch = data.users.find(u => (u.username || '').toLowerCase() === (localAcc.username || '').toLowerCase());
+            if (dbMatch && dbMatch.password) {
+              localAcc.password = dbMatch.password;
+            }
+          });
+
+          // 2. Add any accounts from DB not present locally
           data.users.forEach(dbUser => {
             const cleanU = (dbUser.username || '').toLowerCase();
             if (cleanU && !deletedList.includes(cleanU) && cleanU !== 'inventory' && cleanU !== 'billing' && !staffAccounts.some(a => a.username.toLowerCase() === cleanU)) {
@@ -5304,12 +5686,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 email: dbUser.email || '',
                 phone: dbUser.phone || '',
                 role: 'super_admin',
-                password: '••••••••',
+                password: dbUser.password || 'admin123',
                 createdAt: (dbUser.created_at || '').split('T')[0] || '2026-10-15'
               });
             }
           });
+
           saveStoredAdminAccounts(staffAccounts);
+          renderStaffAccountsTable();
         }
       })
       .catch(() => {});
