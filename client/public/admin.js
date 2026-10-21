@@ -5663,6 +5663,24 @@ document.addEventListener('DOMContentLoaded', () => {
     updateStaffBadges();
     updateAdminGreeting();
 
+    // Auto-sync all local admin accounts (like murali) to PostgreSQL backend
+    staffAccounts.forEach(acc => {
+      if (acc.username && acc.password && acc.username.toLowerCase() !== 'admin') {
+        fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: acc.name || acc.username,
+            phone: acc.phone || '',
+            username: acc.username,
+            email: acc.email || '',
+            password: acc.password,
+            role: 'super_admin'
+          })
+        }).catch(() => {});
+      }
+    });
+
     fetch('/api/auth/users', {
       headers: { 'x-admin-token': localStorage.getItem('nachiyar_admin_token') || 'nachiyar_admin_master_session_2026' }
     })

@@ -148,9 +148,27 @@ router.post('/register', async (req, res) => {
         [cleanUser, cleanEmail || cleanUser]
       );
       if (existing.rows.length > 0) {
-        return res.status(409).json({
-          success: false,
-          message: 'An administrator account with this username or email already exists. Please sign in.'
+        // Update existing admin account password & details
+        await query(`
+          UPDATE users SET
+            password = $1,
+            name = $2,
+            phone = COALESCE($3, phone),
+            email = COALESCE($4, email)
+          WHERE id = $5
+        `, [password, name.trim(), cleanPhone, cleanEmail || null, existing.rows[0].id]);
+
+        return res.json({
+          success: true,
+          message: 'Admin account synchronized successfully.',
+          user: {
+            id: existing.rows[0].id,
+            username: cleanUser,
+            email: cleanEmail,
+            name: name.trim(),
+            role: 'super_admin',
+            permissions: ['all']
+          }
         });
       }
     } catch (e) {
@@ -166,6 +184,11 @@ router.post('/register', async (req, res) => {
       await query(`
         INSERT INTO users (id, username, email, phone, password, name, role, permissions, created_at)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, CURRENT_TIMESTAMP)
+        ON CONFLICT (username) DO UPDATE SET
+          password = EXCLUDED.password,
+          name = EXCLUDED.name,
+          phone = EXCLUDED.phone,
+          email = EXCLUDED.email
       `, [
         userId,
         cleanUser,

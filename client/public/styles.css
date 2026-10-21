@@ -6491,7 +6491,7 @@ textarea.form-input {
 @media (max-width: 991px) {
   /* Clear body space on mobile so content isn't covered */
   body {
-    padding-bottom: 90px !important;
+    padding-bottom: calc(76px + env(safe-area-inset-bottom, 16px)) !important;
   }
 
   /* Completely hide mystery discount badge on mobile view */
@@ -6512,7 +6512,7 @@ textarea.form-input {
     bottom: 0 !important;
     left: 0 !important;
     right: 0 !important;
-    height: 68px !important;
+    height: 70px !important;
     background: #FFFFFF !important;
     border-radius: 20px 20px 0 0 !important;
     border-top: 1px solid rgba(124, 90, 171, 0.12) !important;
@@ -6520,7 +6520,7 @@ textarea.form-input {
     z-index: 9999 !important;
     user-select: none !important;
     -webkit-tap-highlight-color: transparent !important;
-    padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 6px) !important;
   }
 
   .mobile-nav-tabs {
@@ -6540,7 +6540,7 @@ textarea.form-input {
     flex-direction: column;
     align-items: center;
     justify-content: flex-end;
-    padding-bottom: 10px;
+    padding-bottom: 8px !important;
     height: 100%;
     text-decoration: none !important;
     position: relative;
@@ -6569,14 +6569,16 @@ textarea.form-input {
   .mobile-nav-tab.is-active .tab-icon-wrap {
     opacity: 0 !important;
     visibility: hidden !important;
-    transform: translateY(-8px) scale(0.6);
+    transform: translateY(-10px) scale(0.5);
     pointer-events: none;
+    height: 0 !important;
+    margin-bottom: 0 !important;
   }
 
   .mobile-nav-tab .tab-label {
     font-size: 0.6875rem; /* 11px */
     font-weight: 600;
-    line-height: 1.1;
+    line-height: 1.15;
     letter-spacing: 0.2px;
     color: #7E7188;
     white-space: nowrap;
@@ -6602,11 +6604,11 @@ textarea.form-input {
 
   .nav-wave-shape {
     position: absolute;
-    top: -24px;
+    top: -27px !important;
     left: 50%;
     transform: translateX(-50%);
-    width: 110px;
-    height: 34px;
+    width: 114px !important;
+    height: 36px !important;
     overflow: visible;
     pointer-events: none;
     filter: drop-shadow(0 -4px 8px rgba(45, 24, 50, 0.08));
@@ -6621,14 +6623,14 @@ textarea.form-input {
 
   .nav-bubble-circle {
     position: absolute;
-    top: -16px;
+    top: -25px !important;
     left: 50%;
     transform: translateX(-50%);
-    width: 52px;
-    height: 52px;
+    width: 48px !important;
+    height: 48px !important;
     border-radius: 50%;
     background: linear-gradient(135deg, #7C2A72 0%, #4D1847 60%, #2D1832 100%);
-    box-shadow: 0 8px 18px rgba(45, 24, 50, 0.35);
+    box-shadow: 0 6px 16px rgba(45, 24, 50, 0.32);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -6651,27 +6653,38 @@ textarea.form-input {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 26px;
-    height: 26px;
+    width: 24px;
+    height: 24px;
     color: #FFFFFF;
   }
 
   .bubble-icon-slot svg {
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
     stroke: #FFFFFF !important;
     stroke-width: 2.2;
   }
 
   @media (max-width: 360px) {
+    .mobile-curved-bottom-nav {
+      height: 66px !important;
+    }
+    .mobile-nav-tab {
+      padding-bottom: 6px !important;
+    }
     .mobile-nav-tab .tab-label {
       font-size: 0.625rem !important; /* 10px */
       letter-spacing: 0 !important;
     }
+    .nav-wave-shape {
+      top: -24px !important;
+      width: 104px !important;
+      height: 34px !important;
+    }
     .nav-bubble-circle {
-      width: 46px !important;
-      height: 46px !important;
-      top: -14px !important;
+      width: 44px !important;
+      height: 44px !important;
+      top: -22px !important;
     }
     .bubble-icon-slot svg {
       width: 20px !important;
