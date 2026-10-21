@@ -152,6 +152,13 @@
 
   // Curved Floating Bottom Navigation Bar for Mobile (Home, Shop Rituals, About Us, Contact)
   function ensureMobileCurvedBottomNav() {
+    // Suppress bottom nav on checkout and admin pages to prevent covering action buttons
+    const curPath = (window.location.pathname || '').toLowerCase();
+    const curHref = (window.location.href || '').toLowerCase();
+    if (curPath.includes('checkout') || curHref.includes('checkout') || curPath.includes('order-status') || curHref.includes('order-status') || curPath.includes('nimda') || curHref.includes('nimda')) {
+      return;
+    }
+
     // 1. Remove any legacy hamburger toggles and drawers
     const existingToggle = document.getElementById('mobileNavToggle');
     if (existingToggle) existingToggle.remove();
@@ -163,61 +170,57 @@
 
     if (document.getElementById('mobileCurvedBottomNav')) return;
 
+    // Environment-adaptive clean URLs (works seamlessly on Local, localhost, and Live Apache/cPanel)
+    const isLocalOrHtml = window.location.protocol === 'file:' || 
+                          window.location.pathname.endsWith('.html') || 
+                          window.location.hostname === 'localhost' || 
+                          window.location.hostname === '127.0.0.1';
+
+    const getNavUrl = (slug) => {
+      if (slug === 'home') return isLocalOrHtml ? 'index.html' : '/';
+      return isLocalOrHtml ? `${slug}.html` : `/${slug}/`;
+    };
+
     const NAV_ITEMS = [
       {
         id: 'home',
         name: 'Home',
-        url: '/',
-        match: ['/', '/index.html', 'index.html'],
+        url: getNavUrl('home'),
         icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5L12 3l9 7.5V20a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V10.5z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`
       },
       {
         id: 'shop',
         name: 'Shop Rituals',
-        url: 'shop.html',
-        match: ['shop.html', 'product.html'],
+        url: getNavUrl('shop'),
         icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>`
       },
       {
         id: 'about',
         name: 'About Us',
-        url: 'about.html',
-        match: ['about.html'],
+        url: getNavUrl('about'),
         icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 4 13C4 7 11 2 20 2c0 9-5 16-11 16z"/><path d="M8 16c2-3 5-6 9-8"/></svg>`
       },
       {
         id: 'contact',
         name: 'Contact',
-        url: 'contact.html',
-        match: ['contact.html'],
+        url: getNavUrl('contact'),
         icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="13" y2="13"/></svg>`
       }
     ];
 
-    // Detect active page index
-    const currentPath = (window.location.pathname || '').toLowerCase();
-    let activeIndex = -1;
+    // Detect active page index with 100% precision across Local, File, and Live
+    const hrefLower = (window.location.href || '').toLowerCase();
+    const pathLower = (window.location.pathname || '').toLowerCase();
 
-    for (let idx = 0; idx < NAV_ITEMS.length; idx++) {
-      const item = NAV_ITEMS[idx];
-      let matched = false;
-      for (const pattern of item.match) {
-        if (pattern === '/' && (currentPath.endsWith('/') || currentPath === '' || currentPath.endsWith('index.html'))) {
-          matched = true;
-          break;
-        } else if (pattern !== '/' && currentPath.includes(pattern)) {
-          matched = true;
-          break;
-        }
-      }
-      if (matched) {
-        activeIndex = idx;
-        break;
-      }
-    }
-
-    if (activeIndex === -1 && (currentPath === '' || currentPath.endsWith('/'))) {
-      activeIndex = 0;
+    let activeIndex = 0; // Default: Home
+    if (pathLower.includes('about') || hrefLower.includes('about')) {
+      activeIndex = 2; // About Us
+    } else if (pathLower.includes('shop') || hrefLower.includes('shop') || pathLower.includes('product') || hrefLower.includes('product')) {
+      activeIndex = 1; // Shop Rituals
+    } else if (pathLower.includes('contact') || hrefLower.includes('contact')) {
+      activeIndex = 3; // Contact
+    } else {
+      activeIndex = 0; // Home
     }
 
     const nav = document.createElement('nav');
@@ -225,9 +228,10 @@
     nav.className = 'mobile-curved-bottom-nav';
     nav.setAttribute('aria-label', 'Mobile Navigation');
 
+    // Pre-position glider directly in DOM inline styles to prevent ANY jump or animation from Home!
     nav.innerHTML = `
       <div class="mobile-nav-tabs" id="mobileNavTabs">
-        <div class="mobile-nav-glider-wrapper" id="mobileNavGlider">
+        <div class="mobile-nav-glider-wrapper" id="mobileNavGlider" style="transform: translateX(${activeIndex * 100}%); opacity: 1; transition: none;">
           <div class="nav-wave-shape">
             <svg viewBox="0 0 110 34" class="nav-wave-svg" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M 0,34 C 24,34 30,24 38,12 C 46,0 55,0 64,0 C 72,0 80,12 88,24 C 94,34 100,34 110,34 L 110,38 L 0,38 Z" fill="#FFFFFF"/>
@@ -235,7 +239,7 @@
             </svg>
           </div>
           <div class="nav-bubble-circle" id="navBubbleCircle">
-            <div class="bubble-icon-slot" id="bubbleIconSlot"></div>
+            <div class="bubble-icon-slot" id="bubbleIconSlot">${NAV_ITEMS[activeIndex].icon}</div>
           </div>
         </div>
         ${NAV_ITEMS.map((item, idx) => `
@@ -253,6 +257,15 @@
     const bubble = document.getElementById('navBubbleCircle');
     const bubbleSlot = document.getElementById('bubbleIconSlot');
     const tabs = nav.querySelectorAll('.mobile-nav-tab');
+
+    // Smooth transition re-enabled immediately after initial render frame
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        if (glider) {
+          glider.style.transition = 'transform 0.42s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease';
+        }
+      }, 50);
+    });
 
     function updateActiveGlider(idx, animateBubble = true) {
       if (idx < 0 || idx >= NAV_ITEMS.length) {
@@ -281,12 +294,9 @@
       }
     }
 
-    // Set initial position
-    if (activeIndex >= 0) {
-      updateActiveGlider(activeIndex, false);
-    } else {
-      if (glider) glider.style.opacity = '0';
-    }
+    window.addEventListener('resize', () => {
+      if (activeIndex >= 0) updateActiveGlider(activeIndex, false);
+    });
 
     // Bind smooth navigation and glide animation
     tabs.forEach((tab, idx) => {
@@ -304,7 +314,7 @@
         const targetUrl = tab.getAttribute('href');
         setTimeout(() => {
           window.location.href = targetUrl;
-        }, 220);
+        }, 180);
       });
     });
   }
@@ -322,17 +332,24 @@
     }
 
     if (currentCustomer && currentCustomer.name) {
-      const firstName = currentCustomer.name.split(' ')[0];
-      if (navLabel) navLabel.textContent = `Hi, ${firstName}`;
+      const firstName = currentCustomer.name.trim().split(' ')[0];
+      if (navLabel) {
+        navLabel.textContent = `Hi, ${firstName}`;
+        navLabel.style.display = 'inline-block';
+      }
       if (btn) {
         btn.href = '/account/';
         btn.setAttribute('aria-label', `Account of ${currentCustomer.name}`);
+        btn.classList.add('is-logged-in');
       }
     } else {
-      if (navLabel) navLabel.textContent = 'Sign In';
+      if (navLabel) {
+        navLabel.textContent = 'Sign In';
+      }
       if (btn) {
         btn.href = 'javascript:void(0);';
         btn.setAttribute('aria-label', 'Sign In or Create Account');
+        btn.classList.remove('is-logged-in');
       }
     }
   }
@@ -588,7 +605,7 @@
             <input type="text" id="regAddress" class="drawer-auth-input" placeholder="Street Delivery Address" autocomplete="street-address">
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
               <input type="text" id="regCity" class="drawer-auth-input" placeholder="City (e.g. Chennai)">
-              <input type="text" id="regPincode" class="drawer-auth-input" placeholder="Pincode (e.g. 600020)">
+              <input type="tel" id="regPincode" class="drawer-auth-input" placeholder="Pincode (6 digits)" maxlength="6" inputmode="numeric" pattern="[0-9]{6}" oninput="this.value = this.value.replace(/\D/g, '').slice(0, 6);">
             </div>
             <button type="submit" class="drawer-auth-submit-btn">Create Account & Continue →</button>
           </form>
@@ -653,26 +670,13 @@
           const oPhone = (c.phone || '').replace(/\D/g, '').slice(-10);
           const oEmail = (c.email || '').trim().toLowerCase();
           const matches = (cleanEmail && oEmail && cleanEmail === oEmail) ||
-                          (cleanPhone && oPhone && cleanPhone === oPhone);
+                          (cleanPhone && oPhone && cleanPhone === oPhone) ||
+                          (currentCustomer && currentCustomer.id && c.id && currentCustomer.id === c.id);
           if (matches && o.orderNumber && !orderMap.has(o.orderNumber)) {
             orderMap.set(o.orderNumber, o);
           }
         });
       } catch (e) {}
-
-      // Only if demo user Pooja Madhavan test account has 0 orders, show demo order
-      if (orderMap.size === 0 && cleanEmail === 'pooja.m@example.com') {
-        orderMap.set('NH-ON-1001', {
-          orderNumber: 'NH-ON-1001',
-          total: 999,
-          status: 'shipped',
-          createdAt: new Date().toISOString(),
-          items: [
-            { name: 'Herbal Hair Oil (200ml)', qty: 1, img: 'assets/hero-bottle-oil-transparent.png' },
-            { name: 'Hibiscus Flower Shampoo (250ml)', qty: 1, img: 'assets/hero-bottle-shampoo-transparent.png' }
-          ]
-        });
-      }
 
       const orders = Array.from(orderMap.values());
       orders.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
@@ -856,6 +860,19 @@
     `;
   }
 
+  function syncCustomerLoginState(customer) {
+    currentCustomer = customer;
+    localStorage.setItem('nachiyar_customer', JSON.stringify(customer));
+    updateNavbarUserState();
+    closeAccountDrawer();
+    try {
+      window.dispatchEvent(new Event('storage'));
+      if (typeof window.renderCheckoutAuthBanner === 'function') {
+        window.renderCheckoutAuthBanner();
+      }
+    } catch (e) {}
+  }
+
   // 6. Global Login and Register Handlers
   window.handleDrawerLogin = async function() {
     const email = document.getElementById('drawerLoginEmail').value.trim();
@@ -870,10 +887,7 @@
       const data = await res.json();
 
       if (data.success && data.customer) {
-        currentCustomer = data.customer;
-        localStorage.setItem('nachiyar_customer', JSON.stringify(data.customer));
-        updateNavbarUserState();
-        closeAccountDrawer();
+        syncCustomerLoginState(data.customer);
         showSideToast({ title: 'Welcome Back!', message: `Signed in as ${data.customer.name}`, type: 'success' });
         if (window.location.pathname.includes('account')) {
           setTimeout(() => window.location.reload(), 300);
@@ -895,6 +909,12 @@
       return;
     }
 
+    const cleanPincode = (document.getElementById('regPincode')?.value || '').replace(/\D/g, '').slice(0, 6);
+    if (cleanPincode && cleanPincode.length !== 6) {
+      alert('Please enter a valid 6-digit PIN code (e.g. 600028).');
+      return;
+    }
+
     const payload = {
       name: document.getElementById('regName').value.trim(),
       email: document.getElementById('regEmail').value.trim(),
@@ -902,7 +922,7 @@
       password: document.getElementById('regPassword').value,
       address: document.getElementById('regAddress').value.trim(),
       city: document.getElementById('regCity').value.trim(),
-      pincode: document.getElementById('regPincode').value.trim(),
+      pincode: cleanPincode,
       state: 'Tamil Nadu'
     };
 
@@ -915,10 +935,7 @@
       const data = await res.json();
 
       if (data.success && data.customer) {
-        currentCustomer = data.customer;
-        localStorage.setItem('nachiyar_customer', JSON.stringify(data.customer));
-        updateNavbarUserState();
-        closeAccountDrawer();
+        syncCustomerLoginState(data.customer);
         showSideToast({ title: 'Account Created!', message: `Welcome to Nachiyar Herbals, ${data.customer.name}!`, type: 'success' });
         if (window.location.pathname.includes('account')) {
           setTimeout(() => window.location.reload(), 300);
@@ -941,11 +958,8 @@
       });
       const data = await res.json();
       if (data.success && data.customer) {
-        currentCustomer = data.customer;
-        localStorage.setItem('nachiyar_customer', JSON.stringify(data.customer));
-        updateNavbarUserState();
         closeGoogleAccountPicker();
-        closeAccountDrawer();
+        syncCustomerLoginState(data.customer);
         showSideToast({ title: 'Welcome!', message: `Signed in with Google as ${data.customer.name}`, type: 'success' });
         if (window.location.pathname.includes('account')) {
           setTimeout(() => window.location.reload(), 300);
@@ -1151,10 +1165,7 @@ Documentation: docs/FIREBASE_SETUP.md
 
       const data = await res.json();
       if (data.success && data.customer) {
-        currentCustomer = data.customer;
-        localStorage.setItem('nachiyar_customer', JSON.stringify(data.customer));
-        updateNavbarUserState();
-        closeAccountDrawer(); // Close the customer login panel after successful authentication!
+        syncCustomerLoginState(data.customer);
         showAuthToast(`✓ Welcome, ${data.customer.name}!`);
         if (window.location.pathname.includes('account.html')) {
           setTimeout(() => window.location.reload(), 300);

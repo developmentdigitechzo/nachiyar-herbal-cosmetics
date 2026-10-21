@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <base href="/">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Royal Checkout | Nachiyar Herbals & Cosmetics</title>
@@ -12,6 +13,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="customer-account.css">
   <style>
     .checkout-page-container {
       padding-block: 40px 80px;
@@ -324,7 +326,7 @@
               </div>
               <div class="form-group-checkout">
                 <label>Mobile Number (For Courier Updates) *</label>
-                <input type="tel" id="chkPhone" class="checkout-input" placeholder="+91 98401 23456" required>
+                <input type="tel" id="chkPhone" class="checkout-input" placeholder="10-digit mobile number" required maxlength="10" pattern="[0-9]{10}" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);">
               </div>
             </div>
 
@@ -345,8 +347,8 @@
             </div>
             <div class="form-row-2">
               <div class="form-group-checkout">
-                <label>PIN Code *</label>
-                <input type="text" id="chkPincode" class="checkout-input" placeholder="600028" required>
+                <label>PIN Code * (6 Digits)</label>
+                <input type="tel" id="chkPincode" class="checkout-input" placeholder="600028" required maxlength="6" inputmode="numeric" pattern="[0-9]{6}" oninput="this.value = this.value.replace(/\D/g, '').slice(0, 6);">
               </div>
               <div class="form-group-checkout">
                 <label>Delivery Landmark</label>
@@ -682,7 +684,7 @@
 
       function renderCheckout() {
         if (cart.length === 0) {
-          itemsList.innerHTML = '<p style="color:var(--color-text-muted); padding:20px; text-align:center;">Your bag is empty. <a href="shop.html">Shop Rituals</a></p>';
+          itemsList.innerHTML = '<p style="color:var(--color-text-muted); padding:20px; text-align:center;">Your bag is empty. <a href="/shop/">Shop Rituals</a></p>';
           subtotalVal.textContent = '₹0';
           totalVal.textContent = '₹0';
           btnPlaceOrder.disabled = true;
@@ -824,22 +826,57 @@
         renderCheckout();
       };
 
-      checkoutForm.onsubmit = async (e) => {
+      function isCustomerAuthenticated() {
+        let cust = null;
+        try {
+          const saved = localStorage.getItem('nachiyar_customer');
+          if (saved) cust = JSON.parse(saved);
+        } catch (e) {}
+        return Boolean(cust && (cust.email || cust.phone) && cust.name);
+      }
+
+      // 🔒 INTERCEPT BUTTON CLICK IN CAPTURE PHASE
+      // Crucial: Runs immediately BEFORE HTML5 browser validation can block or scroll away!
+      if (btnPlaceOrder) {
+        btnPlaceOrder.addEventListener('click', (e) => {
+          if (!isCustomerAuthenticated()) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            openSignInRequiredModal();
+            return false;
+          }
+        }, true);
+      }
+
+      checkoutForm.addEventListener('submit', async (e) => {
+        // 🔒 Check authentication in submit event as well
+        if (!isCustomerAuthenticated()) {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          openSignInRequiredModal();
+          return false;
+        }
+
         e.preventDefault();
         if (cart.length === 0) {
           alert('Your bag is empty.');
           return;
         }
 
-        // 🔒 MANDATORY CUSTOMER LOGIN CHECK
-        const savedCustStr = localStorage.getItem('nachiyar_customer');
-        let currentAuthCustomer = null;
-        try {
-          if (savedCustStr) currentAuthCustomer = JSON.parse(savedCustStr);
-        } catch (e) {}
+        // 🔒 MANDATORY 6-DIGIT PINCODE CHECK
+        const pincodeVal = (document.getElementById('chkPincode')?.value || '').trim();
+        if (!/^\d{6}$/.test(pincodeVal)) {
+          alert('⚠️ Please enter a valid 6-digit PIN code (e.g. 600028). Letters or incomplete numbers are not allowed.');
+          document.getElementById('chkPincode')?.focus();
+          return;
+        }
 
-        if (!currentAuthCustomer || (!currentAuthCustomer.email && !currentAuthCustomer.phone)) {
-          openSignInRequiredModal();
+        const phoneVal = (document.getElementById('chkPhone')?.value || '').replace(/\D/g, '');
+        if (phoneVal.length < 10) {
+          alert('⚠️ Please enter a valid 10-digit mobile number.');
+          document.getElementById('chkPhone')?.focus();
           return;
         }
 
@@ -975,100 +1012,148 @@
 
         localStorage.removeItem('nachiyar_cart');
         window.location.href = `order-status.html?orderId=${orderId}&orderNumber=${orderNumber}`;
-      };
+      });
 
       renderCheckout();
     });
   
-    function openSignInRequiredModal() {
+    window.openSignInRequiredModal = function() {
       const modal = document.getElementById('signInRequiredModal');
       if (modal) {
-        modal.style.display = 'flex';
+        modal.style.setProperty('display', 'flex', 'important');
+        modal.style.setProperty('opacity', '1', 'important');
+        modal.style.setProperty('visibility', 'visible', 'important');
+        modal.style.setProperty('pointer-events', 'auto', 'important');
+        document.body.style.overflow = 'hidden';
       } else {
-        if (confirm('⚠️ Sign In Required: Please sign in or register to place your order. Would you like to sign in now?')) {
-          window.location.href = '/account/?redirect=checkout.html';
-        }
+        alert('⚠️ Account Required to Place Order: Please sign in or create an account to complete your order.');
+        window.location.href = '/account/?redirect=checkout.html';
       }
-    }
+    };
 
-    function closeSignInRequiredModal() {
+    window.closeSignInRequiredModal = function() {
       const modal = document.getElementById('signInRequiredModal');
-      if (modal) modal.style.display = 'none';
-    }
+      if (modal) {
+        modal.style.setProperty('display', 'none', 'important');
+        modal.style.setProperty('opacity', '0', 'important');
+        modal.style.setProperty('visibility', 'hidden', 'important');
+        modal.style.setProperty('pointer-events', 'none', 'important');
+        document.body.style.overflow = '';
+      }
+    };
 
-    // Prefill customer details and show auth banner on load
-    document.addEventListener('DOMContentLoaded', () => {
+    window.handleModalAuthAction = function() {
+      window.closeSignInRequiredModal();
+      if (typeof window.openCustomerAccountDrawer === 'function') {
+        window.openCustomerAccountDrawer();
+      } else {
+        window.location.href = '/account/?redirect=checkout.html';
+      }
+    };
+
+    // Render Auth Banner & Prefill Customer details
+    function renderCheckoutAuthBanner() {
       try {
+        const form = document.getElementById('checkoutForm');
+        if (!form) return;
+
+        // Remove any previous banners to prevent duplicate stacking
+        const prevNotice = document.getElementById('checkoutGuestNotice');
+        if (prevNotice) prevNotice.remove();
+        const prevBanner = document.getElementById('checkoutAuthBanner');
+        if (prevBanner) prevBanner.remove();
+
         const savedCustStr = localStorage.getItem('nachiyar_customer');
+        let cust = null;
         if (savedCustStr) {
-          const cust = JSON.parse(savedCustStr);
-          if (cust) {
-            const firstNameInput = document.getElementById('chkFirstName');
-            const lastNameInput = document.getElementById('chkLastName');
-            const emailInput = document.getElementById('chkEmail');
-            const phoneInput = document.getElementById('chkPhone');
-            const addressInput = document.getElementById('chkAddress');
-            const cityInput = document.getElementById('chkCity');
-            const stateInput = document.getElementById('chkState');
-            const pincodeInput = document.getElementById('chkPincode');
+          try { cust = JSON.parse(savedCustStr); } catch (e) {}
+        }
 
-            if (cust.name) {
-              const nameParts = cust.name.trim().split(' ');
-              if (firstNameInput && !firstNameInput.value) firstNameInput.value = nameParts[0] || '';
-              if (lastNameInput && !lastNameInput.value) lastNameInput.value = nameParts.slice(1).join(' ') || '';
-            }
-            if (emailInput && !emailInput.value && cust.email) emailInput.value = cust.email;
-            if (phoneInput && !phoneInput.value && cust.phone) phoneInput.value = cust.phone.replace(/[^0-9]/g, '').slice(-10);
-            if (addressInput && !addressInput.value && cust.address) addressInput.value = cust.address;
-            if (cityInput && !cityInput.value && cust.city) cityInput.value = cust.city;
-            if (stateInput && !stateInput.value && cust.state) stateInput.value = cust.state;
-            if (pincodeInput && !pincodeInput.value && cust.pincode) pincodeInput.value = cust.pincode;
+        const isLoggedIn = cust && (cust.email || cust.phone) && cust.name;
 
-            // Show signed-in badge in header
-            const customerSection = document.querySelector('.checkout-section');
-            if (customerSection && !document.getElementById('checkoutAuthBanner')) {
-              const banner = document.createElement('div');
-              banner.id = 'checkoutAuthBanner';
-              banner.style.cssText = 'background: #F3E8FF; border: 1.5px solid #C4B5FD; border-radius: 10px; padding: 12px 16px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem;';
-              banner.innerHTML = `<div><strong style="color: #6B21A8;">👑 Signed In:</strong> <span style="color: #4C1D95; font-weight: 700;">${cust.name || 'Valued Member'}</span> <small style="color: #6D28D9;">(${cust.email || cust.phone || ''})</small></div><span style="color: #10B981; font-weight: 700; font-size: 0.78rem;">● Verified</span>`;
-              customerSection.insertBefore(banner, customerSection.firstChild);
-            }
+        if (isLoggedIn) {
+          const firstNameInput = document.getElementById('chkFirstName');
+          const lastNameInput = document.getElementById('chkLastName');
+          const emailInput = document.getElementById('chkEmail');
+          const phoneInput = document.getElementById('chkPhone');
+          const addressInput = document.getElementById('chkAddress');
+          const cityInput = document.getElementById('chkCity');
+          const stateInput = document.getElementById('chkState');
+          const pincodeInput = document.getElementById('chkPincode');
+
+          if (cust.name) {
+            const nameParts = cust.name.trim().split(' ');
+            if (firstNameInput && !firstNameInput.value) firstNameInput.value = nameParts[0] || '';
+            if (lastNameInput && !lastNameInput.value) lastNameInput.value = nameParts.slice(1).join(' ') || '';
           }
+          if (emailInput && !emailInput.value && cust.email) emailInput.value = cust.email;
+          if (phoneInput && !phoneInput.value && cust.phone) phoneInput.value = cust.phone.replace(/[^0-9]/g, '').slice(-10);
+          if (addressInput && !addressInput.value && cust.address) addressInput.value = cust.address;
+          if (cityInput && !cityInput.value && cust.city) cityInput.value = cust.city;
+          if (stateInput && !stateInput.value && cust.state) stateInput.value = cust.state;
+          if (pincodeInput && !pincodeInput.value && cust.pincode) pincodeInput.value = cust.pincode;
+
+          // Injected right at top of form
+          const banner = document.createElement('div');
+          banner.id = 'checkoutAuthBanner';
+          banner.style.cssText = 'background: #F3E8FF; border: 1.5px solid #C4B5FD; border-radius: 12px; padding: 14px 18px; margin-bottom: 22px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; font-size: 0.88rem;';
+          banner.innerHTML = `
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span style="font-size:1.4rem;">👑</span>
+              <div>
+                <strong style="color: #6B21A8; display:block; font-size:0.95rem;">Signed In: <span style="color: #4C1D95; font-weight: 800;">${cust.name || 'Valued Member'}</span></strong>
+                <span style="color: #6D28D9; font-size:0.8rem;">${cust.email || cust.phone || ''}</span>
+              </div>
+            </div>
+            <span style="color: #059669; background:#DEF7EC; padding:4px 12px; border-radius:999px; font-weight: 700; font-size: 0.78rem;">✓ Verified Member</span>
+          `;
+          form.insertBefore(banner, form.firstChild);
         } else {
           // Show guest warning banner
-          const customerSection = document.querySelector('.checkout-section');
-          if (customerSection && !document.getElementById('checkoutGuestNotice')) {
-            const notice = document.createElement('div');
-            notice.id = 'checkoutGuestNotice';
-            notice.style.cssText = 'background: #FEF3C7; border: 1.5px solid #FCD34D; border-radius: 10px; padding: 12px 16px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; font-size: 0.85rem;';
-            notice.innerHTML = `<div><strong style="color: #92400E;">⚠️ Sign In Required:</strong> <span style="color: #B45309;">Please sign in or create an account to complete checkout.</span></div><a href="/account/?redirect=checkout.html" style="background: #D97706; color: #FFF; padding: 5px 12px; border-radius: 6px; font-weight: 700; font-size: 0.78rem; text-decoration: none;">Sign In / Register ↗</a>`;
-            customerSection.insertBefore(notice, customerSection.firstChild);
-          }
+          const notice = document.createElement('div');
+          notice.id = 'checkoutGuestNotice';
+          notice.style.cssText = 'background: #FEF3C7; border: 1.5px solid #FCD34D; border-radius: 12px; padding: 14px 18px; margin-bottom: 22px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; font-size: 0.88rem;';
+          notice.innerHTML = `
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span style="font-size:1.4rem;">⚠️</span>
+              <div>
+                <strong style="color: #92400E; display:block; font-size:0.95rem;">Account Sign In Required</strong>
+                <span style="color: #B45309; font-size:0.82rem;">Please sign in or create an account to complete checkout.</span>
+              </div>
+            </div>
+            <button type="button" onclick="openSignInRequiredModal()" style="background: linear-gradient(135deg, #2D1A3B 0%, #7C5AAB 100%); color: #FFF; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 0.84rem; border: none; cursor: pointer; box-shadow: 0 4px 10px rgba(124, 90, 171, 0.25);">
+              Sign In / Register ↗
+            </button>
+          `;
+          form.insertBefore(notice, form.firstChild);
         }
       } catch (e) {}
-    });
+    }
+
+    document.addEventListener('DOMContentLoaded', renderCheckoutAuthBanner);
+    window.addEventListener('storage', renderCheckoutAuthBanner);
     </script>
 
-
-  <!-- ==================== SIGN IN REQUIRED MODAL ==================== -->
-  <div class="modal-overlay" id="signInRequiredModal" style="display: none; position: fixed; inset: 0; background: rgba(26,11,38,0.75); backdrop-filter: blur(8px); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
-    <div style="background: #FFF; border-radius: 16px; max-width: 440px; width: 100%; padding: 32px 24px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.25); border: 1.5px solid #E2E8F0; position: relative;">
-      <button type="button" onclick="closeSignInRequiredModal()" style="position: absolute; top: 14px; right: 16px; background: none; border: none; font-size: 1.3rem; cursor: pointer; color: #64748B;">✕</button>
-      <div style="width: 56px; height: 56px; border-radius: 50%; background: #F3E8FF; color: #7C5AAB; font-size: 1.8rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto;">👑</div>
-      <h3 style="font-size: 1.25rem; font-weight: 800; color: #1E293B; margin: 0 0 8px 0; font-family: 'Cinzel', serif;">Sign In Required to Place Order</h3>
-      <p style="font-size: 0.88rem; color: #64748B; margin: 0 0 20px 0; line-height: 1.5;">
-        To ensure secure order placement, live delivery tracking, and order history, please sign in or register with your mobile number or Google account.
+  <!-- ==================== SIGN IN REQUIRED POPUP MODAL ==================== -->
+  <div id="signInRequiredModal" style="display: none; position: fixed !important; inset: 0 !important; background: rgba(20, 10, 32, 0.85) !important; backdrop-filter: blur(10px) !important; -webkit-backdrop-filter: blur(10px) !important; z-index: 999999 !important; align-items: center !important; justify-content: center !important; padding: 20px !important; box-sizing: border-box !important;">
+    <div style="background: #FFFFFF; border-radius: 24px; max-width: 460px; width: 100%; padding: 36px 28px; text-align: center; box-shadow: 0 30px 60px -12px rgba(0,0,0,0.5); border: 2px solid #E2E8F0; position: relative;">
+      <button type="button" onclick="closeSignInRequiredModal()" style="position: absolute; top: 16px; right: 18px; background: #F1F5F9; border: none; font-size: 1.3rem; cursor: pointer; color: #475569; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: 700;">✕</button>
+      <div style="width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg, #F3E8FF 0%, #E9D5FF 100%); color: #7C5AAB; font-size: 2.3rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 18px auto; box-shadow: 0 10px 24px rgba(124, 90, 171, 0.3);">👑</div>
+      <h3 style="font-size: 1.35rem; font-weight: 800; color: #1E293B; margin: 0 0 10px 0; font-family: 'Cinzel', serif;">Account Required to Place Order</h3>
+      <p style="font-size: 0.92rem; color: #64748B; margin: 0 0 24px 0; line-height: 1.6;">
+        You must create a customer account or sign in with your mobile number before placing your order. This ensures live order tracking, doorstep courier updates, and order history.
       </p>
-      <div style="display: flex; flex-direction: column; gap: 10px;">
-        <a href="/account/?redirect=checkout.html" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px; border-radius: 10px; background: linear-gradient(135deg, #2D1A3B 0%, #7C5AAB 100%); color: #FFF; font-weight: 700; font-size: 0.95rem; text-decoration: none; box-shadow: 0 4px 12px rgba(124, 90, 171, 0.35);">
-          <span>👑 Sign In / Register Account</span>
-        </a>
-        <button type="button" onclick="closeSignInRequiredModal()" style="padding: 10px; border-radius: 10px; background: #F1F5F9; color: #475569; font-weight: 600; font-size: 0.88rem; border: none; cursor: pointer;">
-          Continue Reviewing Bag
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <button type="button" onclick="handleModalAuthAction()" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 15px; border-radius: 12px; background: linear-gradient(135deg, #2D1A3B 0%, #7C5AAB 100%); color: #FFFFFF; font-weight: 700; font-size: 1rem; border: none; cursor: pointer; box-shadow: 0 6px 20px rgba(124, 90, 171, 0.4); letter-spacing: 0.02em;">
+          <span>👑 Create Account / Sign In</span>
+        </button>
+        <button type="button" onclick="closeSignInRequiredModal()" style="padding: 12px; border-radius: 12px; background: #F8FAFC; color: #64748B; font-weight: 600; font-size: 0.88rem; border: 1px solid #CBD5E1; cursor: pointer;">
+          Review Bag Items
         </button>
       </div>
     </div>
   </div>
 
+  <script src="customer-account.js"></script>
 </body>
 </html>

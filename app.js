@@ -225,7 +225,9 @@ async function initStorefrontApp() {
 
   // Helper: Synchronize Live Products, Rates & Images across the entire Storefront DOM
   function applyLiveProductsToDOM(productsList, customShowcase = null) {
-    if (!productsList || !productsList.length) return;
+    if (!Array.isArray(productsList)) {
+      productsList = [];
+    }
 
     // Load showcase configuration from argument, window, or localStorage cache
     let showcase = customShowcase;
@@ -251,36 +253,36 @@ async function initStorefrontApp() {
     const availableProds = productsList.filter(p => p.status !== 'inactive');
     
     // Intelligently fallback to real active database products if configured targets don't exist
-    let slot1TargetId = isSlot1Removed ? null : (slot1Cfg?.productId || 'prod_oil_01');
-    let slot2TargetId = isSlot2Removed ? null : (slot2Cfg?.productId || 'prod_shampoo_02');
-    let comboTargetId = isComboRemoved ? null : (comboCfg?.productId || 'prod_duo_03');
+    let slot1TargetId = (isSlot1Removed || availableProds.length === 0) ? null : (slot1Cfg?.productId || availableProds[0]?.id || 'prod_oil_01');
+    let slot2TargetId = (isSlot2Removed || availableProds.length < 2) ? null : (slot2Cfg?.productId || availableProds[1]?.id);
+    let comboTargetId = (isComboRemoved || availableProds.length === 0) ? null : (comboCfg?.productId || null);
 
-    if (!isSlot1Removed && (!slot1TargetId || !availableProds.some(p => p.id === slot1TargetId || p.slug === slot1TargetId))) {
-      slot1TargetId = availableProds[0]?.id || 'prod_oil_01';
+    if (!isSlot1Removed && availableProds.length > 0 && (!slot1TargetId || !availableProds.some(p => p.id === slot1TargetId || p.slug === slot1TargetId))) {
+      slot1TargetId = availableProds[0]?.id;
     }
-    if (!isSlot2Removed && (!slot2TargetId || !availableProds.some(p => p.id === slot2TargetId || p.slug === slot2TargetId))) {
-      slot2TargetId = availableProds.length > 1 ? availableProds[1].id : null;
+    if (!isSlot2Removed && availableProds.length > 1 && (!slot2TargetId || !availableProds.some(p => p.id === slot2TargetId || p.slug === slot2TargetId))) {
+      slot2TargetId = availableProds[1]?.id;
     }
-    if (!isComboRemoved && (!comboTargetId || !availableProds.some(p => p.id === comboTargetId || p.slug === comboTargetId))) {
+    if (!isComboRemoved && availableProds.length > 0 && (!comboTargetId || !availableProds.some(p => p.id === comboTargetId || p.slug === comboTargetId))) {
       const duoMatch = availableProds.find(p => p.category === 'Ritual Sets' || p.category === 'Ritual Combos' || (p.name && p.name.includes('Combo')));
       comboTargetId = duoMatch ? duoMatch.id : (availableProds.length > 2 ? availableProds[2].id : availableProds[0]?.id);
     }
 
     // 1. Enforce live storefront visibility for Flagship collection cards & combo banner
     const cardOilEl = document.getElementById('card-oil');
-    if (cardOilEl) cardOilEl.style.display = isSlot1Removed ? 'none' : '';
+    if (cardOilEl) cardOilEl.style.display = (isSlot1Removed || availableProds.length === 0 || !slot1TargetId) ? 'none' : '';
     const megaOilEl = document.querySelector('.mega-card[href*="herbal-hair-oil"]') || document.querySelector('.mega-card:first-child');
-    if (megaOilEl) megaOilEl.style.display = isSlot1Removed ? 'none' : '';
+    if (megaOilEl) megaOilEl.style.display = (isSlot1Removed || availableProds.length === 0) ? 'none' : '';
 
     const cardShampEl = document.getElementById('card-shampoo');
-    if (cardShampEl) cardShampEl.style.display = isSlot2Removed ? 'none' : '';
+    if (cardShampEl) cardShampEl.style.display = (isSlot2Removed || availableProds.length < 2 || !slot2TargetId) ? 'none' : '';
     const megaShampEl = document.querySelector('.mega-card[href*="hibiscus-flower-shampoo"]') || document.querySelector('.mega-card:nth-child(2)');
-    if (megaShampEl) megaShampEl.style.display = isSlot2Removed ? 'none' : '';
+    if (megaShampEl) megaShampEl.style.display = (isSlot2Removed || availableProds.length < 2) ? 'none' : '';
 
     const bundleBannerEl = document.querySelector('.bundle-banner');
-    if (bundleBannerEl) bundleBannerEl.style.display = isComboRemoved ? 'none' : '';
+    if (bundleBannerEl) bundleBannerEl.style.display = (isComboRemoved || availableProds.length === 0 || !comboTargetId) ? 'none' : '';
     const megaDuoEl = document.querySelector('.mega-card[href*="royal-hair-ritual-duo"]') || document.querySelector('.mega-card--duo');
-    if (megaDuoEl) megaDuoEl.style.display = isComboRemoved ? 'none' : '';
+    if (megaDuoEl) megaDuoEl.style.display = (isComboRemoved || availableProds.length === 0) ? 'none' : '';
 
     const dynamicGrid = document.getElementById('dynamicProductsGrid');
     if (dynamicGrid) {
@@ -298,7 +300,7 @@ async function initStorefrontApp() {
 
     const collSection = document.getElementById('collection');
     if (collSection) {
-      collSection.style.display = (isSlot1Removed && isSlot2Removed && isComboRemoved) ? 'none' : '';
+      collSection.style.display = (availableProds.length === 0 || (isSlot1Removed && isSlot2Removed && isComboRemoved)) ? 'none' : '';
     }
 
     // Helper: update border box color & badges ONLY for Featured Collection Cards (#card-oil / #card-shampoo)
@@ -646,16 +648,30 @@ async function initStorefrontApp() {
     // 5.5. Dynamically hydrate header hover mega-menu (.nav-dropdown-mega .mega-grid)
     const megaGrids = document.querySelectorAll('.nav-dropdown-mega .mega-grid');
     megaGrids.forEach(megaGrid => {
-      if (!Array.isArray(productsList) || productsList.length === 0) {
+      const megaDropdown = megaGrid.closest('.nav-dropdown-mega');
+      const megaFooter = megaDropdown ? megaDropdown.querySelector('.mega-footer-bar') : null;
+
+      if (!Array.isArray(availableProds) || availableProds.length === 0) {
+        if (megaFooter) megaFooter.style.display = 'none';
+        megaGrid.style.gridTemplateColumns = '1fr';
+        megaGrid.style.justifyContent = 'center';
         megaGrid.innerHTML = `
-          <div style="padding: 24px; text-align: center; color: var(--color-text-muted); grid-column: 1 / -1;">
-            <p style="margin: 0; font-size: 0.875rem;">Apothecary formulations being prepared in small solar batches.</p>
-            <a href="/shop/" style="display: inline-block; margin-top: 8px; font-weight: 700; color: var(--color-lavender-primary); text-decoration: none;">View Shop Catalog →</a>
+          <div class="mega-empty-state">
+            <div class="empty-icon">🌿</div>
+            <h4>No Products Available Yet</h4>
+            <p>இப்போது தயாரிப்புகள் எதுவும் இல்லை.<br><span style="font-size: 0.8rem; opacity: 0.85;">New formulations will be listed soon.</span></p>
+            <a href="/contact/" class="empty-action-btn">
+              <span>Contact Concierge / Enquiries</span> →
+            </a>
           </div>
         `;
         return;
       }
-      megaGrid.innerHTML = productsList.slice(0, 3).map((prod, idx) => {
+
+      if (megaFooter) megaFooter.style.display = '';
+      megaGrid.style.gridTemplateColumns = availableProds.length === 1 ? 'repeat(1, minmax(0, 320px))' : (availableProds.length === 2 ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)');
+      megaGrid.style.justifyContent = availableProds.length === 1 ? 'center' : '';
+      megaGrid.innerHTML = availableProds.slice(0, 3).map((prod, idx) => {
         const pSlug = prod.slug || prod.id;
         const tag = prod.subtitle || prod.category || 'Ayurvedic Care';
         const img = (prod.images && prod.images[0]) || prod.imageUrl || 'assets/new-oil-bottle-card.jpg';
@@ -708,7 +724,7 @@ async function initStorefrontApp() {
     if (cachedSettings) updateStorefrontBusinessDetails(cachedSettings);
 
     const cachedProducts = JSON.parse(localStorage.getItem('nachiyar_store_products') || 'null');
-    if (cachedProducts && cachedProducts.length) {
+    if (cachedProducts !== null && Array.isArray(cachedProducts)) {
       applyLiveProductsToDOM(cachedProducts);
     }
   } catch (e) {}
@@ -717,7 +733,7 @@ async function initStorefrontApp() {
   async function reloadLiveProducts() {
     try {
       const pRes = await fetch('/api/products?_t=' + Date.now(), { cache: 'no-store' }).then(r => r.json());
-      if (pRes && pRes.success && Array.isArray(pRes.data) && pRes.data.length) {
+      if (pRes && pRes.success && Array.isArray(pRes.data)) {
         try { localStorage.setItem('nachiyar_store_products', JSON.stringify(pRes.data)); } catch (e) {}
         applyLiveProductsToDOM(pRes.data);
       }
@@ -769,7 +785,7 @@ async function initStorefrontApp() {
       }
     }
 
-    if (pRes.success && pRes.data && pRes.data.length) {
+    if (pRes.success && Array.isArray(pRes.data)) {
       try {
         localStorage.setItem('nachiyar_store_products', JSON.stringify(pRes.data));
       } catch (e) {}

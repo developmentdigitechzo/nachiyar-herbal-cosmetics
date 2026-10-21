@@ -587,12 +587,31 @@
       background: #FAF8FC;
       border: 1px solid rgba(124, 90, 171, 0.15);
       border-radius: 18px;
-      padding: 24px 20px 20px;
+      padding: 20px 16px 16px;
       overflow: hidden; /* Strict clipping so line never pokes out of card */
       box-sizing: border-box;
-      flex-shrink: 0; /* Prevents flex container from collapsing/shrinking this card */
+      flex-shrink: 0;
       min-height: min-content;
       height: auto;
+    }
+
+    .timeline-scroll-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 6px;
+      scrollbar-width: thin;
+      scrollbar-color: #CBD5E1 transparent;
+      touch-action: pan-x;
+    }
+
+    .timeline-scroll-wrapper::-webkit-scrollbar {
+      height: 4px;
+    }
+
+    .timeline-scroll-wrapper::-webkit-scrollbar-thumb {
+      background: #CBD5E1;
+      border-radius: 4px;
     }
 
     .timeline-stepper {
@@ -600,13 +619,21 @@
       align-items: flex-start;
       justify-content: space-between;
       position: relative;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
       padding-inline: 16px;
       box-sizing: border-box;
+      min-width: 460px; /* Responsive standard: prevents cramped overlapping labels on mobile */
+    }
+
+    @media (min-width: 641px) {
+      .timeline-stepper {
+        min-width: 100%;
+      }
     }
 
     .timeline-stepper--cancelled {
       max-width: 360px;
+      min-width: 300px;
       margin-inline: auto;
       padding-inline: 24px;
     }
@@ -614,8 +641,8 @@
     .timeline-track-wrapper {
       position: absolute;
       top: 17px;
-      left: 34px;
-      right: 34px;
+      left: 36px;
+      right: 36px;
       height: 3px;
       overflow: hidden; /* FIX: Line is strictly contained between circles */
       border-radius: 999px;
@@ -650,6 +677,8 @@
       align-items: center;
       text-align: center;
       gap: 6px;
+      min-width: 70px;
+      max-width: 86px;
     }
 
     .timeline-circle {
@@ -698,7 +727,10 @@
       font-size: 0.72rem;
       font-weight: 700;
       color: var(--color-text-muted);
-      white-space: nowrap;
+      white-space: normal;
+      text-align: center;
+      line-height: 1.2;
+      word-break: normal;
     }
 
     .timeline-step.is-done .timeline-label {
@@ -708,6 +740,22 @@
     .timeline-step.is-active .timeline-label {
       color: #7C5AAB;
       font-weight: 800;
+    }
+
+    .timeline-swipe-hint {
+      display: none;
+      font-size: 0.6875rem;
+      color: #94A3B8;
+      text-align: center;
+      margin-top: 2px;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    @media (max-width: 640px) {
+      .timeline-swipe-hint {
+        display: block;
+      }
     }
 
     .timeline-status-log {
@@ -1609,18 +1657,14 @@
             const oEmail = (c.email || '').trim().toLowerCase();
 
             const isMatch = (userEmailClean && oEmail && userEmailClean === oEmail) ||
-                            (userPhoneClean && oPhone && userPhoneClean === oPhone);
+                            (userPhoneClean && oPhone && userPhoneClean === oPhone) ||
+                            (activeCustomer && activeCustomer.id && c.id && activeCustomer.id === c.id);
 
             if (isMatch && o.orderNumber && !orderMap.has(o.orderNumber)) {
               orderMap.set(o.orderNumber, o);
             }
           });
         } catch (e) {}
-
-        // 3. ONLY if explicit demo customer (Pooja Madhavan) was selected and has 0 orders, load sample test orders
-        if (orderMap.size === 0 && activeCustomer && activeCustomer.email === 'pooja.m@example.com' && activeCustomer.id === 'cust_01') {
-          getFallbackOrders().forEach(o => orderMap.set(o.orderNumber, o));
-        }
 
         allCustomerOrders = Array.from(orderMap.values());
 
@@ -2104,40 +2148,43 @@
       }
 
       container.innerHTML = `
-        <div class="timeline-stepper">
-          <div class="timeline-track-wrapper">
-            <div class="timeline-line-back"></div>
-            <div class="timeline-line-fill" style="width: ${fillPercent};"></div>
-          </div>
+        <div class="timeline-swipe-hint">👈 Swipe along timeline to view complete status 👉</div>
+        <div class="timeline-scroll-wrapper">
+          <div class="timeline-stepper">
+            <div class="timeline-track-wrapper">
+              <div class="timeline-line-back"></div>
+              <div class="timeline-line-fill" style="width: ${fillPercent};"></div>
+            </div>
 
-          <!-- Step 1: Ordered -->
-          <div class="timeline-step ${stepStates[0] ? (activeIndex === 0 ? 'is-active' : 'is-done') : ''}">
-            <div class="timeline-circle">${stepStates[0] && activeIndex > 0 ? '✓' : '✓'}</div>
-            <span class="timeline-label">Ordered</span>
-          </div>
+            <!-- Step 1: Ordered -->
+            <div class="timeline-step ${stepStates[0] ? (activeIndex === 0 ? 'is-active' : 'is-done') : ''}">
+              <div class="timeline-circle">${stepStates[0] && activeIndex > 0 ? '✓' : '✓'}</div>
+              <span class="timeline-label">Ordered</span>
+            </div>
 
-          <!-- Step 2: Packed -->
-          <div class="timeline-step ${stepStates[1] ? (activeIndex === 1 ? 'is-active' : 'is-done') : ''}">
-            <div class="timeline-circle">${stepStates[1] && activeIndex > 1 ? '✓' : '📦'}</div>
-            <span class="timeline-label">Packed</span>
-          </div>
+            <!-- Step 2: Packed -->
+            <div class="timeline-step ${stepStates[1] ? (activeIndex === 1 ? 'is-active' : 'is-done') : ''}">
+              <div class="timeline-circle">${stepStates[1] && activeIndex > 1 ? '✓' : '📦'}</div>
+              <span class="timeline-label">Packed</span>
+            </div>
 
-          <!-- Step 3: Shipped -->
-          <div class="timeline-step ${stepStates[2] ? (activeIndex === 2 ? 'is-active' : 'is-done') : ''}">
-            <div class="timeline-circle">${stepStates[2] && activeIndex > 2 ? '✓' : '🚚'}</div>
-            <span class="timeline-label">Shipped</span>
-          </div>
+            <!-- Step 3: Shipped -->
+            <div class="timeline-step ${stepStates[2] ? (activeIndex === 2 ? 'is-active' : 'is-done') : ''}">
+              <div class="timeline-circle">${stepStates[2] && activeIndex > 2 ? '✓' : '🚚'}</div>
+              <span class="timeline-label">Shipped</span>
+            </div>
 
-          <!-- Step 4: Out for Delivery -->
-          <div class="timeline-step ${stepStates[3] ? (activeIndex === 3 ? 'is-active' : 'is-done') : ''}">
-            <div class="timeline-circle">${stepStates[3] && activeIndex > 3 ? '✓' : '📍'}</div>
-            <span class="timeline-label">Out for Delivery</span>
-          </div>
+            <!-- Step 4: Out for Delivery -->
+            <div class="timeline-step ${stepStates[3] ? (activeIndex === 3 ? 'is-active' : 'is-done') : ''}">
+              <div class="timeline-circle">${stepStates[3] && activeIndex > 3 ? '✓' : '📍'}</div>
+              <span class="timeline-label">Out for Delivery</span>
+            </div>
 
-          <!-- Step 5: Delivered -->
-          <div class="timeline-step ${stepStates[4] ? 'is-done' : ''}">
-            <div class="timeline-circle">🎁</div>
-            <span class="timeline-label">Delivered</span>
+            <!-- Step 5: Delivered -->
+            <div class="timeline-step ${stepStates[4] ? 'is-done' : ''}">
+              <div class="timeline-circle">🎁</div>
+              <span class="timeline-label">Delivered</span>
+            </div>
           </div>
         </div>
 
@@ -2326,8 +2373,8 @@
         <body>
           <div class="inv-header">
             <div>
-              <div class="inv-title">NACHIYAR HERBALS & COSMETICS</div>
-              <div style="font-size:12px; color:#666; margin-top:4px;">No. 18 Temple Ring Road, Madurai, Tamil Nadu - 625001<br>GSTIN: 33AAACN8492K1Z8 • care@nachiyarherbals.com</div>
+              <div class="inv-title">${(window.__NACHIYAR_SETTINGS?.brandName || 'Nachiyar Herbals & Cosmetics').toUpperCase()}</div>
+              <div style="font-size:12px; color:#666; margin-top:4px;">${window.__NACHIYAR_SETTINGS?.storeAddress || 'No. 18 Temple Ring Road, Madurai, Tamil Nadu - 625001'}<br>GSTIN: ${window.__NACHIYAR_SETTINGS?.gstin || '33AAACN8492K1Z8'} • ${window.__NACHIYAR_SETTINGS?.supportEmail || 'care@nachiyarherbals.com'} • ${window.__NACHIYAR_SETTINGS?.supportPhone || '+91 94440 88990'}</div>
             </div>
             <div class="inv-meta">
               <strong>TAX INVOICE</strong><br>

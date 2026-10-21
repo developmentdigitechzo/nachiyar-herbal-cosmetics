@@ -2074,6 +2074,12 @@ body.admin-body {
     gap: 20px;
   }
 
+  .activity-grid > * {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
   .marketplace-kpi-grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -2343,18 +2349,30 @@ body.admin-body {
   }
 
   .table-responsive {
-    width: 100%;
-    max-width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: pan-x pan-y !important;
     border-radius: 8px;
     border: 1px solid var(--admin-border);
     margin-bottom: 14px;
-    display: block;
+    display: block !important;
+    scrollbar-width: thin;
+    scrollbar-color: #CBD5E1 transparent;
+  }
+
+  .table-responsive::-webkit-scrollbar {
+    height: 5px;
+  }
+
+  .table-responsive::-webkit-scrollbar-thumb {
+    background: #CBD5E1;
+    border-radius: 4px;
   }
 
   .admin-table {
-    min-width: 500px;
+    min-width: 580px;
     width: 100%;
   }
 
@@ -2370,6 +2388,65 @@ body.admin-body {
     white-space: nowrap;
     padding: 4px 8px;
     font-size: 0.72rem;
+  }
+
+  /* POS Responsive Layout Enhancements */
+  .pos-total-row {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-block: 6px;
+    border-bottom: 1px dashed rgba(226, 232, 240, 0.8);
+  }
+
+  .pos-total-row:last-child {
+    border-bottom: none;
+  }
+
+  .pos-total-row > div {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .pos-discount-presets,
+  .pos-gst-presets {
+    display: inline-flex !important;
+    flex-wrap: wrap !important;
+    gap: 4px !important;
+  }
+
+  .pos-disc-preset-btn,
+  .pos-gst-preset-btn {
+    padding: 3px 6px !important;
+    font-size: 0.7rem !important;
+    border-radius: 4px !important;
+  }
+
+  .pos-bill-table {
+    min-width: 440px !important;
+  }
+
+  .pos-bill-table th,
+  .pos-bill-table td {
+    padding: 8px 6px !important;
+    font-size: 0.75rem !important;
+  }
+
+  .pos-payment-subbox {
+    padding: 12px 10px !important;
+  }
+
+  .pos-payment-subbox > div {
+    flex-wrap: wrap;
+  }
+
+  #btnGeneratePosInvoice,
+  #btnClearPosBill {
+    width: 100%;
+    margin-top: 8px;
+    height: 46px;
+    font-size: 0.95rem;
   }
 
   .modal-overlay {

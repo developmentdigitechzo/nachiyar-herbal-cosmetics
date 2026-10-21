@@ -658,20 +658,50 @@
   }
 }
 
+.account-trigger-btn .user-label {
+  display: inline-block !important;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  max-width: 90px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
 @media (max-width: 480px) {
   .account-trigger-btn {
-    padding: 7px 10px;
+    padding: 6px 10px;
     font-size: 0.78rem;
-    gap: 4px;
+    gap: 5px;
+    border-radius: 999px;
   }
 
   .account-trigger-btn .user-label {
-    display: none;
+    display: inline-block !important;
+    font-size: 0.75rem;
+    max-width: 75px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .tracking-status-notice {
     font-size: 0.75rem;
     padding: 8px 10px;
+  }
+}
+
+@media (max-width: 340px) {
+  .account-trigger-btn {
+    padding: 5px 8px;
+    gap: 3px;
+  }
+
+  .account-trigger-btn .user-label {
+    font-size: 0.7rem;
+    max-width: 55px;
   }
 }
 
