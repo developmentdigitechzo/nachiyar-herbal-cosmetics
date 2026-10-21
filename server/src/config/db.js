@@ -82,16 +82,21 @@ async function autoBootstrapSchema() {
     const schemaPath = path.join(__dirname, '..', 'db', 'schema.sql');
     if (fs.existsSync(schemaPath)) {
       const sql = fs.readFileSync(schemaPath, 'utf8');
-      const stmts = sql
-        .split(';')
-        .map(s => s.trim())
-        .filter(s => s.length > 0 && !s.startsWith('--'));
+      try {
+        await pool.query(sql);
+      } catch (fullSqlErr) {
+        // Fallback to statement by statement execution
+        const stmts = sql
+          .split(';')
+          .map(s => s.trim())
+          .filter(s => s.length > 0 && !s.startsWith('--'));
 
-      for (const stmt of stmts) {
-        try {
-          await pool.query(stmt);
-        } catch (stmtErr) {
-          // Individual statement error will not abort other statements
+        for (const stmt of stmts) {
+          try {
+            await pool.query(stmt);
+          } catch (stmtErr) {
+            // Individual statement error will not abort other statements
+          }
         }
       }
       schemaBootstrapped = true;

@@ -148,12 +148,169 @@ app.use('/api/orders', ordersRouter);
 app.use('/api/reviews', reviewsRouter);
 app.use(['/api/messages', '/api/contact/messages'], messagesRouter);
 
-// One-Click Database Ownership & Permissions Fix
+// One-Click Database Setup, Bootstrap & Permissions Fix
 app.get(['/api/fix-database', '/api/admin/fix-permissions'], async (req, res) => {
   try {
     const { query } = require('./config/db');
+
+    // 1. Create all 10 core tables if not exist
+    await query(`
+      CREATE TABLE IF NOT EXISTS categories (
+        id VARCHAR(100) PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        slug VARCHAR(255) UNIQUE NOT NULL,
+        count INT DEFAULT 0
+      );
+
+      CREATE TABLE IF NOT EXISTS products (
+        id VARCHAR(100) PRIMARY KEY,
+        slug VARCHAR(255) UNIQUE NOT NULL,
+        name VARCHAR(255) NOT NULL,
+        subtitle TEXT,
+        category VARCHAR(100) DEFAULT 'Hair Care',
+        category_id VARCHAR(100) DEFAULT 'cat_hair_care',
+        price NUMERIC(10, 2) NOT NULL,
+        mrp NUMERIC(10, 2),
+        stock INT DEFAULT 0,
+        initial_stock INT DEFAULT 0,
+        online_sold INT DEFAULT 0,
+        offline_sold INT DEFAULT 0,
+        sku VARCHAR(100),
+        images JSONB DEFAULT '[]'::jsonb,
+        theme_color VARCHAR(50) DEFAULT '#6B4E9B',
+        tagline TEXT,
+        metric_badge VARCHAR(50),
+        badge VARCHAR(50),
+        short_description TEXT,
+        description TEXT,
+        benefits JSONB DEFAULT '[]'::jsonb,
+        ingredients TEXT,
+        how_to_use TEXT,
+        variants JSONB DEFAULT '[]'::jsonb,
+        seo JSONB DEFAULT '{}'::jsonb,
+        status VARCHAR(50) DEFAULT 'active',
+        tags JSONB DEFAULT '[]'::jsonb,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS customers (
+        id VARCHAR(100) PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        phone VARCHAR(50),
+        password VARCHAR(255) NOT NULL,
+        address TEXT,
+        city VARCHAR(100),
+        state VARCHAR(100),
+        pincode VARCHAR(20),
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS orders (
+        id VARCHAR(100) PRIMARY KEY,
+        order_number VARCHAR(100) UNIQUE NOT NULL,
+        channel VARCHAR(50) DEFAULT 'online',
+        customer JSONB NOT NULL,
+        items JSONB NOT NULL,
+        subtotal NUMERIC(10, 2) DEFAULT 0,
+        discount NUMERIC(10, 2) DEFAULT 0,
+        shipping NUMERIC(10, 2) DEFAULT 0,
+        total NUMERIC(10, 2) DEFAULT 0,
+        payment_method VARCHAR(100) DEFAULT 'UPI / Online Payment',
+        payment_status VARCHAR(50) DEFAULT 'paid',
+        status VARCHAR(50) DEFAULT 'placed',
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS invoices (
+        id VARCHAR(100) PRIMARY KEY,
+        invoice_number VARCHAR(100) UNIQUE NOT NULL,
+        channel VARCHAR(50) DEFAULT 'offline',
+        customer JSONB NOT NULL,
+        items JSONB NOT NULL,
+        subtotal NUMERIC(10, 2) DEFAULT 0,
+        discount NUMERIC(10, 2) DEFAULT 0,
+        tax NUMERIC(10, 2) DEFAULT 0,
+        total NUMERIC(10, 2) DEFAULT 0,
+        payment_status VARCHAR(50) DEFAULT 'paid',
+        payment_mode VARCHAR(50) DEFAULT 'Cash',
+        notes TEXT DEFAULT 'In-store retail billing',
+        created_by VARCHAR(100) DEFAULT 'Sales Staff',
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS reviews (
+        id VARCHAR(100) PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255),
+        product_name VARCHAR(255) DEFAULT 'Herbal Hair Care',
+        rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
+        title VARCHAR(255),
+        comment TEXT NOT NULL,
+        status VARCHAR(50) DEFAULT 'pending',
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS inventory_logs (
+        id VARCHAR(100) PRIMARY KEY,
+        product_id VARCHAR(100),
+        product_name VARCHAR(255),
+        channel VARCHAR(50),
+        reference VARCHAR(100),
+        change INT,
+        prev_stock INT,
+        new_stock INT,
+        timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        reason TEXT
+      );
+
+      CREATE TABLE IF NOT EXISTS users (
+        id VARCHAR(100) PRIMARY KEY,
+        username VARCHAR(100) UNIQUE NOT NULL,
+        email VARCHAR(255),
+        phone VARCHAR(50),
+        password VARCHAR(255),
+        name VARCHAR(255) NOT NULL,
+        role VARCHAR(100) NOT NULL DEFAULT 'super_admin',
+        permissions JSONB DEFAULT '["all"]'::jsonb,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS site_settings (
+        id INT PRIMARY KEY DEFAULT 1,
+        data JSONB NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS contact_messages (
+        id VARCHAR(100) PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255) NOT NULL,
+        phone VARCHAR(50),
+        subject VARCHAR(255) DEFAULT 'General Inquiry',
+        message TEXT NOT NULL,
+        status VARCHAR(50) DEFAULT 'unread',
+        admin_notes TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // 2. Ensure all column extensions exist
+    await query(`
+      ALTER TABLE products ADD COLUMN IF NOT EXISTS tags JSONB DEFAULT '[]'::jsonb;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR(255);
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(50);
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS password VARCHAR(255);
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS name VARCHAR(255);
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(100) DEFAULT 'super_admin';
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS permissions JSONB DEFAULT '["all"]'::jsonb;
+    `);
+
+    // 3. Transfer ownership and grant full privileges
     const fixSql = `
-      DO $
+      DO $$
       BEGIN
         BEGIN ALTER TABLE IF EXISTS categories OWNER TO nachiyarherbals; EXCEPTION WHEN OTHERS THEN NULL; END;
         BEGIN ALTER TABLE IF EXISTS contact_messages OWNER TO nachiyarherbals; EXCEPTION WHEN OTHERS THEN NULL; END;
@@ -183,17 +340,66 @@ app.get(['/api/fix-database', '/api/admin/fix-permissions'], async (req, res) =>
     `;
     await query(fixSql);
 
-    // Auto-seed default admin into users table if empty
-    try {
-      const uRes = await query('SELECT COUNT(*) FROM users');
-      if (parseInt(uRes.rows[0].count, 10) === 0) {
-        await query(`
-          INSERT INTO users (id, username, email, phone, password, name, role, permissions)
-          VALUES ('user_nimda_master', 'admin', 'admin@nachiyarherbals.com', '9876543210', 'admin123', 'Super Administrator', 'super_admin', '["all"]'::jsonb)
-          ON CONFLICT (id) DO NOTHING
-        `);
+    // 4. Seed default and fallback admin users
+    await query(`
+      INSERT INTO users (id, username, email, phone, password, name, role, permissions)
+      VALUES 
+        ('user_nimda_master', 'nimda', 'admin@nachiyarherbals.com', '9876543210', 'admin123', 'Super Nimda', 'super_admin', '["all"]'::jsonb),
+        ('user_admin_master', 'admin', 'admin@nachiyarherbals.com', '9876543210', 'admin123', 'Super Administrator', 'super_admin', '["all"]'::jsonb)
+      ON CONFLICT (username) DO UPDATE SET
+        password = EXCLUDED.password,
+        name = EXCLUDED.name;
+    `);
+
+    // 5. Migrate users from data/db.json into PostgreSQL users table
+    const dbJsonPath = path.join(projectRoot, 'data', 'db.json');
+    let importedUsersCount = 0;
+    if (fs.existsSync(dbJsonPath)) {
+      try {
+        const rawJson = fs.readFileSync(dbJsonPath, 'utf8');
+        const dbData = JSON.parse(rawJson);
+        if (Array.isArray(dbData.users)) {
+          for (const u of dbData.users) {
+            if (u.username && u.password) {
+              await query(`
+                INSERT INTO users (id, username, email, phone, password, name, role, permissions)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb)
+                ON CONFLICT (username) DO UPDATE SET
+                  password = EXCLUDED.password,
+                  name = EXCLUDED.name,
+                  email = EXCLUDED.email,
+                  phone = EXCLUDED.phone
+              `, [
+                u.id || `user_${u.username}`,
+                u.username.toLowerCase().trim(),
+                u.email || null,
+                u.phone || null,
+                u.password,
+                u.name || u.username,
+                u.role || 'super_admin',
+                JSON.stringify(u.permissions || ['all'])
+              ]);
+              importedUsersCount++;
+            }
+          }
+        }
+      } catch (errJson) {
+        console.warn('Note on db.json users migration:', errJson.message);
       }
-    } catch (uErr) {}
+    }
+
+    // 6. Query all tables and all users to confirm
+    const tablesRes = await query(`
+      SELECT table_name 
+      FROM information_schema.tables 
+      WHERE table_schema = 'public' 
+      ORDER BY table_name ASC
+    `);
+    const tablesList = tablesRes.rows.map(r => r.table_name);
+
+    const usersRes = await query('SELECT id, username, name, role FROM users ORDER BY username ASC');
+    const usersList = usersRes.rows;
+
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.send(`
       <!DOCTYPE html>
@@ -201,38 +407,47 @@ app.get(['/api/fix-database', '/api/admin/fix-permissions'], async (req, res) =>
       <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Database Permissions Synchronized</title>
+        <title>Database 100% Configured & Synchronized</title>
         <style>
           body { font-family: system-ui, -apple-system, sans-serif; background: #FAF5FF; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; color: #2A153E; padding: 20px; box-sizing: border-box; }
-          .card { background: white; padding: 36px 30px; border-radius: 16px; box-shadow: 0 10px 30px rgba(107, 78, 155, 0.12); max-width: 540px; text-align: center; border: 1px solid #E9D5FF; }
+          .card { background: white; padding: 36px 30px; border-radius: 16px; box-shadow: 0 10px 30px rgba(107, 78, 155, 0.12); max-width: 580px; text-align: center; border: 1px solid #E9D5FF; }
           .icon { font-size: 3rem; margin-bottom: 12px; }
           h1 { color: #15803D; font-size: 1.45rem; margin: 0 0 10px; font-weight: 700; }
           p { color: #4B5563; font-size: 0.92rem; line-height: 1.6; margin: 0 0 20px; }
           .badge { display: inline-block; background: #DCFCE7; color: #166534; font-weight: 700; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; margin-bottom: 14px; }
-          .table-list { background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 12px; text-align: left; font-size: 0.82rem; color: #334155; margin-bottom: 24px; }
-          .table-list span { display: inline-block; background: #E0E7FF; color: #3730A3; padding: 2px 8px; border-radius: 4px; margin: 2px; font-family: monospace; font-weight: 600; }
-          a.btn { display: inline-block; background: #6B4E9B; color: white; text-decoration: none; padding: 10px 24px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; transition: background 0.2s; }
+          .table-list { background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 12px; text-align: left; font-size: 0.82rem; color: #334155; margin-bottom: 16px; }
+          .table-list span { display: inline-block; background: #E0E7FF; color: #3730A3; padding: 3px 8px; border-radius: 4px; margin: 2px; font-family: monospace; font-weight: 600; }
+          .user-badge { display: inline-block; background: #FEF3C7; color: #92400E; padding: 3px 8px; border-radius: 4px; margin: 2px; font-family: monospace; font-weight: 600; }
+          a.btn { display: inline-block; background: #6B4E9B; color: white; text-decoration: none; padding: 10px 24px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; transition: background 0.2s; margin-top: 10px; }
           a.btn:hover { background: #553A82; }
         </style>
       </head>
       <body>
         <div class="card">
           <div class="icon">🌿</div>
-          <div class="badge">✔ DATABASE OWNERSHIP SYNCHRONIZED</div>
-          <h1>Database Permissions Successfully Fixed!</h1>
-          <p>All database tables have been transferred to owner <b>nachiyarherbals</b> with full Read/Write privileges granted to both database accounts.</p>
+          <div class="badge">✔ DATABASE TABLES & USERS SYNCHRONIZED</div>
+          <h1>PostgreSQL Database 100% Ready!</h1>
+          <p>All core tables have been verified/created in schema <b>public</b>, permissions granted, and all admin accounts are active in PostgreSQL!</p>
           <div class="table-list">
-            <b>Unlocked Tables:</b><br>
-            <span>categories</span> <span>customers</span> <span>contact_messages</span> <span>reviews</span> <span>products</span> <span>orders</span> <span>invoices</span> <span>inventory_logs</span> <span>site_settings</span> <span>users</span>
+            <b>Active Tables (${tablesList.length}):</b><br>
+            ${tablesList.map(t => `<span>${t}</span>`).join(' ')}
           </div>
-          <p style="font-size: 0.85rem; color: #64748B;">You can now open phpPgAdmin and view/manage all tables with zero permission errors.</p>
-          <a href="/" class="btn">← Return to Storefront</a>
+          <div class="table-list">
+            <b>Active Admin Accounts (${usersList.length}):</b><br>
+            ${usersList.map(u => `<span class="user-badge">${u.username} (${u.role})</span>`).join(' ')}
+          </div>
+          <a href="/nimda-login.html" class="btn">Open Nimda Admin Login →</a>
         </div>
       </body>
       </html>
     `);
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    console.error('Database setup error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Database setup failed: ' + err.message,
+      stack: err.stack
+    });
   }
 });
 

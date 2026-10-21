@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS products (
   variants JSONB DEFAULT '[]'::jsonb,
   seo JSONB DEFAULT '{}'::jsonb,
   status VARCHAR(50) DEFAULT 'active',
+  tags JSONB DEFAULT '[]'::jsonb,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -163,10 +164,16 @@ CREATE INDEX IF NOT EXISTS idx_reviews_status ON reviews (status);
 CREATE INDEX IF NOT EXISTS idx_inventory_logs_product ON inventory_logs (product_id);
 
 -- SEED ESSENTIAL DEFAULT ACCOUNTS & SETTINGS
-INSERT INTO users (id, username, name, role, permissions)
+INSERT INTO users (id, username, email, phone, password, name, role, permissions)
 VALUES 
-  ('user_nimda', 'nimda', 'Super Nimda', 'super_admin', '["all"]'::jsonb)
-ON CONFLICT (username) DO NOTHING;
+  ('user_nimda', 'nimda', 'admin@nachiyarherbals.com', '9876543210', 'admin123', 'Super Nimda', 'super_admin', '["all"]'::jsonb),
+  ('user_admin', 'admin', 'admin@nachiyarherbals.com', '9876543210', 'admin123', 'Super Administrator', 'super_admin', '["all"]'::jsonb),
+  ('user_murali', 'murali', 'muraliii@gmail.com', '0987654321', '1234567890', 'murali', 'super_admin', '["all"]'::jsonb)
+ON CONFLICT (username) DO UPDATE SET
+  password = EXCLUDED.password,
+  name = EXCLUDED.name,
+  email = EXCLUDED.email,
+  phone = EXCLUDED.phone;
 
 INSERT INTO site_settings (id, data)
 VALUES (1, '{"announcementText": "ROYAL BOTANICAL CARE • FREE PAN-INDIA SHIPPING ON ORDERS ₹599 & ABOVE", "freeShippingThreshold": 599, "paymentMethods": {"cod": {"enabled": true, "label": "Cash on Delivery"}, "upi": {"enabled": true, "label": "UPI / QR Code", "upiId": "nachiyarherbals18@okaxis", "merchantName": "Nachiyar Herbals"}}}'::jsonb)
@@ -180,6 +187,13 @@ VALUES
   ('prod_duo_03', 'The Royal Hair Ritual (Duo Set)', 'royal-hair-ritual-duo', 499.00, 1148.00, 85, 'Ritual Combos', '["complete-ritual", "bestseller", "ayurvedic-duo"]'::jsonb, '["assets/duo-ritual-new.jpg"]'::jsonb, 'The complete 2-step royal restorative haircare routine featuring our Herbal Hair Oil and Hibiscus Shampoo.')
 ON CONFLICT (id) DO NOTHING;
 
-
--- FIX FOR TAGS COLUMN
+-- FIX FOR TAGS COLUMN (Idempotent check)
 ALTER TABLE products ADD COLUMN IF NOT EXISTS tags JSONB DEFAULT '[]'::jsonb;
+
+-- PERMISSIONS AND OWNERSHIP SYNCHRONIZATION
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO nachiyarherbals;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO nachiyarherbals;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO nachiyarherbals_client_db;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO nachiyarherbals_client_db;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO nachiyarherbals;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO nachiyarherbals_client_db;
