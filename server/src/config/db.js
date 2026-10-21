@@ -204,6 +204,22 @@ async function autoBootstrapSchema() {
     } catch (syncErr) {
       console.warn('Ownership sync note:', syncErr.message);
     }
+
+    // Auto-seed default admin account into users table if empty
+    try {
+      const userCountRes = await pool.query('SELECT COUNT(*) FROM users');
+      if (parseInt(userCountRes.rows[0].count, 10) === 0) {
+        await pool.query(`
+          INSERT INTO users (id, username, email, phone, password, name, role, permissions)
+          VALUES 
+            ('user_nimda_master', 'admin', 'admin@nachiyarherbals.com', '9876543210', 'admin123', 'Super Administrator', 'super_admin', '["all"]'::jsonb)
+          ON CONFLICT (id) DO NOTHING
+        `);
+        console.log('✅ Auto-seeded master admin account into users table.');
+      }
+    } catch (userErr) {
+      console.warn('Users seed note:', userErr.message);
+    }
   } catch (err) {
     console.warn('⚠️ Auto-schema bootstrap note:', err.message);
   }

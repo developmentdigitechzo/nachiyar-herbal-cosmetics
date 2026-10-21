@@ -179,9 +179,21 @@ app.get(['/api/fix-database', '/api/admin/fix-permissions'], async (req, res) =>
           ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO nachiyarherbals_client_db;
         EXCEPTION WHEN OTHERS THEN NULL;
         END;
-      END $;
+      END $$;
     `;
     await query(fixSql);
+
+    // Auto-seed default admin into users table if empty
+    try {
+      const uRes = await query('SELECT COUNT(*) FROM users');
+      if (parseInt(uRes.rows[0].count, 10) === 0) {
+        await query(`
+          INSERT INTO users (id, username, email, phone, password, name, role, permissions)
+          VALUES ('user_nimda_master', 'admin', 'admin@nachiyarherbals.com', '9876543210', 'admin123', 'Super Administrator', 'super_admin', '["all"]'::jsonb)
+          ON CONFLICT (id) DO NOTHING
+        `);
+      }
+    } catch (uErr) {}
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.send(`
       <!DOCTYPE html>
