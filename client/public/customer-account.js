@@ -139,16 +139,87 @@
 
   document.addEventListener('DOMContentLoaded', () => {
     ensureMobileCurvedBottomNav();
+    syncMobileFixedTopNav();
     injectAccountUI();
     bindNavbarAccountButton();
     updateNavbarUserState();
-
     // Auto open drawer if redirected with open_account=true
     const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('logged_out') === '1') {
+      clearCustomerSession(false);
+    } else {
+      validateBackendSession();
+    }
+    initGoogleIdentityServices();
+
     if (urlParams.get('open_account') === 'true') {
       setTimeout(openAccountDrawer, 300);
     }
   });
+
+  // Synchronize Mobile Fixed Top Nav (Announcement Bar + Site Header) dynamically
+  function syncMobileFixedTopNav() {
+    const isMobile = window.innerWidth <= 768;
+    const annBar = document.querySelector('.announcement-bar');
+    const header = document.querySelector('.site-header');
+
+    if (!isMobile) {
+      if (annBar) {
+        annBar.style.position = '';
+        annBar.style.top = '';
+        annBar.style.left = '';
+        annBar.style.right = '';
+        annBar.style.width = '';
+        annBar.style.zIndex = '';
+      }
+      if (header) {
+        header.style.position = '';
+        header.style.top = '';
+        header.style.left = '';
+        header.style.right = '';
+        header.style.width = '';
+        header.style.zIndex = '';
+      }
+      document.body.style.paddingTop = '';
+      return;
+    }
+
+    let annHeight = 0;
+    if (annBar && window.getComputedStyle(annBar).display !== 'none') {
+      annHeight = annBar.offsetHeight || 38;
+      annBar.style.position = 'fixed';
+      annBar.style.top = '0px';
+      annBar.style.left = '0px';
+      annBar.style.right = '0px';
+      annBar.style.width = '100%';
+      annBar.style.zIndex = '1002';
+    }
+
+    if (header) {
+      header.style.position = 'fixed';
+      header.style.top = annHeight + 'px';
+      header.style.left = '0px';
+      header.style.right = '0px';
+      header.style.width = '100%';
+      header.style.zIndex = '1001';
+
+      const headerHeight = header.offsetHeight || 68;
+      document.body.style.paddingTop = (annHeight + headerHeight) + 'px';
+    }
+  }
+
+  window.addEventListener('resize', syncMobileFixedTopNav);
+  window.addEventListener('orientationchange', syncMobileFixedTopNav);
+  window.addEventListener('scroll', () => {
+    const header = document.querySelector('.site-header');
+    if (header) {
+      if (window.scrollY > 10) {
+        header.classList.add('is-scrolled');
+      } else {
+        header.classList.remove('is-scrolled');
+      }
+    }
+  }, { passive: true });
 
   // Curved Floating Bottom Navigation Bar for Mobile (Home, Shop Rituals, About Us, Contact)
   function ensureMobileCurvedBottomNav() {
@@ -454,6 +525,7 @@
 
   function openAccountDrawer() {
     renderDrawerContent();
+    renderGsiButtons();
     const overlay = document.getElementById('accountDrawerOverlay');
     if (overlay) overlay.classList.add('is-open');
     document.body.style.overflow = 'hidden';
@@ -538,17 +610,7 @@
       `;
 
       document.getElementById('customerLogoutBtn').onclick = () => {
-        localStorage.removeItem('nachiyar_customer');
-        localStorage.removeItem('nachiyar_customer_orders');
-        localStorage.removeItem('nachiyar_token');
-        sessionStorage.clear();
-        currentCustomer = null;
-        updateNavbarUserState();
-        renderDrawerContent();
-        showSideToast({ title: 'Signed Out', message: 'You have been safely signed out.', type: 'info' });
-        if (window.location.pathname.includes('account')) {
-          window.location.replace('/');
-        }
+        customerSignOut();
       };
 
       // Fetch customer orders from backend
@@ -572,15 +634,17 @@
             Choose any Google account on your device to sign in or create an account instantly.
           </p>
 
-          <button type="button" class="btn-google-signin" id="btnGoogleSignIn" onclick="window.handleGoogleSignIn()">
-            <svg viewBox="0 0 24 24" width="20" height="20">
-              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-            </svg>
-            <span>Sign in with Google</span>
-          </button>
+          <div id="drawerGoogleBtnWrapper" style="display:flex; justify-content:center; width:100%; min-height:48px;">
+            <button type="button" class="btn-google-signin" id="btnGoogleSignIn" onclick="window.handleGoogleSignIn()">
+              <svg viewBox="0 0 24 24" width="20" height="20">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+              </svg>
+              <span>Sign in with Google</span>
+            </button>
+          </div>
         </div>
 
         <div class="drawer-auth-divider">
@@ -860,9 +924,14 @@
     `;
   }
 
-  function syncCustomerLoginState(customer) {
+  function syncCustomerLoginState(customer, token) {
     currentCustomer = customer;
-    localStorage.setItem('nachiyar_customer', JSON.stringify(customer));
+    if (customer) {
+      localStorage.setItem('nachiyar_customer', JSON.stringify(customer));
+    }
+    if (token) {
+      localStorage.setItem('nachiyar_token', token);
+    }
     updateNavbarUserState();
     closeAccountDrawer();
     try {
@@ -887,7 +956,7 @@
       const data = await res.json();
 
       if (data.success && data.customer) {
-        syncCustomerLoginState(data.customer);
+        syncCustomerLoginState(data.customer, data.token);
         showSideToast({ title: 'Welcome Back!', message: `Signed in as ${data.customer.name}`, type: 'success' });
         if (window.location.pathname.includes('account')) {
           setTimeout(() => window.location.reload(), 300);
@@ -935,7 +1004,7 @@
       const data = await res.json();
 
       if (data.success && data.customer) {
-        syncCustomerLoginState(data.customer);
+        syncCustomerLoginState(data.customer, data.token);
         showSideToast({ title: 'Account Created!', message: `Welcome to Nachiyar Herbals, ${data.customer.name}!`, type: 'success' });
         if (window.location.pathname.includes('account')) {
           setTimeout(() => window.location.reload(), 300);
@@ -948,248 +1017,237 @@
     }
   };
 
-  // 7. Google Sign-In Execution & Interactive Account Chooser
-  async function executeGoogleAuth(profile) {
+  // =========================================================================
+  // SECURE BACKEND SESSION VALIDATION & SIGN OUT
+  // =========================================================================
+  async function validateBackendSession() {
     try {
-      const res = await fetch('/api/customer/google-auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(profile)
-      });
+      const res = await fetch('/api/customer/session?_t=' + Date.now(), { cache: 'no-store' });
       const data = await res.json();
-      if (data.success && data.customer) {
-        closeGoogleAccountPicker();
-        syncCustomerLoginState(data.customer);
-        showSideToast({ title: 'Welcome!', message: `Signed in with Google as ${data.customer.name}`, type: 'success' });
-        if (window.location.pathname.includes('account')) {
-          setTimeout(() => window.location.reload(), 300);
-        }
-        return true;
+      if (data && data.success && data.authenticated && data.customer) {
+        currentCustomer = data.customer;
+        localStorage.setItem('nachiyar_customer', JSON.stringify(data.customer));
+        updateNavbarUserState();
       } else {
-        alert(data.message || 'Google authentication failed.');
-        return false;
+        // If server indicates session is invalid or expired, clear local state
+        if (currentCustomer) {
+          clearCustomerSession(false);
+        }
       }
-    } catch (err) {
-      console.error('Google Auth Error:', err);
-      alert('Could not complete Google Sign-In. Please check your connection.');
-      return false;
+    } catch (e) {
+      // Offline fallback: keep cached customer info
     }
   }
 
-  // Toast notification helper
-  function showAuthToast(msg) {
-    const toast = document.createElement('div');
-    toast.style.cssText = `
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      background: #191319;
-      color: #FFF;
-      padding: 12px 20px;
-      border-radius: 999px;
-      font-size: 0.875rem;
-      font-weight: 600;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.24);
-      z-index: 1000000;
-      animation: fadeInModal 0.2s ease;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    `;
-    toast.innerHTML = `<span>${msg}</span>`;
-    document.body.appendChild(toast);
-    setTimeout(() => {
-      toast.style.opacity = '0';
-      toast.style.transition = 'opacity 0.3s ease';
-      setTimeout(() => toast.remove(), 300);
-    }, 3000);
+  async function customerSignOut() {
+    try {
+      if (window.google && window.google.accounts && window.google.accounts.id) {
+        window.google.accounts.id.disableAutoSelect();
+      }
+    } catch (e) {}
+
+    const token = localStorage.getItem('nachiyar_token') || '';
+    try {
+      await fetch('/api/customer/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': 'Bearer ' + token, 'x-customer-token': token } : {})
+        },
+        body: JSON.stringify({ token })
+      });
+    } catch (e) {}
+
+    document.cookie = 'nachiyar_customer_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax;';
+    clearCustomerSession(true);
+    showSideToast({ title: 'Signed Out', message: 'You have been safely signed out.', type: 'info' });
+    if (window.location.pathname.includes('account')) {
+      window.location.replace('/');
+    }
   }
 
-  // 7. Firebase Authentication Integration & GoogleAuthProvider with prompt: "select_account"
-  let firebaseAuthInstance = null;
+  window.customerSignOut = customerSignOut;
 
-  function loadScript(src) {
+  function clearCustomerSession(reRender = true) {
+    currentCustomer = null;
+    localStorage.removeItem('nachiyar_customer');
+    localStorage.removeItem('nachiyar_customer_orders');
+    localStorage.removeItem('nachiyar_token');
+    sessionStorage.clear();
+    updateNavbarUserState();
+    if (reRender) {
+      renderDrawerContent();
+    }
+    try {
+      window.dispatchEvent(new Event('storage'));
+    } catch (e) {}
+  }
+
+  // =========================================================================
+  // GOOGLE IDENTITY SERVICES (GIS) INTEGRATION
+  // =========================================================================
+  let googleClientId = null;
+  let gsiInitialized = false;
+
+  function loadGsiScript() {
     return new Promise((resolve, reject) => {
-      const existing = document.querySelector(`script[src="${src}"]`);
+      if (window.google && window.google.accounts && window.google.accounts.id) {
+        return resolve();
+      }
+      const existing = document.querySelector('script[src="https://accounts.google.com/gsi/client"]');
       if (existing) {
         if (existing.getAttribute('data-loaded') === 'true') return resolve();
         existing.addEventListener('load', () => resolve());
-        existing.addEventListener('error', () => reject());
+        existing.addEventListener('error', () => reject(new Error('Failed to load Google script')));
         return;
       }
       const s = document.createElement('script');
-      s.src = src;
+      s.src = 'https://accounts.google.com/gsi/client';
       s.async = true;
+      s.defer = true;
       s.onload = () => {
         s.setAttribute('data-loaded', 'true');
         resolve();
       };
-      s.onerror = reject;
+      s.onerror = () => reject(new Error('Failed to load Google Identity Services'));
       document.head.appendChild(s);
     });
   }
 
-  async function ensureFirebaseLoaded() {
-    if (!window.FIREBASE_CONFIG) {
-      try {
-        await loadScript('firebase-config.js');
-      } catch (e) {}
-    }
-    if (window.firebase && window.firebase.auth) return true;
+  async function getGoogleClientId() {
+    if (googleClientId) return googleClientId;
     try {
-      await loadScript('https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js');
-      await loadScript('https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js');
-      return true;
-    } catch (e) {
-      console.error('Failed to load Firebase scripts:', e);
-      return false;
-    }
-  }
-
-  ensureFirebaseLoaded();
-
-  async function getFirebaseConfig() {
-    function isValid(cfg) {
-      return Boolean(
-        cfg &&
-        typeof cfg.apiKey === 'string' &&
-        cfg.apiKey.trim().length > 10 &&
-        !cfg.apiKey.includes('YOUR_FIREBASE_API_KEY') &&
-        cfg.projectId &&
-        cfg.projectId.trim().length > 0
-      );
-    }
-
-    if (isValid(window.FIREBASE_CONFIG)) {
-      return window.FIREBASE_CONFIG;
-    }
-
-    // Try fetching from backend environment endpoint
-    if (typeof window.__loadFirebaseConfigFromBackend === 'function') {
-      const backendConfig = await window.__loadFirebaseConfigFromBackend();
-      if (isValid(backendConfig)) return backendConfig;
-    }
-
-    try {
-      const res = await fetch('/api/customer/firebase-config?_t=' + Date.now(), { cache: 'no-store' });
+      const res = await fetch('/api/customer/google-config?_t=' + Date.now(), { cache: 'no-store' });
       const data = await res.json();
-      if (data && data.success && data.configured && isValid(data.config)) {
-        window.FIREBASE_CONFIG = data.config;
-        return data.config;
+      if (data && data.success && data.configured && data.clientId) {
+        googleClientId = data.clientId.trim();
+        return googleClientId;
       }
-    } catch (e) {}
-
+    } catch (e) {
+      console.warn('Could not retrieve Google Client ID from backend:', e.message);
+    }
     return null;
   }
 
-  async function initFirebaseApp() {
-    if (firebaseAuthInstance) return firebaseAuthInstance;
-    const config = await getFirebaseConfig();
-    if (!config) {
-      return null;
-    }
-    if (!window.firebase.apps.length) {
-      window.firebase.initializeApp(config);
-    }
-    firebaseAuthInstance = window.firebase.auth();
-    return firebaseAuthInstance;
-  }
-
-  // Global Google Sign-In handler called by customer login panel button
-  window.handleGoogleSignIn = async function() {
-    await ensureFirebaseLoaded();
-    const auth = await initFirebaseApp();
-
-    if (!auth) {
-      const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-      console.warn(`
-%c[NACHIYAR HERBALS] FIREBASE GOOGLE SIGN-IN SETUP REQUIRED%c
-
-Firebase configuration is missing in the environment.
-To enable direct Google Sign-In with official account chooser:
-
-1. Open Firebase Console: https://console.firebase.google.com/
-2. Project Settings -> General -> "Your apps" -> Add Web app (</>)
-3. Add the keys in .env.development or .env.production:
-   FIREBASE_API_KEY="AIzaSy..."
-   FIREBASE_AUTH_DOMAIN="nachiyar-herbals.firebaseapp.com"
-   FIREBASE_PROJECT_ID="nachiyar-herbals"
-   FIREBASE_STORAGE_BUCKET="nachiyar-herbals.appspot.com"
-   FIREBASE_MESSAGING_SENDER_ID="1234567890"
-   FIREBASE_APP_ID="1:...:web:..."
-   (Or define them in firebase-config.js)
-4. Authentication -> Sign-in method -> Enable "Google" provider
-5. Authentication -> Settings -> Authorized domains -> ensure "${window.location.hostname}" is listed
-
-Documentation: docs/FIREBASE_SETUP.md
-      `, 'background: #5B1425; color: #FFF; font-weight: bold; padding: 4px 8px; border-radius: 4px;', '');
-
-      if (isDev) {
-        showAuthToast('⚠️ Firebase keys missing in .env. See console (F12) for setup steps.');
-      } else {
-        showAuthToast('Google Sign-In is temporarily unavailable. Please use email or phone.');
-      }
+  async function handleGoogleCredentialResponse(response) {
+    if (!response || !response.credential) {
+      showSideToast('Google Sign-In was cancelled or failed.', 'error');
       return;
     }
 
+    showSideToast({ title: 'Signing In...', message: 'Verifying Google credentials with Nachiyar Herbals...', type: 'info' });
+
     try {
-      const provider = new window.firebase.auth.GoogleAuthProvider();
-      // Google's official account chooser using GoogleAuthProvider with prompt: "select_account"
-      provider.setCustomParameters({
-        prompt: 'select_account'
-      });
-
-      const result = await auth.signInWithPopup(provider);
-      const user = result.user;
-
-      if (!user) return;
-
-      const firebaseUid = user.uid;
-      const email = user.email;
-      const name = user.displayName || (email ? email.split('@')[0] : 'Customer');
-      const picture = user.photoURL || '';
-
-      // After successful login, automatically create a customer account if it doesn't already exist,
-      // using the Firebase UID as the unique user ID.
       const res = await fetch('/api/customer/google-auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          firebaseUid: firebaseUid,
-          googleId: firebaseUid,
-          email: email,
-          name: name,
-          picture: picture
-        })
+        body: JSON.stringify({ credential: response.credential })
       });
 
       const data = await res.json();
       if (data.success && data.customer) {
-        syncCustomerLoginState(data.customer);
-        showAuthToast(`✓ Welcome, ${data.customer.name}!`);
-        if (window.location.pathname.includes('account.html')) {
+        syncCustomerLoginState(data.customer, data.token);
+        showSideToast({ title: 'Welcome!', message: `Signed in as ${data.customer.name}`, type: 'success' });
+        if (window.location.pathname.includes('account')) {
           setTimeout(() => window.location.reload(), 300);
         }
       } else {
-        alert(data.message || 'Login failed.');
+        showSideToast(data.message || 'Google authentication failed.', 'error');
       }
     } catch (err) {
-      console.error('Firebase Google Sign-In Error:', err);
-      if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
-        return;
-      }
-      if (err.code === 'auth/configuration-not-found' || err.code === 'auth/operation-not-allowed') {
-        console.error('Google provider is not enabled in Firebase Console. Go to Authentication -> Sign-in method -> Enable Google.');
-        showAuthToast('⚠️ Google provider not enabled in Firebase Console.');
-        return;
-      }
-      if (err.code === 'auth/unauthorized-domain') {
-        console.error(`Domain "${window.location.hostname}" is not authorized. Add it to Firebase Console -> Authentication -> Settings -> Authorized domains.`);
-        showAuthToast(`⚠️ Domain "${window.location.hostname}" not authorized in Firebase Console.`);
-        return;
-      }
-      alert('Google Sign-In: ' + (err.message || err));
+      console.error('Google Auth Error:', err);
+      showSideToast('Could not complete Google Sign-In. Please check your connection.', 'error');
     }
+  }
+
+  async function initGoogleIdentityServices() {
+    if (gsiInitialized) return true;
+    const clientId = await getGoogleClientId();
+    if (!clientId) {
+      return false;
+    }
+
+    try {
+      await loadGsiScript();
+      if (!window.google || !window.google.accounts || !window.google.accounts.id) {
+        return false;
+      }
+
+      window.google.accounts.id.initialize({
+        client_id: clientId,
+        callback: handleGoogleCredentialResponse,
+        auto_select: false,
+        cancel_on_tap_outside: true
+      });
+
+      gsiInitialized = true;
+      renderGsiButtons();
+      return true;
+    } catch (err) {
+      console.error('Error initializing Google Identity Services:', err);
+      return false;
+    }
+  }
+
+  function renderGsiButtons() {
+    if (!gsiInitialized || !window.google || !window.google.accounts || !window.google.accounts.id) return;
+
+    // Render inside the slide-out account drawer
+    const drawerWrapper = document.getElementById('drawerGoogleBtnWrapper');
+    if (drawerWrapper) {
+      drawerWrapper.innerHTML = '';
+      window.google.accounts.id.renderButton(drawerWrapper, {
+        type: 'standard',
+        shape: 'pill',
+        theme: 'outline',
+        text: 'signin_with',
+        size: 'large',
+        logo_alignment: 'left',
+        width: 320
+      });
+    }
+
+    // Render on standalone account.html page
+    const accountPageWrapper = document.getElementById('accountPageGoogleBtnContainer');
+    if (accountPageWrapper) {
+      accountPageWrapper.innerHTML = '';
+      window.google.accounts.id.renderButton(accountPageWrapper, {
+        type: 'standard',
+        shape: 'pill',
+        theme: 'outline',
+        text: 'signin_with',
+        size: 'large',
+        logo_alignment: 'left',
+        width: 320
+      });
+    }
+  }
+
+  // Global Google Sign-In handler called by customer login panel button
+  window.handleGoogleSignIn = async function() {
+    const ready = await initGoogleIdentityServices();
+    if (!ready) {
+      const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      if (isDev) {
+        showSideToast('Google Client ID is not configured in .env. Please set GOOGLE_CLIENT_ID.', 'error');
+        console.warn('[NACHIYAR HERBALS] Google Sign-In: GOOGLE_CLIENT_ID is not configured in .env file.');
+      } else {
+        showSideToast('Google Sign-In is temporarily unavailable. Please use email or password.', 'info');
+      }
+      return;
+    }
+
+    renderGsiButtons();
+
+    window.google.accounts.id.prompt((notification) => {
+      if (notification.isNotDisplayed() || notification.isSkippedMomentum()) {
+        const renderedBtn = document.querySelector('#drawerGoogleBtnWrapper [role="button"]') ||
+                            document.querySelector('#accountPageGoogleBtnContainer [role="button"]');
+        if (renderedBtn) {
+          renderedBtn.click();
+        }
+      }
+    });
   };
 
   // Expose global opener for buttons

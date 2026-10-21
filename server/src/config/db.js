@@ -164,6 +164,46 @@ async function autoBootstrapSchema() {
     } catch (catErr) {
       console.warn('Categories verify note:', catErr.message);
     }
+
+    // Auto-synchronize table ownership & permissions between nachiyarherbals and nachiyarherbals_client_db
+    try {
+      const syncPermissionsSql = `
+        DO $$
+        BEGIN
+          -- 1. Transfer ownership of client_db tables to nachiyarherbals
+          BEGIN ALTER TABLE IF EXISTS categories OWNER TO nachiyarherbals; EXCEPTION WHEN OTHERS THEN NULL; END;
+          BEGIN ALTER TABLE IF EXISTS contact_messages OWNER TO nachiyarherbals; EXCEPTION WHEN OTHERS THEN NULL; END;
+          BEGIN ALTER TABLE IF EXISTS customers OWNER TO nachiyarherbals; EXCEPTION WHEN OTHERS THEN NULL; END;
+          BEGIN ALTER TABLE IF EXISTS reviews OWNER TO nachiyarherbals; EXCEPTION WHEN OTHERS THEN NULL; END;
+          BEGIN ALTER TABLE IF EXISTS inventory_logs OWNER TO nachiyarherbals; EXCEPTION WHEN OTHERS THEN NULL; END;
+          BEGIN ALTER TABLE IF EXISTS invoices OWNER TO nachiyarherbals; EXCEPTION WHEN OTHERS THEN NULL; END;
+          BEGIN ALTER TABLE IF EXISTS orders OWNER TO nachiyarherbals; EXCEPTION WHEN OTHERS THEN NULL; END;
+          BEGIN ALTER TABLE IF EXISTS products OWNER TO nachiyarherbals; EXCEPTION WHEN OTHERS THEN NULL; END;
+          BEGIN ALTER TABLE IF EXISTS site_settings OWNER TO nachiyarherbals; EXCEPTION WHEN OTHERS THEN NULL; END;
+          BEGIN ALTER TABLE IF EXISTS users OWNER TO nachiyarherbals; EXCEPTION WHEN OTHERS THEN NULL; END;
+
+          -- 2. Grant all permissions to both users across all tables & sequences
+          BEGIN
+            GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO nachiyarherbals;
+            GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO nachiyarherbals;
+            GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO nachiyarherbals_client_db;
+            GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO nachiyarherbals_client_db;
+          EXCEPTION WHEN OTHERS THEN NULL;
+          END;
+
+          -- 3. Set default privileges for any future tables
+          BEGIN
+            ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO nachiyarherbals;
+            ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO nachiyarherbals_client_db;
+          EXCEPTION WHEN OTHERS THEN NULL;
+          END;
+        END $$;
+      `;
+      await pool.query(syncPermissionsSql);
+      console.log('✅ PostgreSQL database table ownership & permissions synchronized to nachiyarherbals successfully.');
+    } catch (syncErr) {
+      console.warn('Ownership sync note:', syncErr.message);
+    }
   } catch (err) {
     console.warn('⚠️ Auto-schema bootstrap note:', err.message);
   }

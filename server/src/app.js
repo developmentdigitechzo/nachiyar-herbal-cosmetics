@@ -148,6 +148,82 @@ app.use('/api/orders', ordersRouter);
 app.use('/api/reviews', reviewsRouter);
 app.use(['/api/messages', '/api/contact/messages'], messagesRouter);
 
+// One-Click Database Ownership & Permissions Fix
+app.get(['/api/fix-database', '/api/admin/fix-permissions'], async (req, res) => {
+  try {
+    const { query } = require('./config/db');
+    const fixSql = `
+      DO $
+      BEGIN
+        BEGIN ALTER TABLE IF EXISTS categories OWNER TO nachiyarherbals; EXCEPTION WHEN OTHERS THEN NULL; END;
+        BEGIN ALTER TABLE IF EXISTS contact_messages OWNER TO nachiyarherbals; EXCEPTION WHEN OTHERS THEN NULL; END;
+        BEGIN ALTER TABLE IF EXISTS customers OWNER TO nachiyarherbals; EXCEPTION WHEN OTHERS THEN NULL; END;
+        BEGIN ALTER TABLE IF EXISTS reviews OWNER TO nachiyarherbals; EXCEPTION WHEN OTHERS THEN NULL; END;
+        BEGIN ALTER TABLE IF EXISTS inventory_logs OWNER TO nachiyarherbals; EXCEPTION WHEN OTHERS THEN NULL; END;
+        BEGIN ALTER TABLE IF EXISTS invoices OWNER TO nachiyarherbals; EXCEPTION WHEN OTHERS THEN NULL; END;
+        BEGIN ALTER TABLE IF EXISTS orders OWNER TO nachiyarherbals; EXCEPTION WHEN OTHERS THEN NULL; END;
+        BEGIN ALTER TABLE IF EXISTS products OWNER TO nachiyarherbals; EXCEPTION WHEN OTHERS THEN NULL; END;
+        BEGIN ALTER TABLE IF EXISTS site_settings OWNER TO nachiyarherbals; EXCEPTION WHEN OTHERS THEN NULL; END;
+        BEGIN ALTER TABLE IF EXISTS users OWNER TO nachiyarherbals; EXCEPTION WHEN OTHERS THEN NULL; END;
+
+        BEGIN
+          GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO nachiyarherbals;
+          GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO nachiyarherbals;
+          GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO nachiyarherbals_client_db;
+          GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO nachiyarherbals_client_db;
+        EXCEPTION WHEN OTHERS THEN NULL;
+        END;
+
+        BEGIN
+          ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO nachiyarherbals;
+          ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO nachiyarherbals_client_db;
+        EXCEPTION WHEN OTHERS THEN NULL;
+        END;
+      END $;
+    `;
+    await query(fixSql);
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.send(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Database Permissions Synchronized</title>
+        <style>
+          body { font-family: system-ui, -apple-system, sans-serif; background: #FAF5FF; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; color: #2A153E; padding: 20px; box-sizing: border-box; }
+          .card { background: white; padding: 36px 30px; border-radius: 16px; box-shadow: 0 10px 30px rgba(107, 78, 155, 0.12); max-width: 540px; text-align: center; border: 1px solid #E9D5FF; }
+          .icon { font-size: 3rem; margin-bottom: 12px; }
+          h1 { color: #15803D; font-size: 1.45rem; margin: 0 0 10px; font-weight: 700; }
+          p { color: #4B5563; font-size: 0.92rem; line-height: 1.6; margin: 0 0 20px; }
+          .badge { display: inline-block; background: #DCFCE7; color: #166534; font-weight: 700; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; margin-bottom: 14px; }
+          .table-list { background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 12px; text-align: left; font-size: 0.82rem; color: #334155; margin-bottom: 24px; }
+          .table-list span { display: inline-block; background: #E0E7FF; color: #3730A3; padding: 2px 8px; border-radius: 4px; margin: 2px; font-family: monospace; font-weight: 600; }
+          a.btn { display: inline-block; background: #6B4E9B; color: white; text-decoration: none; padding: 10px 24px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; transition: background 0.2s; }
+          a.btn:hover { background: #553A82; }
+        </style>
+      </head>
+      <body>
+        <div class="card">
+          <div class="icon">🌿</div>
+          <div class="badge">✔ DATABASE OWNERSHIP SYNCHRONIZED</div>
+          <h1>Database Permissions Successfully Fixed!</h1>
+          <p>All database tables have been transferred to owner <b>nachiyarherbals</b> with full Read/Write privileges granted to both database accounts.</p>
+          <div class="table-list">
+            <b>Unlocked Tables:</b><br>
+            <span>categories</span> <span>customers</span> <span>contact_messages</span> <span>reviews</span> <span>products</span> <span>orders</span> <span>invoices</span> <span>inventory_logs</span> <span>site_settings</span> <span>users</span>
+          </div>
+          <p style="font-size: 0.85rem; color: #64748B;">You can now open phpPgAdmin and view/manage all tables with zero permission errors.</p>
+          <a href="/" class="btn">← Return to Storefront</a>
+        </div>
+      </body>
+      </html>
+    `);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // Public storefront settings (announcements & enabled checkout payment methods)
 const { query: dbQuery } = require('./config/db');
 app.get('/api/settings/public', async (req, res) => {

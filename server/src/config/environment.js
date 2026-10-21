@@ -186,6 +186,11 @@ const config = {
     billingPassword: process.env.BILLING_PASSWORD || 'billing123',
     jwtSecret: process.env.JWT_SECRET || 'nachiyar_secret_key_2026'
   },
+  google: {
+    clientId: (process.env.GOOGLE_CLIENT_ID || '').trim(),
+    clientSecret: (process.env.GOOGLE_CLIENT_SECRET || '').trim(),
+    isConfigured: Boolean(process.env.GOOGLE_CLIENT_ID && (process.env.GOOGLE_CLIENT_ID.trim().length > 10) && !process.env.GOOGLE_CLIENT_ID.includes('your_google'))
+  },
   firebase: {
     apiKey: process.env.FIREBASE_API_KEY || '',
     authDomain: process.env.FIREBASE_AUTH_DOMAIN || '',

@@ -1,14 +1,77 @@
 const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
+const { OAuth2Client } = require('google-auth-library');
 const { query } = require('../config/db');
+const config = require('../config/environment');
 
-// In-memory customer sessions: token -> customer
+// In-memory customer sessions: token -> { customer, expiresAt }
 const customerSessions = new Map();
 
 function generateToken() {
   return crypto.randomBytes(32).toString('hex');
 }
+
+function verifyCustomerToken(token) {
+  if (!token) return null;
+  const session = customerSessions.get(token);
+  if (!session) return null;
+  if (Date.now() > session.expiresAt) {
+    customerSessions.delete(token);
+    return null;
+  }
+  return session.customer;
+}
+
+// Cookie configuration for customer sessions
+const CUSTOMER_COOKIE_OPTIONS = {
+  maxAge: 30 * 24 * 60 * 60 * 1000,
+  httpOnly: false, // Accessible to client-side scripts for API authorization headers
+  sameSite: 'lax',
+  path: '/'
+};
+
+// GET /api/customer/google-config (Expose Web Client ID to GIS frontend safely)
+router.get('/google-config', (req, res) => {
+  const clientId = (process.env.GOOGLE_CLIENT_ID || config.google?.clientId || '').trim();
+  const isConfigured = Boolean(clientId && clientId.length > 10 && !clientId.includes('your_google'));
+
+  res.json({
+    success: true,
+    configured: isConfigured,
+    clientId: isConfigured ? clientId : ''
+  });
+});
+
+// GET /api/customer/session (Verify authenticated server session without relying on localStorage)
+router.get('/session', (req, res) => {
+  const token = (req.cookies && req.cookies.nachiyar_customer_token) ||
+                (req.headers['authorization'] && req.headers['authorization'].replace('Bearer ', '')) ||
+                req.headers['x-customer-token'] ||
+                req.query.token;
+
+  const customer = verifyCustomerToken(token);
+  if (!customer) {
+    return res.status(401).json({ success: false, authenticated: false, message: 'No active session' });
+  }
+
+  res.json({ success: true, authenticated: true, customer });
+});
+
+// POST /api/customer/logout (Terminate server session and clear cookies)
+router.post('/logout', (req, res) => {
+  const token = (req.cookies && req.cookies.nachiyar_customer_token) ||
+                (req.headers['authorization'] && req.headers['authorization'].replace('Bearer ', '')) ||
+                req.headers['x-customer-token'] ||
+                req.body?.token;
+
+  if (token) {
+    customerSessions.delete(token);
+  }
+
+  res.clearCookie('nachiyar_customer_token', { path: '/', sameSite: 'lax' });
+  res.json({ success: true, message: 'Signed out successfully' });
+});
 
 // POST /api/customer/register
 router.post('/register', async (req, res) => {
@@ -58,6 +121,8 @@ router.post('/register', async (req, res) => {
 
     const token = generateToken();
     customerSessions.set(token, { customer, expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000 });
+
+    res.cookie('nachiyar_customer_token', token, CUSTOMER_COOKIE_OPTIONS);
 
     res.json({
       success: true,
@@ -112,6 +177,8 @@ router.post('/login', async (req, res) => {
     const token = generateToken();
     customerSessions.set(token, { customer, expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000 });
 
+    res.cookie('nachiyar_customer_token', token, CUSTOMER_COOKIE_OPTIONS);
+
     res.json({
       success: true,
       message: 'Welcome back, ' + customer.name,
@@ -151,63 +218,80 @@ router.get('/firebase-config', (req, res) => {
   });
 });
 
-// POST /api/customer/google-auth
+// POST /api/customer/google-auth (Cryptographically verify Google ID Token & authenticate customer)
 router.post('/google-auth', async (req, res) => {
   try {
-    const { credential, email, name, picture, googleId, firebaseUid } = req.body;
+    const { credential } = req.body;
 
-    let userEmail = email;
-    let userName = name;
-    let userPicture = picture;
-    let userGoogleId = firebaseUid || googleId;
-
-    // If Google ID token credential passed (standard Google Identity Services JWT)
-    if (credential) {
-      try {
-        const parts = credential.split('.');
-        if (parts.length === 3) {
-          const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString('utf8'));
-          userEmail = payload.email || userEmail;
-          userName = payload.name || userName;
-          userPicture = payload.picture || userPicture;
-          userGoogleId = payload.sub || userGoogleId;
-        }
-      } catch (jwtErr) {
-        console.warn('Could not decode Google credential JWT:', jwtErr.message);
-      }
+    if (!credential) {
+      return res.status(400).json({
+        success: false,
+        message: 'Google ID token (credential) is required.'
+      });
     }
 
-    if (!userEmail) {
-      return res.status(400).json({ success: false, message: 'Google account email is required.' });
+    const clientId = (process.env.GOOGLE_CLIENT_ID || config.google?.clientId || '').trim();
+    if (!clientId || clientId.includes('your_google')) {
+      return res.status(500).json({
+        success: false,
+        message: 'Google Sign-In is not configured on the server. Please set GOOGLE_CLIENT_ID in the environment (.env).'
+      });
     }
 
-    const cleanEmail = userEmail.trim().toLowerCase();
-    const cleanName = (userName || cleanEmail.split('@')[0]).trim();
+    // Cryptographic verification of Google ID token using Google's public certificates
+    let ticket;
+    try {
+      const client = new OAuth2Client(clientId);
+      ticket = await client.verifyIdToken({
+        idToken: credential,
+        audience: clientId
+      });
+    } catch (verifyErr) {
+      console.error('Google ID token verification failed:', verifyErr.message);
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid Google ID token. Cryptographic verification failed: ' + verifyErr.message
+      });
+    }
 
-    // Ensure columns exist safely
+    const payload = ticket.getPayload();
+    if (!payload || !payload.email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Google authentication payload missing required email information.'
+      });
+    }
+
+    const googleSub = payload.sub; // Google's unique, permanent user ID
+    const cleanEmail = payload.email.trim().toLowerCase();
+    const cleanName = (payload.name || cleanEmail.split('@')[0]).trim();
+    const userPicture = payload.picture || '';
+
+    // Ensure database columns exist safely
     try {
       await query(`ALTER TABLE customers ADD COLUMN IF NOT EXISTS avatar TEXT;`);
       await query(`ALTER TABLE customers ADD COLUMN IF NOT EXISTS google_id VARCHAR(255);`);
       await query(`ALTER TABLE customers ADD COLUMN IF NOT EXISTS auth_provider VARCHAR(50) DEFAULT 'local';`);
     } catch (colErr) {
-      // Columns may already exist
+      // Columns already exist
     }
 
-    // Check if customer already exists by Firebase UID or email
-    const existing = await query('SELECT * FROM customers WHERE id = $1 OR LOWER(email) = $2', [userGoogleId || '', cleanEmail]);
+    // Check if customer already exists by Google ID or verified Email
+    const existing = await query(
+      'SELECT * FROM customers WHERE google_id = $1 OR LOWER(email) = $2',
+      [googleSub, cleanEmail]
+    );
 
     let customer;
     if (existing.rows.length > 0) {
       const row = existing.rows[0];
-      if (userPicture || userGoogleId) {
-        await query(`
-          UPDATE customers 
-          SET avatar = COALESCE($1, avatar),
-              google_id = COALESCE($2, google_id),
-              auth_provider = 'google'
-          WHERE id = $3 OR LOWER(email) = $4
-        `, [userPicture, userGoogleId, row.id, cleanEmail]);
-      }
+      await query(`
+        UPDATE customers 
+        SET avatar = COALESCE(NULLIF($1, ''), avatar),
+            google_id = COALESCE(NULLIF($2, ''), google_id),
+            auth_provider = 'google'
+        WHERE id = $3
+      `, [userPicture, googleSub, row.id]);
 
       customer = {
         id: row.id,
@@ -222,9 +306,9 @@ router.post('/google-auth', async (req, res) => {
         authProvider: 'google'
       };
     } else {
-      // Create new customer with Firebase UID as the unique user ID
-      const customerId = firebaseUid || userGoogleId || ('cust_g_' + Date.now() + '_' + Math.floor(Math.random() * 1000));
-      const generatedPass = 'FIREBASE_AUTH_' + crypto.randomBytes(8).toString('hex');
+      // Create new customer with Google credentials in PostgreSQL
+      const customerId = 'cust_g_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+      const generatedPass = 'GOOGLE_AUTH_' + crypto.randomBytes(16).toString('hex');
 
       await query(`
         INSERT INTO customers (id, name, email, phone, password, address, city, state, pincode, avatar, google_id, auth_provider)
@@ -240,7 +324,7 @@ router.post('/google-auth', async (req, res) => {
         'Tamil Nadu',
         '',
         userPicture || '',
-        userGoogleId || ''
+        googleSub
       ]);
 
       customer = {
@@ -257,8 +341,11 @@ router.post('/google-auth', async (req, res) => {
       };
     }
 
+    // Generate secure session token (valid 30 days)
     const token = generateToken();
     customerSessions.set(token, { customer, expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000 });
+
+    res.cookie('nachiyar_customer_token', token, CUSTOMER_COOKIE_OPTIONS);
 
     res.json({
       success: true,
