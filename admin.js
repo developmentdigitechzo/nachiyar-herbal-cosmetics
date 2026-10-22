@@ -365,10 +365,10 @@ document.addEventListener('DOMContentLoaded', () => {
     paymentMethodContainer.innerHTML = '';
 
     const methods = [
-      { key: 'UPI', label: 'UPI / QR Payments (GPay, PhonePe, Paytm)', dotClass: 'upi', color: '#6366F1' },
-      { key: 'Card', label: 'Credit / Debit Cards & POS Terminal', dotClass: 'card', color: '#3B82F6' },
-      { key: 'Cash', label: 'Cash & Retail POS / COD', dotClass: 'cash', color: '#10B981' },
-      { key: 'Net Banking', label: 'Net Banking / Bank Transfer', dotClass: 'netbanking', color: '#F59E0B' }
+      { key: 'UPI', label: 'Instant UPI (GPay, PhonePe, QR)', dotClass: 'pm-dot-upi', color: '#6366F1' },
+      { key: 'Card', label: 'Credit & Debit Cards (POS)', dotClass: 'pm-dot-card', color: '#3B82F6' },
+      { key: 'Cash', label: 'Cash Counter & COD', dotClass: 'pm-dot-cash', color: '#10B981' },
+      { key: 'Net Banking', label: 'Net Banking & Bank Transfer', dotClass: 'pm-dot-netbanking', color: '#F59E0B' }
     ];
 
     const safeTotal = totalRev > 0 ? totalRev : 1;
@@ -382,19 +382,21 @@ document.addEventListener('DOMContentLoaded', () => {
       row.title = `Click to inspect all ${m.key} transactions`;
       row.onclick = () => openAnalyticsModal(m.key.toLowerCase().replace(/\s+/g, ''));
       row.innerHTML = `
-        <div class="pm-header">
-          <div class="pm-name-wrap">
+        <div class="pm-top-row">
+          <div class="pm-title-group">
             <span class="pm-indicator-dot ${m.dotClass}"></span>
             <span class="pm-name">${m.label}</span>
-            <span class="pm-count">(${data.count} txns)</span>
+            <span class="pm-count-badge">${data.count} txns</span>
           </div>
-          <div class="pm-values">
+          <div class="pm-amount-group">
             <span class="pm-amount">₹${data.revenue.toLocaleString()}</span>
-            <span class="pm-pct">${pct}%</span>
           </div>
         </div>
-        <div class="pm-progress-track">
-          <div class="pm-progress-bar" style="width: ${pct}%; background-color: ${m.color};"></div>
+        <div class="pm-bottom-row">
+          <div class="pm-progress-track">
+            <div class="pm-progress-bar" style="width: ${pct}%; background-color: ${m.color};"></div>
+          </div>
+          <span class="pm-pct-badge" style="color: ${m.color};">${pct}%</span>
         </div>
       `;
       paymentMethodContainer.appendChild(row);
@@ -521,16 +523,18 @@ document.addEventListener('DOMContentLoaded', () => {
       const item = document.createElement('div');
       item.className = 'low-stock-item';
       item.innerHTML = `
-        <div class="low-stock-item-info">
-          <strong>⚠️ ${p.name}</strong>
-          <small>SKU: ${p.sku || p.id} • Price: ₹${p.price} • Threshold: 25 units</small>
-        </div>
-        <div style="display: flex; align-items: center; gap: 12px;">
-          <div style="text-align: right;">
-            <span class="low-stock-item-count">${p.stock}</span>
-            <small style="display: block; color: #991B1B; font-weight: 700;">Remaining</small>
+        <div class="low-stock-main-wrap">
+          <div class="low-stock-item-info">
+            <strong>⚠️ ${p.name}</strong>
+            <small>SKU: ${p.sku || p.id} • Price: ₹${p.price} • Threshold: 25 units</small>
           </div>
-          <button class="btn-primary btn-sm" style="background-color: #DC2626;" onclick="switchTab('inventory')">⚡ Restock</button>
+          <div class="low-stock-action-wrap">
+            <div class="low-stock-count-box">
+              <span class="low-stock-item-count">${p.stock}</span>
+              <small class="low-stock-count-lbl">Remaining</small>
+            </div>
+            <button type="button" class="btn-restock-pill" onclick="switchTab('inventory')">⚡ Restock</button>
+          </div>
         </div>
       `;
       lowStockListContainer.appendChild(item);
@@ -999,6 +1003,7 @@ document.addEventListener('DOMContentLoaded', () => {
       analyticsModalOverlay.classList.remove('is-visible');
     }
   }
+  window.closeAnalyticsModal = closeAnalyticsModal;
 
   if (analyticsModalClose) analyticsModalClose.onclick = closeAnalyticsModal;
   if (btnCloseAnalyticsModal) btnCloseAnalyticsModal.onclick = closeAnalyticsModal;
@@ -5206,6 +5211,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Close mobile sidebar on navigation
     closeSidebar();
   }
+
+  // Expose switchTab globally for inline onclick handlers across the dashboard
+  window.switchTab = switchTab;
 
   navTabs.forEach(t => {
     t.onclick = () => switchTab(t.dataset.tab, true, true);

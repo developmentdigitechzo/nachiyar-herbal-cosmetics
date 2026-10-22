@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="admin.css?v=5.3">
+  <link rel="stylesheet" href="admin.css?v=5.6">
   <script>
     // Immediate client-side security auth gate
     (function() {
@@ -1988,7 +1988,7 @@
         </div>
         <div class="analytics-header-actions">
           <button class="btn-secondary btn-sm" id="btnExportAnalyticsCsv">📥 Export CSV</button>
-          <button class="modal-close-btn" id="analyticsModalClose">✕</button>
+          <button type="button" class="modal-close-btn" id="analyticsModalClose" onclick="closeAnalyticsModal()">✕</button>
         </div>
       </div>
 
@@ -2024,7 +2024,7 @@
         <span style="font-size: 0.75rem; color: var(--admin-text-muted);">
           🔒 Verified live database metrics (PostgreSQL)
         </span>
-        <button type="button" class="btn-secondary" id="btnCloseAnalyticsModal">Close Report</button>
+        <button type="button" class="btn-secondary" id="btnCloseAnalyticsModal" onclick="closeAnalyticsModal()">Close Report</button>
       </div>
     </div>
   </div>
@@ -2567,7 +2567,7 @@
     </div>
   </div>
 
-  <script src="admin.js?v=6.1"></script>
+  <script src="admin.js?v=6.4"></script>
 
   
   </body>
