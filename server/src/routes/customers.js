@@ -4,9 +4,13 @@ const crypto = require('crypto');
 const { OAuth2Client } = require('google-auth-library');
 const { query } = require('../config/db');
 const config = require('../config/environment');
+const { sendOtpEmail } = require('../services/mailer');
 
 // In-memory customer sessions: token -> { customer, expiresAt }
 const customerSessions = new Map();
+
+// In-memory OTP store for email password verification: email -> { otp, expiresAt }
+const otpStore = new Map();
 
 function generateToken() {
   return crypto.randomBytes(32).toString('hex');
@@ -543,6 +547,246 @@ router.put('/profile', async (req, res) => {
     const updated = await query('SELECT id, name, email, phone, address, city, state, pincode FROM customers WHERE LOWER(email) = $1', [email.toLowerCase()]);
     res.json({ success: true, customer: updated.rows[0], message: 'Profile updated successfully.' });
   } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// Mask email helper: e.g. "muraliii@gmail.com" -> "mu****@gmail.com"
+function maskEmail(email) {
+  if (!email || !email.includes('@')) return email || '';
+  const [user, domain] = email.split('@');
+  if (user.length <= 2) return `${user}****@${domain}`;
+  return `${user.slice(0, 2)}${'*'.repeat(Math.min(user.length - 2, 4))}@${domain}`;
+}
+
+// 1. GET /api/customer/password-status (Check if user has custom password or Google initial auth)
+router.get('/password-status', async (req, res) => {
+  try {
+    const token = (req.cookies && req.cookies.nachiyar_customer_token) ||
+                  (req.headers['authorization'] && req.headers['authorization'].replace('Bearer ', '')) ||
+                  req.headers['x-customer-token'] ||
+                  req.query.token;
+
+    let email = req.query.email;
+    const sessionCustomer = verifyCustomerToken(token);
+    if (sessionCustomer && sessionCustomer.email) {
+      email = sessionCustomer.email;
+    }
+
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email or active session required' });
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+    const result = await query('SELECT id, name, email, phone, password, auth_provider, google_id FROM customers WHERE LOWER(email) = $1', [cleanEmail]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Customer account not found' });
+    }
+
+    const row = result.rows[0];
+    const isGoogleAuth = Boolean(row.auth_provider === 'google' || (row.google_id && row.google_id.length > 5));
+    // If password starts with GOOGLE_AUTH_ or is empty, user hasn't set a custom password
+    const hasCustomPassword = Boolean(row.password && !row.password.startsWith('GOOGLE_AUTH_') && row.password.length >= 4);
+
+    res.json({
+      success: true,
+      email: row.email,
+      maskedEmail: maskEmail(row.email),
+      phone: row.phone || '',
+      isGoogleAuth,
+      hasCustomPassword
+    });
+  } catch (err) {
+    console.error('Password status check error:', err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// 2. POST /api/customer/change-password
+router.post('/change-password', async (req, res) => {
+  try {
+    const token = (req.cookies && req.cookies.nachiyar_customer_token) ||
+                  (req.headers['authorization'] && req.headers['authorization'].replace('Bearer ', '')) ||
+                  req.headers['x-customer-token'];
+
+    let email = req.body.email;
+    const sessionCustomer = verifyCustomerToken(token);
+    if (sessionCustomer && sessionCustomer.email) {
+      email = sessionCustomer.email;
+    }
+
+    const { currentPassword, newPassword } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email or active session required.' });
+    }
+
+    if (!newPassword || newPassword.trim().length < 4) {
+      return res.status(400).json({ success: false, message: 'New password must be at least 4 characters.' });
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+    const result = await query('SELECT id, name, email, password, auth_provider, google_id FROM customers WHERE LOWER(email) = $1', [cleanEmail]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Customer not found.' });
+    }
+
+    const row = result.rows[0];
+    const isGoogleAuth = Boolean(row.auth_provider === 'google' || (row.google_id && row.google_id.length > 5));
+    const hasCustomPassword = Boolean(row.password && !row.password.startsWith('GOOGLE_AUTH_') && row.password.length >= 4);
+
+    // Current Password is ONLY required for MANUAL accounts (non-Google) that already have a password set.
+    // Google logged-in users NEVER need to enter a current password!
+    if (!isGoogleAuth && hasCustomPassword) {
+      if (!currentPassword) {
+        return res.status(400).json({ success: false, message: 'Current password is required.' });
+      }
+      if (row.password !== currentPassword) {
+        return res.status(401).json({ success: false, message: 'Current password is incorrect. Please try again or use Forgot Password.' });
+      }
+    }
+
+    // Update password in PostgreSQL
+    await query('UPDATE customers SET password = $1 WHERE id = $2', [newPassword.trim(), row.id]);
+
+    res.json({
+      success: true,
+      message: 'User password is updated successfully.'
+    });
+  } catch (err) {
+    console.error('Change password error:', err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// 3. POST /api/customer/send-otp
+router.post('/send-otp', async (req, res) => {
+  try {
+    const token = (req.cookies && req.cookies.nachiyar_customer_token) ||
+                  (req.headers['authorization'] && req.headers['authorization'].replace('Bearer ', '')) ||
+                  req.headers['x-customer-token'];
+
+    let email = req.body.email;
+    const sessionCustomer = verifyCustomerToken(token);
+    if (sessionCustomer && sessionCustomer.email) {
+      email = sessionCustomer.email;
+    }
+
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email is required to dispatch OTP.' });
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+    const result = await query('SELECT id, name, email FROM customers WHERE LOWER(email) = $1', [cleanEmail]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, notRegistered: true, message: 'This email is not registered with us. Please create an account first.' });
+    }
+
+    const customer = result.rows[0];
+
+    // Generate 6-digit numeric OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes
+
+    otpStore.set(cleanEmail, { otp, expiresAt, customerId: customer.id, verified: false });
+
+    // Send email via mailer
+    const mailResult = await sendOtpEmail({
+      to: cleanEmail,
+      name: customer.name || 'Valued Customer',
+      otp
+    });
+
+    res.json({
+      success: true,
+      message: 'Verification OTP has been sent to ' + cleanEmail,
+      maskedEmail: maskEmail(cleanEmail),
+      mailSent: mailResult.sent
+    });
+  } catch (err) {
+    console.error('Send OTP error:', err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// 4. POST /api/customer/verify-otp (Step 1 of reset: validates 6-digit code)
+router.post('/verify-otp', async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({ success: false, message: 'Email and 6-digit OTP code are required.' });
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+    const record = otpStore.get(cleanEmail);
+
+    if (!record) {
+      return res.status(400).json({ success: false, message: 'No active OTP request found. Please click Send OTP first.' });
+    }
+
+    if (Date.now() > record.expiresAt) {
+      otpStore.delete(cleanEmail);
+      return res.status(400).json({ success: false, message: 'OTP has expired (valid for 5 mins). Please request a new OTP.' });
+    }
+
+    if (record.otp !== otp.trim()) {
+      return res.status(400).json({ success: false, message: 'OTP is wrong. Please enter the valid OTP sent to your email.' });
+    }
+
+    // Mark as verified
+    record.verified = true;
+    res.json({
+      success: true,
+      message: 'OTP verified successfully! Please enter your new password below.'
+    });
+  } catch (err) {
+    console.error('Verify OTP error:', err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// 5. POST /api/customer/verify-otp-reset (Step 2 of reset: sets new password after verified OTP)
+router.post('/verify-otp-reset', async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({ success: false, message: 'Email and OTP code are required.' });
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+    const record = otpStore.get(cleanEmail);
+
+    if (!record) {
+      return res.status(400).json({ success: false, message: 'No active OTP request found. Please click Send OTP.' });
+    }
+
+    if (Date.now() > record.expiresAt) {
+      otpStore.delete(cleanEmail);
+      return res.status(400).json({ success: false, message: 'OTP has expired (valid for 5 mins). Please request a new OTP.' });
+    }
+
+    if (record.otp !== otp.trim()) {
+      return res.status(400).json({ success: false, message: 'OTP is wrong. Please enter the valid OTP sent to your email.' });
+    }
+
+    if (!newPassword || newPassword.trim().length < 4) {
+      return res.status(400).json({ success: false, message: 'New password must be at least 4 characters.' });
+    }
+
+    await query('UPDATE customers SET password = $1 WHERE LOWER(email) = $2', [newPassword.trim(), cleanEmail]);
+    otpStore.delete(cleanEmail);
+
+    return res.json({
+      success: true,
+      message: 'User password is updated successfully.'
+    });
+  } catch (err) {
+    console.error('Verify OTP reset error:', err);
     res.status(500).json({ success: false, message: err.message });
   }
 });

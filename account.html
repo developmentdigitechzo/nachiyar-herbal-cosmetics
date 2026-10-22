@@ -1234,6 +1234,14 @@
               </button>
             </li>
             <li>
+              <button class="sidebar-menu-btn" id="btnTabSecurity" onclick="switchDashboardTab('security')">
+                <span class="menu-btn-left">
+                  <span>🔑</span>
+                  <span>Password & Security</span>
+                </span>
+              </button>
+            </li>
+            <li>
               <button class="sidebar-menu-btn" onclick="window.location.href='shop.html'">
                 <span class="menu-btn-left">
                   <span>🌿</span>
@@ -1334,6 +1342,171 @@
                 42, Besant Avenue, Adyar, Chennai, Tamil Nadu - 600020
               </p>
               <p style="font-size:0.84375rem; color:var(--color-text-muted);">Phone: <strong id="addrPhoneText">+91 98401 23456</strong></p>
+            </div>
+          </div>
+
+          <!-- PANEL 4: PASSWORD & SECURITY -->
+          <div id="viewSecuritySection" style="display: none;">
+            <div class="view-panel-header" style="margin-bottom: 24px;">
+              <h2>Password & Account Security</h2>
+              <p style="color:var(--color-text-muted); font-size:0.875rem; margin-top:2px;">
+                Manage your credentials, set dedicated account passwords, or securely reset via verified Email OTP.
+              </p>
+            </div>
+
+            <!-- Google Account Status Banner (Dynamically shown if Google user has no custom password) -->
+            <div id="secGoogleNoticeCard" style="display:none; background: linear-gradient(135deg, #FAF5FF 0%, #F5EEFC 100%); border: 1.5px solid #E9D5FF; border-radius: 16px; padding: 20px; margin-bottom: 24px;">
+              <div style="display:flex; align-items:flex-start; gap:14px;">
+                <span style="font-size:1.6rem; line-height:1;">✨</span>
+                <div>
+                  <h4 style="font-size:1rem; font-weight:700; color:#4A154B; margin-bottom:4px;">Google Account Connected</h4>
+                  <p style="font-size:0.875rem; color:#6B5E74; line-height:1.5; margin:0;">
+                    You signed in via Google (Gmail). Set a dedicated password below to also sign in directly using your email and password from any device or browser.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- MAIN PASSWORD CHANGE CARD -->
+            <div id="secChangePassCard" style="background:#FFFFFF; border-radius:20px; padding:32px; border:1px solid var(--color-border); box-shadow:var(--shadow-sm); margin-bottom:24px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid #F0E8F8; padding-bottom:16px;">
+                <div>
+                  <h3 id="secCardHeading" style="font-size:1.15rem; font-weight:700; color:#2D1832; margin-bottom:2px;">Change Password</h3>
+                  <p id="secCardSubheading" style="font-size:0.8125rem; color:#8E7F99; margin:0;">Enter your existing password and choose a secure new one.</p>
+                </div>
+                <span id="secAuthBadge" style="background:#FAF5FF; color:#7C5AAB; border:1px solid #E9D5FF; font-size:0.75rem; font-weight:700; padding:4px 12px; border-radius:999px;">
+                  Active Account
+                </span>
+              </div>
+
+              <form id="formChangePassword" onsubmit="handleCustomerPasswordSubmit(event)">
+                <!-- CURRENT PASSWORD (Hidden for Google users without custom password) -->
+                <div id="secCurrentPassGroup" style="margin-bottom:18px;">
+                  <label style="display:block; font-size:0.8125rem; font-weight:700; color:#3B2A45; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:6px;">
+                    Current Password <span style="color:#DC2626;">*</span>
+                  </label>
+                  <div style="position:relative;">
+                    <input type="password" id="inputCurrentPass" class="form-input" placeholder="Enter your current password" style="padding-right:44px; height:48px; border-radius:10px; width:100%; box-sizing:border-box;">
+                    <button type="button" onclick="togglePassVisibility('inputCurrentPass', this)" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; color:#8E7F99; cursor:pointer; font-size:1.1rem; padding:4px;">👁️</button>
+                  </div>
+                </div>
+
+                <!-- NEW PASSWORD -->
+                <div style="margin-bottom:18px;">
+                  <label style="display:block; font-size:0.8125rem; font-weight:700; color:#3B2A45; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:6px;">
+                    New Password <span style="color:#DC2626;">*</span>
+                  </label>
+                  <div style="position:relative;">
+                    <input type="password" id="inputNewPass" class="form-input" placeholder="Enter at least 4 characters" required minlength="4" style="padding-right:44px; height:48px; border-radius:10px; width:100%; box-sizing:border-box;">
+                    <button type="button" onclick="togglePassVisibility('inputNewPass', this)" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; color:#8E7F99; cursor:pointer; font-size:1.1rem; padding:4px;">👁️</button>
+                  </div>
+                </div>
+
+                <!-- CONFIRM NEW PASSWORD -->
+                <div style="margin-bottom:24px;">
+                  <label style="display:block; font-size:0.8125rem; font-weight:700; color:#3B2A45; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:6px;">
+                    Confirm New Password <span style="color:#DC2626;">*</span>
+                  </label>
+                  <div style="position:relative;">
+                    <input type="password" id="inputConfirmPass" class="form-input" placeholder="Re-type your new password" required minlength="4" style="padding-right:44px; height:48px; border-radius:10px; width:100%; box-sizing:border-box;">
+                    <button type="button" onclick="togglePassVisibility('inputConfirmPass', this)" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; color:#8E7F99; cursor:pointer; font-size:1.1rem; padding:4px;">👁️</button>
+                  </div>
+                  <div id="secPassMismatchError" style="display:none; color:#DC2626; font-size:0.8125rem; font-weight:600; margin-top:6px;">
+                    ⚠️ Passwords do not match. Please re-enter.
+                  </div>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+                  <button type="submit" id="btnSubmitPasswordChange" class="btn-order-view" style="height:48px; padding-inline:28px; background:linear-gradient(135deg, #7C2A72 0%, #4D1847 60%, #2D1832 100%); color:#FFFFFF; border:none; border-radius:999px; font-weight:700; cursor:pointer; box-shadow:0 4px 14px rgba(45,24,50,0.25);">
+                    <span id="btnSubmitPasswordText">Update Password →</span>
+                  </button>
+
+                  <button type="button" id="btnToggleForgotOtp" onclick="toggleForgotOtpSection(true)" style="background:none; border:none; color:#7C5AAB; font-size:0.875rem; font-weight:700; cursor:pointer; text-decoration:underline;">
+                    Forgot Current Password? Reset via Email OTP →
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- FORGOT PASSWORD: EMAIL OTP RESET CARD (COLLAPSED BY DEFAULT) -->
+            <div id="secOtpResetCard" style="display:none; background:#FFFFFF; border-radius:20px; padding:32px; border:1.5px solid #D4AF37; box-shadow:0 8px 30px rgba(212,175,55,0.12); margin-bottom:24px;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:18px;">
+                <div>
+                  <div style="display:inline-block; background:#FAF5FF; color:#A37F14; border:1px solid #E9D5FF; font-size:0.75rem; font-weight:800; padding:4px 12px; border-radius:999px; margin-bottom:8px;">
+                    SECURE EMAIL VERIFICATION
+                  </div>
+                  <h3 style="font-size:1.2rem; font-weight:700; color:#2D1832; margin-bottom:4px;">Reset Password via Email OTP</h3>
+                  <p style="font-size:0.875rem; color:#6B5E74; margin:0;">
+                    Click the button below to send a 6-digit verification code to your registered email: <strong id="secOtpTargetEmail" style="color:#2D1832;"></strong>
+                  </p>
+                </div>
+                <button type="button" onclick="toggleForgotOtpSection(false)" style="background:#F4EFF9; border:none; border-radius:50%; width:32px; height:32px; font-size:1rem; cursor:pointer; color:#6B5E74;" aria-label="Cancel OTP reset">✕</button>
+              </div>
+
+              <!-- DISPATCH OTP BUTTON & RESEND TIMER -->
+              <div id="otpStep1Container" style="margin-bottom:16px;">
+                <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+                  <button type="button" id="btnDispatchOtp" onclick="handleSendOtpClick()" style="height:46px; padding-inline:24px; background:#A37F14; color:#FFFFFF; border:none; border-radius:999px; font-weight:700; font-size:0.875rem; cursor:pointer; box-shadow:0 3px 10px rgba(163,127,20,0.25);">
+                    📩 Send 6-Digit OTP to Email
+                  </button>
+                  <span id="otpCountdownTimer" style="display:none; font-size:0.8125rem; font-weight:600; color:#8E7F99;"></span>
+                </div>
+              </div>
+
+              <!-- STATUS NOTIFICATION BANNER (NO DEMO OTP!) -->
+              <div id="otpStatusBanner" style="display:none; background:#F0FDF4; border:1px solid #BBF7D0; border-radius:12px; padding:14px 18px; margin-bottom:20px; font-size:0.875rem; color:#166534;">
+              </div>
+
+              <!-- STEP 1: OTP ENTER & VERIFY BUTTON (SHOWN AFTER SEND OTP) -->
+              <div id="otpVerifyRow" style="display:none; margin-bottom:24px; background:#FAF7FD; border:1px solid #EADEF7; border-radius:14px; padding:20px;">
+                <label style="display:block; font-size:0.8125rem; font-weight:700; color:#3B2A45; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:8px;">
+                  Enter 6-Digit Verification Code Sent to Email <span style="color:#DC2626;">*</span>
+                </label>
+                <div style="display:flex; gap:10px; align-items:center; max-width:400px; flex-wrap:wrap;">
+                  <input type="text" id="inputOtpDigits" class="form-input" placeholder="e.g. 123456" maxlength="6" style="height:48px; border-radius:10px; flex:1; min-width:160px; font-size:1.2rem; letter-spacing:4px; font-weight:700; text-align:center; box-sizing:border-box;">
+                  <button type="button" id="btnVerifyOtp" onclick="handleVerifyOtpOnly()" style="height:48px; padding-inline:22px; background:linear-gradient(135deg, #7C2A72 0%, #4D1847 100%); color:#FFFFFF; border:none; border-radius:10px; font-weight:700; font-size:0.875rem; cursor:pointer; white-space:nowrap; box-shadow:0 3px 10px rgba(77,24,71,0.25);">
+                    Verify OTP
+                  </button>
+                </div>
+                <div id="otpVerifyErrorMsg" style="display:none; color:#DC2626; font-size:0.84rem; font-weight:600; margin-top:8px;"></div>
+              </div>
+
+              <!-- STEP 2: PASSWORD RESET FIELDS (ONLY SHOWN AFTER OTP IS VERIFIED!) -->
+              <div id="otpPasswordFields" style="display:none; background:#FFFFFF; border:1.5px solid #22C55E; border-radius:16px; padding:24px; margin-bottom:16px;">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:18px; color:#15803D; font-weight:700; font-size:0.92rem;">
+                  <span style="font-size:1.2rem;">✅</span> OTP Verified Successfully! Now enter your new password:
+                </div>
+
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:16px; margin-bottom:20px;">
+                  <div>
+                    <label style="display:block; font-size:0.8125rem; font-weight:700; color:#3B2A45; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:6px;">
+                      New Password <span style="color:#DC2626;">*</span>
+                    </label>
+                    <div style="position:relative;">
+                      <input type="password" id="inputOtpNewPass" class="form-input" placeholder="Minimum 4 characters" minlength="4" style="padding-right:44px; height:48px; border-radius:10px; width:100%; box-sizing:border-box;">
+                      <button type="button" onclick="togglePassVisibility('inputOtpNewPass', this)" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; color:#8E7F99; cursor:pointer; font-size:1.1rem; padding:4px;">👁️</button>
+                    </div>
+                  </div>
+                  <div>
+                    <label style="display:block; font-size:0.8125rem; font-weight:700; color:#3B2A45; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:6px;">
+                      Confirm New Password <span style="color:#DC2626;">*</span>
+                    </label>
+                    <div style="position:relative;">
+                      <input type="password" id="inputOtpConfirmPass" class="form-input" placeholder="Re-type new password" minlength="4" style="padding-right:44px; height:48px; border-radius:10px; width:100%; box-sizing:border-box;">
+                      <button type="button" onclick="togglePassVisibility('inputOtpConfirmPass', this)" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; color:#8E7F99; cursor:pointer; font-size:1.1rem; padding:4px;">👁️</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="display:flex; gap:14px; align-items:center; flex-wrap:wrap;">
+                  <button type="button" id="btnSubmitOtpReset" onclick="handleOtpPasswordUpdate()" style="height:48px; padding-inline:28px; background:linear-gradient(135deg, #7C2A72 0%, #4D1847 60%, #2D1832 100%); color:#FFFFFF; border:none; border-radius:999px; font-weight:700; cursor:pointer; box-shadow:0 4px 14px rgba(45,24,50,0.25);">
+                    Update Password →
+                  </button>
+                  <button type="button" onclick="toggleForgotOtpSection(false)" style="background:none; border:none; color:#8E7F99; font-size:0.875rem; font-weight:600; cursor:pointer;">
+                    Cancel
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -1541,7 +1714,8 @@
     <div class="footer-container">
       <div class="footer-legal-bar">
         <p>© 2026 NACHIYAR HERBALS & COSMETICS. ALL RIGHTS RESERVED.</p>
-        <p class="legal-links"><a href="/">Home</a> • <a href="/shop/">Shop Rituals</a> • <a href="/about/">About Us</a> • <a href="/contact/">Contact</a> • <a href="/privacy/">Privacy Policy</a> • <a href="/terms/">Terms of Service</a> • <a href="/shipping-policy/">Shipping & Returns</a></p>
+        <p class="footer-developer-credit">Developed by <a href="https://digitechzo.com" target="_blank" rel="noopener noreferrer" class="developer-link">Digitechzo</a></p>
+        <p class="legal-links"><a href="/">Home</a> • <a href="/shop/">Shop Rituals</a> • <a href="/about/">About Us</a> • <a href="/contact/">Contact</a> • <a href="/privacy/">Privacy Policy</a> • <a href="/terms/">Terms of Service</a> • <a href="/shipping-policy/">Shipping & Returns</a> • <a href="/sitemap/">Sitemap</a></p>
       </div>
     </div>
   </footer>
@@ -2475,10 +2649,14 @@
       document.getElementById('btnTabOrders').classList.remove('is-active');
       document.getElementById('btnTabProfile').classList.remove('is-active');
       document.getElementById('btnTabAddress').classList.remove('is-active');
+      const btnSec = document.getElementById('btnTabSecurity');
+      if (btnSec) btnSec.classList.remove('is-active');
 
       document.getElementById('viewOrdersSection').style.display = 'none';
       document.getElementById('viewProfileSection').style.display = 'none';
       document.getElementById('viewAddressSection').style.display = 'none';
+      const viewSec = document.getElementById('viewSecuritySection');
+      if (viewSec) viewSec.style.display = 'none';
 
       if (tab === 'orders') {
         document.getElementById('btnTabOrders').classList.add('is-active');
@@ -2489,6 +2667,397 @@
       } else if (tab === 'address') {
         document.getElementById('btnTabAddress').classList.add('is-active');
         document.getElementById('viewAddressSection').style.display = 'block';
+      } else if (tab === 'security') {
+        if (btnSec) btnSec.classList.add('is-active');
+        if (viewSec) viewSec.style.display = 'block';
+        loadPasswordSecurityTab();
+      }
+    }
+
+    // =========================================================================
+    // PASSWORD & SECURITY LOGIC (CURRENT / NEW / EMAIL OTP / GOOGLE SYNC)
+    // =========================================================================
+    let currentSecurityStatus = {
+      isGoogleAuth: false,
+      hasCustomPassword: false,
+      email: '',
+      maskedEmail: ''
+    };
+    let otpCooldownInterval = null;
+
+    function togglePassVisibility(inputId, btn) {
+      const input = document.getElementById(inputId);
+      if (!input) return;
+      if (input.type === 'password') {
+        input.type = 'text';
+        btn.textContent = '🔒';
+      } else {
+        input.type = 'password';
+        btn.textContent = '👁️';
+      }
+    }
+
+    function showPasswordSuccessModal(title, msg) {
+      const modal = document.getElementById('passwordSuccessModal');
+      const titleEl = document.getElementById('passModalTitle');
+      const subEl = document.getElementById('passModalSubtitle');
+      if (titleEl && title) titleEl.textContent = title;
+      if (subEl && msg) subEl.textContent = msg;
+      if (modal) {
+        modal.style.display = 'flex';
+      }
+    }
+
+    function closePasswordSuccessModal() {
+      const modal = document.getElementById('passwordSuccessModal');
+      if (modal) modal.style.display = 'none';
+      // Switch back to orders or refresh security tab
+      loadPasswordSecurityTab();
+    }
+
+    function showOtpErrorModal(title, msg) {
+      const modal = document.getElementById('otpErrorModal');
+      const titleEl = document.getElementById('otpErrorTitle');
+      const subEl = document.getElementById('otpErrorSubtitle');
+      if (titleEl && title) titleEl.textContent = title;
+      if (subEl && msg) subEl.textContent = msg;
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function closeOtpErrorModal() {
+      const modal = document.getElementById('otpErrorModal');
+      if (modal) modal.style.display = 'none';
+      const inp = document.getElementById('inputOtpDigits');
+      if (inp && !inp.disabled) {
+        inp.focus();
+        inp.select();
+      }
+    }
+
+    async function loadPasswordSecurityTab() {
+      const email = (activeCustomer && activeCustomer.email) || '';
+      if (!email) return;
+
+      const targetEmailEl = document.getElementById('secOtpTargetEmail');
+      if (targetEmailEl) targetEmailEl.textContent = email;
+
+      try {
+        const res = await fetch(`/api/customer/password-status?email=${encodeURIComponent(email)}`);
+        const data = await res.json();
+        if (data.success) {
+          currentSecurityStatus = data;
+          applySecurityUIState();
+        }
+      } catch (e) {
+        console.warn('Could not load password status:', e.message);
+      }
+    }
+
+    function applySecurityUIState() {
+      const googleCard = document.getElementById('secGoogleNoticeCard');
+      const currentGroup = document.getElementById('secCurrentPassGroup');
+      const forgotBtn = document.getElementById('btnToggleForgotOtp');
+      const heading = document.getElementById('secCardHeading');
+      const subheading = document.getElementById('secCardSubheading');
+      const submitText = document.getElementById('btnSubmitPasswordText');
+      const authBadge = document.getElementById('secAuthBadge');
+      const targetEmailEl = document.getElementById('secOtpTargetEmail');
+
+      const email = (activeCustomer && activeCustomer.email) || '';
+      if (targetEmailEl) {
+        targetEmailEl.textContent = email;
+      }
+
+      // CRITICAL RULE: If user signed in via Google (Gmail), NEVER ASK FOR CURRENT PASSWORD!
+      // Current Password is ONLY for manual website registrations (email+password signups).
+      if (currentSecurityStatus.isGoogleAuth) {
+        if (googleCard) googleCard.style.display = 'block';
+        if (currentGroup) currentGroup.style.display = 'none'; // NEVER SHOW CURRENT PASSWORD TO GMAIL USERS!
+        if (forgotBtn) forgotBtn.style.display = 'none'; // Gmail users don't need forgot password because no current password is required!
+        if (heading) heading.textContent = currentSecurityStatus.hasCustomPassword ? 'Change Password' : 'Set Account Password';
+        if (subheading) subheading.textContent = 'Set or update your password to log in directly via email & password on any device.';
+        if (submitText) submitText.textContent = currentSecurityStatus.hasCustomPassword ? 'Update Password →' : 'Set Password →';
+        if (authBadge) {
+          authBadge.textContent = 'Google Connected';
+          authBadge.style.color = '#15803D';
+          authBadge.style.background = '#ECFDF5';
+          authBadge.style.borderColor = '#A7F3D0';
+        }
+      } else {
+        // Standard Manual Registration User
+        if (googleCard) googleCard.style.display = 'none';
+        if (currentGroup) currentGroup.style.display = 'block'; // Required for manual users
+        if (forgotBtn) forgotBtn.style.display = 'inline-block';
+        if (heading) heading.textContent = 'Change Password';
+        if (subheading) subheading.textContent = 'Enter your current password and choose a secure new one.';
+        if (submitText) submitText.textContent = 'Update Password →';
+        if (authBadge) {
+          authBadge.textContent = 'Password Protected';
+          authBadge.style.color = '#7C5AAB';
+          authBadge.style.background = '#FAF5FF';
+          authBadge.style.borderColor = '#E9D5FF';
+        }
+      }
+    }
+
+    function toggleForgotOtpSection(show) {
+      const changeCard = document.getElementById('secChangePassCard');
+      const otpCard = document.getElementById('secOtpResetCard');
+      if (show) {
+        if (changeCard) changeCard.style.display = 'none';
+        if (otpCard) otpCard.style.display = 'block';
+      } else {
+        if (changeCard) changeCard.style.display = 'block';
+        if (otpCard) otpCard.style.display = 'none';
+      }
+    }
+
+    async function handleCustomerPasswordSubmit(e) {
+      e.preventDefault();
+      const currentPassEl = document.getElementById('inputCurrentPass');
+      const newPassEl = document.getElementById('inputNewPass');
+      const confirmPassEl = document.getElementById('inputConfirmPass');
+      const mismatchError = document.getElementById('secPassMismatchError');
+
+      const currentPassword = currentPassEl ? currentPassEl.value : '';
+      const newPassword = newPassEl ? newPassEl.value.trim() : '';
+      const confirmPassword = confirmPassEl ? confirmPassEl.value.trim() : '';
+
+      if (newPassword !== confirmPassword) {
+        if (mismatchError) mismatchError.style.display = 'block';
+        return;
+      }
+      if (mismatchError) mismatchError.style.display = 'none';
+
+      if (newPassword.length < 4) {
+        alert('New password must be at least 4 characters.');
+        return;
+      }
+
+      const email = (activeCustomer && activeCustomer.email) || '';
+      const btn = document.getElementById('btnSubmitPasswordChange');
+      if (btn) btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/customer/change-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, currentPassword, newPassword })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          // Clear inputs
+          if (currentPassEl) currentPassEl.value = '';
+          if (newPassEl) newPassEl.value = '';
+          if (confirmPassEl) confirmPassEl.value = '';
+
+          // Show celebration modal
+          showPasswordSuccessModal(
+            'User password is updated!',
+            'Your new password has been successfully saved in the database. You can now use your newly updated password to log in anytime.'
+          );
+        } else {
+          alert(data.message || 'Could not update password. Please check your current password.');
+        }
+      } catch (err) {
+        alert('Network error while updating password: ' + err.message);
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    async function handleSendOtpClick() {
+      const email = (activeCustomer && activeCustomer.email) || '';
+      const btn = document.getElementById('btnDispatchOtp');
+      const timerSpan = document.getElementById('otpCountdownTimer');
+      const verifyRow = document.getElementById('otpVerifyRow');
+      const banner = document.getElementById('otpStatusBanner');
+      const errorMsg = document.getElementById('otpVerifyErrorMsg');
+      const passFields = document.getElementById('otpPasswordFields');
+      const otpInput = document.getElementById('inputOtpDigits');
+
+      if (!email) {
+        alert('No registered email found.');
+        return;
+      }
+
+      if (btn) btn.disabled = true;
+      if (errorMsg) errorMsg.style.display = 'none';
+      if (passFields) passFields.style.display = 'none';
+
+      try {
+        const res = await fetch('/api/customer/send-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          if (banner) {
+            banner.style.display = 'block';
+            banner.innerHTML = `<span>📩 <strong>Verification Code Sent:</strong> A 6-digit OTP has been sent to your registered email <strong>${email}</strong>. Please check your inbox.</span>`;
+          }
+
+          if (verifyRow) verifyRow.style.display = 'block';
+
+          // Strictly leave input EMPTY - NO auto-fill!
+          if (otpInput) {
+            otpInput.value = '';
+            otpInput.disabled = false;
+            otpInput.focus();
+          }
+
+          const verifyBtn = document.getElementById('btnVerifyOtp');
+          if (verifyBtn) {
+            verifyBtn.disabled = false;
+            verifyBtn.textContent = 'Verify OTP';
+            verifyBtn.style.background = 'linear-gradient(135deg, #7C2A72 0%, #4D1847 100%)';
+          }
+
+          // 60-second cooldown timer
+          let timeLeft = 60;
+          if (timerSpan) {
+            timerSpan.style.display = 'inline';
+            timerSpan.textContent = `Resend in ${timeLeft}s`;
+          }
+          if (otpCooldownInterval) clearInterval(otpCooldownInterval);
+          otpCooldownInterval = setInterval(() => {
+            timeLeft--;
+            if (timeLeft <= 0) {
+              clearInterval(otpCooldownInterval);
+              if (btn) btn.disabled = false;
+              if (timerSpan) timerSpan.style.display = 'none';
+            } else {
+              if (timerSpan) timerSpan.textContent = `Resend in ${timeLeft}s`;
+            }
+          }, 1000);
+        } else {
+          alert(data.message || 'Could not send OTP.');
+          if (btn) btn.disabled = false;
+        }
+      } catch (err) {
+        alert('Network error while dispatching OTP: ' + err.message);
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    async function handleVerifyOtpOnly() {
+      const email = (activeCustomer && activeCustomer.email) || '';
+      const otpInput = document.getElementById('inputOtpDigits');
+      const verifyBtn = document.getElementById('btnVerifyOtp');
+      const errorMsg = document.getElementById('otpVerifyErrorMsg');
+      const passFields = document.getElementById('otpPasswordFields');
+
+      const otp = otpInput ? otpInput.value.trim() : '';
+
+      if (!otp || otp.length !== 6) {
+        showOtpErrorModal('OTP is wrong', 'Please enter the 6-digit verification code sent to your email.');
+        if (errorMsg) {
+          errorMsg.style.display = 'block';
+          errorMsg.textContent = '⚠️ Please enter the 6-digit OTP code.';
+        }
+        return;
+      }
+
+      if (verifyBtn) {
+        verifyBtn.disabled = true;
+        verifyBtn.textContent = 'Verifying...';
+      }
+      if (errorMsg) errorMsg.style.display = 'none';
+
+      try {
+        const res = await fetch('/api/customer/verify-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, otp })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          // Correct OTP!
+          if (otpInput) otpInput.disabled = true;
+          if (verifyBtn) {
+            verifyBtn.textContent = '✅ Verified';
+            verifyBtn.style.background = '#15803D';
+          }
+          if (passFields) {
+            passFields.style.display = 'block';
+            const newPassInput = document.getElementById('inputOtpNewPass');
+            if (newPassInput) newPassInput.focus();
+          }
+        } else {
+          // Wrong OTP!
+          if (verifyBtn) {
+            verifyBtn.disabled = false;
+            verifyBtn.textContent = 'Verify OTP';
+          }
+          if (errorMsg) {
+            errorMsg.style.display = 'block';
+            errorMsg.textContent = '❌ ' + (data.message || 'OTP is wrong. Please check your email and try again.');
+          }
+          showOtpErrorModal('OTP is wrong', data.message || 'The OTP you entered is wrong. Please enter the valid OTP sent to your email.');
+        }
+      } catch (err) {
+        if (verifyBtn) {
+          verifyBtn.disabled = false;
+          verifyBtn.textContent = 'Verify OTP';
+        }
+        showOtpErrorModal('Error', 'Network error verifying OTP: ' + err.message);
+      }
+    }
+
+    async function handleOtpPasswordUpdate() {
+      const email = (activeCustomer && activeCustomer.email) || '';
+      const otpInput = document.getElementById('inputOtpDigits');
+      const newPassInput = document.getElementById('inputOtpNewPass');
+      const confirmPassInput = document.getElementById('inputOtpConfirmPass');
+      const btn = document.getElementById('btnSubmitOtpReset');
+
+      const otp = otpInput ? otpInput.value.trim() : '';
+      const newPassword = newPassInput ? newPassInput.value.trim() : '';
+      const confirmPassword = confirmPassInput ? confirmPassInput.value.trim() : '';
+
+      if (!newPassword || newPassword.length < 4) {
+        alert('Please enter a new password (minimum 4 characters).');
+        return;
+      }
+      if (newPassword !== confirmPassword) {
+        alert('New passwords do not match. Please verify.');
+        return;
+      }
+
+      if (btn) btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/customer/verify-otp-reset', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, otp, newPassword })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          // Clear inputs
+          if (otpInput) { otpInput.value = ''; otpInput.disabled = false; }
+          if (newPassInput) newPassInput.value = '';
+          if (confirmPassInput) confirmPassInput.value = '';
+
+          toggleForgotOtpSection(false);
+
+          // Show celebration modal
+          showPasswordSuccessModal(
+            'User password is updated!',
+            'Your account password has been successfully verified and updated in the database. You can now use your newly updated password to log in anytime.'
+          );
+        } else {
+          alert(data.message || 'Could not update password. Please try again.');
+        }
+      } catch (err) {
+        alert('Network error while updating password: ' + err.message);
+      } finally {
+        if (btn) btn.disabled = false;
       }
     }
 
@@ -2533,6 +3102,38 @@
       });
     }
   </script>
+  <!-- ==================== PASSWORD SUCCESS POPUP MODAL ==================== -->
+  <div id="passwordSuccessModal" style="display:none; position:fixed; inset:0; background:rgba(30,12,38,0.7); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); z-index:99999; align-items:center; justify-content:center; padding:20px;">
+    <div style="background:#FFFFFF; border-radius:24px; max-width:440px; width:100%; padding:36px 28px; text-align:center; box-shadow:0 20px 50px rgba(45,24,50,0.3); border:1.5px solid #F0E8F8; animation:popIn 0.3s cubic-bezier(0.34,1.56,0.64,1);">
+      <div style="width:72px; height:72px; border-radius:50%; background:linear-gradient(135deg, #DCFCE7 0%, #BBF7D0 100%); display:flex; align-items:center; justify-content:center; font-size:2.2rem; margin:0 auto 18px; box-shadow:0 6px 18px rgba(34,197,94,0.25);">
+        🎉
+      </div>
+      <h3 id="passModalTitle" style="font-size:1.45rem; font-weight:800; color:#1E0C26; margin-bottom:8px; font-family:var(--font-display);">User Password is Updated!</h3>
+      <p id="passModalSubtitle" style="font-size:0.92rem; color:#6B5E74; line-height:1.6; margin-bottom:24px;">
+        Your new password has been successfully updated in your account. You can now use your newly updated password to log in anytime.
+      </p>
+      <button type="button" onclick="closePasswordSuccessModal()" style="width:100%; height:50px; background:linear-gradient(135deg, #7C2A72 0%, #4D1847 60%, #2D1832 100%); color:#FFFFFF; border:none; border-radius:999px; font-weight:800; font-size:0.95rem; cursor:pointer; box-shadow:0 4px 16px rgba(45,24,50,0.3); transition:transform 0.2s ease;">
+        Continue to Account →
+      </button>
+    </div>
+  </div>
+
+  <!-- ==================== OTP ERROR POPUP MODAL ==================== -->
+  <div id="otpErrorModal" style="display:none; position:fixed; inset:0; background:rgba(30,12,38,0.7); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); z-index:99999; align-items:center; justify-content:center; padding:20px;">
+    <div style="background:#FFFFFF; border-radius:24px; max-width:420px; width:100%; padding:34px 26px; text-align:center; box-shadow:0 20px 50px rgba(220,38,38,0.25); border:1.5px solid #FEE2E2; animation:popIn 0.3s cubic-bezier(0.34,1.56,0.64,1);">
+      <div style="width:68px; height:68px; border-radius:50%; background:#FEE2E2; color:#DC2626; display:flex; align-items:center; justify-content:center; font-size:2rem; margin:0 auto 16px;">
+        ⚠️
+      </div>
+      <h3 id="otpErrorTitle" style="font-size:1.35rem; font-weight:800; color:#991B1B; margin-bottom:8px; font-family:var(--font-display);">OTP is wrong</h3>
+      <p id="otpErrorSubtitle" style="font-size:0.9rem; color:#6B5E74; line-height:1.55; margin-bottom:22px;">
+        The OTP you entered is invalid. Please check your registered email inbox and enter the correct 6-digit OTP code.
+      </p>
+      <button type="button" onclick="closeOtpErrorModal()" style="width:100%; height:46px; background:#DC2626; color:#FFFFFF; border:none; border-radius:999px; font-weight:800; font-size:0.92rem; cursor:pointer; box-shadow:0 4px 14px rgba(220,38,38,0.3); transition:transform 0.2s ease;">
+        Try Again
+      </button>
+    </div>
+  </div>
+
   <script src="customer-account.js"></script>
 </body>
 </html>

@@ -1,0 +1,28 @@
+# ==============================================================================
+# NACHIYAR HERBALS & COSMETICS - ROBOTS.TXT
+# User-facing crawlers are allowed; staff & admin consoles are strictly blocked.
+# ==============================================================================
+
+User-agent: *
+Allow: /
+Allow: /shop/
+Allow: /about/
+Allow: /contact/
+Allow: /product/
+Allow: /account/
+Allow: /order-status/
+Allow: /privacy/
+Allow: /terms/
+Allow: /shipping-policy/
+Allow: /sitemap/
+
+# Strictly Disallow Staff & Admin Portals
+Disallow: /nimda/
+Disallow: /nimda/*
+Disallow: /nimda-login/
+Disallow: /nimda-login/*
+Disallow: /admin/
+Disallow: /admin/*
+Disallow: /api/
+
+Sitemap: https://nachiyarherbals.com/sitemap.xml

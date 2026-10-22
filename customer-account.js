@@ -684,15 +684,77 @@
             <form id="drawerLoginForm" onsubmit="event.preventDefault(); window.handleDrawerLogin();">
               <input type="text" id="drawerLoginEmail" class="drawer-auth-input" placeholder="Email Address or Phone" required autocomplete="username">
               <input type="password" id="drawerLoginPassword" class="drawer-auth-input" placeholder="Password" required autocomplete="current-password">
+              <div style="display:flex; justify-content:flex-end; margin-bottom:10px;">
+                <button type="button" onclick="window.toggleDrawerForgotPassword(true)" style="background:none; border:none; color:#7C5AAB; font-size:0.8125rem; font-weight:700; cursor:pointer; text-decoration:underline; padding:0;">
+                  Forgot Password?
+                </button>
+              </div>
               <button type="submit" class="drawer-auth-submit-btn" style="background:#4A306D;">Sign In with Password →</button>
             </form>
+          </div>
+
+          <!-- DRAWER FORGOT PASSWORD (OTP RESET FLOW) -->
+          <div id="drawerForgotPassWrap" style="display:none; margin-top:14px; padding:18px; background:#FAF7FD; border:1.5px solid #D4AF37; border-radius:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <span style="font-size:0.875rem; font-weight:800; color:#2D1832;">🔑 Reset Password via OTP</span>
+              <button type="button" onclick="window.toggleDrawerForgotPassword(false)" style="background:#ECE5F8; border:none; border-radius:50%; width:24px; height:24px; font-size:0.8125rem; cursor:pointer; color:#6B5E74;" aria-label="Close">✕</button>
+            </div>
+            
+            <!-- Step 1: Input registered email & send OTP -->
+            <div id="drawerForgotStep1">
+              <p style="font-size:0.8125rem; color:#6B5E74; margin:0 0 10px 0; line-height:1.45;">
+                Enter your registered email address. We will send a 6-digit OTP code to reset your password.
+              </p>
+              <input type="email" id="drawerForgotEmail" class="drawer-auth-input" placeholder="Registered Email (e.g. name@gmail.com)" style="margin-bottom:10px;">
+              <div style="display:flex; gap:8px; align-items:center;">
+                <button type="button" id="btnDrawerSendOtp" onclick="window.handleDrawerSendOtp()" class="drawer-auth-submit-btn" style="background:#A37F14; margin:0; flex:1; height:42px; font-size:0.84rem;">
+                  Send 6-Digit OTP →
+                </button>
+                <span id="drawerOtpCountdownTimer" style="display:none; font-size:0.75rem; color:#8E7F99; font-weight:700; white-space:nowrap;"></span>
+              </div>
+            </div>
+
+            <!-- Sent Notification Banner -->
+            <div id="drawerOtpStatusBanner" style="display:none; background:#F0FDF4; border:1px solid #BBF7D0; border-radius:10px; padding:10px 12px; margin-top:12px; font-size:0.8125rem; color:#166534; line-height:1.45;"></div>
+
+            <!-- Step 2: OTP Input & Verify Button (Hidden until OTP sent) -->
+            <div id="drawerForgotStep2" style="display:none; margin-top:14px; padding-top:12px; border-top:1px dashed #E5DDF0;">
+              <label style="display:block; font-size:0.75rem; font-weight:700; color:#3B2A45; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:6px;">
+                Enter 6-Digit OTP Sent to Email *
+              </label>
+              <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
+                <input type="text" id="drawerForgotOtpDigits" class="drawer-auth-input" placeholder="e.g. 123456" maxlength="6" style="margin:0; text-align:center; font-size:1.15rem; letter-spacing:4px; font-weight:700; flex:1; height:42px; box-sizing:border-box;">
+                <button type="button" id="btnDrawerVerifyOtp" onclick="window.handleDrawerVerifyOtp()" style="height:42px; padding-inline:16px; background:linear-gradient(135deg, #7C2A72 0%, #4D1847 100%); color:#FFF; border:none; border-radius:8px; font-weight:700; font-size:0.8125rem; cursor:pointer; white-space:nowrap; box-shadow:0 2px 8px rgba(77,24,71,0.25);">
+                  Verify OTP
+                </button>
+              </div>
+              <div id="drawerOtpErrorMsg" style="display:none; color:#DC2626; font-size:0.78rem; font-weight:700; margin-bottom:8px;"></div>
+            </div>
+
+            <!-- Step 3: New Password & Confirm Password (Revealed ONLY after OTP verified) -->
+            <div id="drawerForgotStep3" style="display:none; margin-top:14px; padding-top:14px; border-top:1.5px solid #22C55E;">
+              <div style="color:#15803D; font-size:0.8125rem; font-weight:700; margin-bottom:10px;">
+                ✅ OTP Verified Successfully! Now set your new password:
+              </div>
+              <input type="password" id="drawerForgotNewPass" class="drawer-auth-input" placeholder="New Password (min 4 chars)" minlength="4" style="margin-bottom:8px;">
+              <input type="password" id="drawerForgotConfirmPass" class="drawer-auth-input" placeholder="Confirm New Password" minlength="4" style="margin-bottom:12px;">
+              <button type="button" id="btnDrawerUpdatePass" onclick="window.handleDrawerFinalPasswordReset()" class="drawer-auth-submit-btn" style="background:linear-gradient(135deg, #7C2A72 0%, #4D1847 100%); margin:0; height:44px; box-shadow:0 3px 12px rgba(77,24,71,0.25);">
+                Update Password & Sign In →
+              </button>
+            </div>
+
+            <div style="margin-top:12px; text-align:center;">
+              <button type="button" onclick="window.toggleDrawerForgotPassword(false)" style="background:none; border:none; color:#8E7F99; font-size:0.78rem; font-weight:600; cursor:pointer;">
+                ← Back to Sign In
+              </button>
+            </div>
           </div>
         </div>
       `;
 
       drawerFooter.innerHTML = `
-        <button class="btn-drawer-action btn-drawer-action--shop" onclick="window.location.href='/nimda-login/'">
-          <span>Full Operations & Staff Portal →</span>
+        <button class="btn-drawer-action btn-drawer-action--shop" onclick="window.location.href='shop.html'">
+          <span>Shop Handcrafted Rituals →</span>
         </button>
       `;
 
@@ -967,6 +1029,329 @@
     } catch (e) {
       alert('Login error. Please try again.');
     }
+  };
+
+  let drawerOtpCooldownTimer = null;
+
+  // Toggle Forgot Password View inside Customer Drawer
+  window.toggleDrawerForgotPassword = function(show) {
+    const loginWrap = document.getElementById('drawerPasswordLoginWrap');
+    const forgotWrap = document.getElementById('drawerForgotPassWrap');
+    const toggleBtn = document.getElementById('togglePasswordLoginBtn');
+    const loginEmailInput = document.getElementById('drawerLoginEmail');
+    const forgotEmailInput = document.getElementById('drawerForgotEmail');
+
+    if (show) {
+      if (loginWrap) loginWrap.style.display = 'none';
+      if (forgotWrap) forgotWrap.style.display = 'block';
+      if (toggleBtn) toggleBtn.style.display = 'none';
+      if (loginEmailInput && forgotEmailInput && loginEmailInput.value.includes('@')) {
+        forgotEmailInput.value = loginEmailInput.value.trim();
+      }
+    } else {
+      if (loginWrap) loginWrap.style.display = 'block';
+      if (forgotWrap) forgotWrap.style.display = 'none';
+      if (toggleBtn) toggleBtn.style.display = 'inline-block';
+    }
+  };
+
+  // Step 1: Send OTP to registered email
+  window.handleDrawerSendOtp = async function() {
+    const emailInput = document.getElementById('drawerForgotEmail');
+    const btn = document.getElementById('btnDrawerSendOtp');
+    const timerSpan = document.getElementById('drawerOtpCountdownTimer');
+    const banner = document.getElementById('drawerOtpStatusBanner');
+    const step2 = document.getElementById('drawerForgotStep2');
+    const otpInput = document.getElementById('drawerForgotOtpDigits');
+    const errorMsg = document.getElementById('drawerOtpErrorMsg');
+
+    const email = (emailInput?.value || '').trim();
+    if (!email || !email.includes('@')) {
+      window.showDrawerActionModal({
+        icon: '⚠️',
+        iconBg: '#FEE2E2',
+        iconColor: '#DC2626',
+        title: 'Valid Email Required',
+        message: 'Please enter a valid registered email address to receive your verification code.',
+        btnText: 'OK',
+        onConfirm: () => emailInput?.focus()
+      });
+      return;
+    }
+
+    if (btn) btn.disabled = true;
+    if (errorMsg) errorMsg.style.display = 'none';
+
+    try {
+      const res = await fetch('/api/customer/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        if (banner) {
+          banner.style.display = 'block';
+          banner.innerHTML = `✅ <strong>Verification Code Sent:</strong> A 6-digit OTP has been sent to your registered email <strong>${email}</strong>. Please check your inbox.`;
+        }
+        if (step2) step2.style.display = 'block';
+        if (otpInput) {
+          otpInput.value = '';
+          otpInput.disabled = false;
+          otpInput.focus();
+        }
+
+        const verifyBtn = document.getElementById('btnDrawerVerifyOtp');
+        if (verifyBtn) {
+          verifyBtn.disabled = false;
+          verifyBtn.textContent = 'Verify OTP';
+          verifyBtn.style.background = 'linear-gradient(135deg, #7C2A72 0%, #4D1847 100%)';
+        }
+
+        // 60-second countdown
+        let timeLeft = 60;
+        if (timerSpan) {
+          timerSpan.style.display = 'inline';
+          timerSpan.textContent = `(${timeLeft}s)`;
+        }
+        if (drawerOtpCooldownTimer) clearInterval(drawerOtpCooldownTimer);
+        drawerOtpCooldownTimer = setInterval(() => {
+          timeLeft--;
+          if (timeLeft <= 0) {
+            clearInterval(drawerOtpCooldownTimer);
+            if (btn) btn.disabled = false;
+            if (timerSpan) timerSpan.style.display = 'none';
+          } else {
+            if (timerSpan) timerSpan.textContent = `(${timeLeft}s)`;
+          }
+        }, 1000);
+
+      } else {
+        if (btn) btn.disabled = false;
+        // User rule: If email is not registered, show popup explaining to register first!
+        if (res.status === 404 || data.notRegistered || (data.message && data.message.toLowerCase().includes('not registered'))) {
+          window.showDrawerActionModal({
+            icon: '🚫',
+            iconBg: '#FEE2E2',
+            iconColor: '#DC2626',
+            title: 'Email Not Registered',
+            message: `The email "${email}" is not registered with Nachiyar Herbals. Please create an account first.`,
+            btnText: 'Create Account Now →',
+            onConfirm: () => {
+              window.toggleDrawerForgotPassword(false);
+              const passWrap = document.getElementById('drawerPasswordLoginWrap');
+              const toggleBtn = document.getElementById('togglePasswordLoginBtn');
+              if (passWrap) passWrap.style.display = 'none';
+              if (toggleBtn) toggleBtn.textContent = 'Already registered? Sign In with Password →';
+              const regEmail = document.getElementById('regEmail');
+              if (regEmail) {
+                regEmail.value = email;
+                regEmail.focus();
+              }
+            }
+          });
+        } else {
+          window.showDrawerActionModal({
+            icon: '⚠️',
+            iconBg: '#FEE2E2',
+            iconColor: '#DC2626',
+            title: 'Unable to Send OTP',
+            message: data.message || 'Could not send verification code. Please try again.',
+            btnText: 'OK'
+          });
+        }
+      }
+    } catch (e) {
+      if (btn) btn.disabled = false;
+      window.showDrawerActionModal({
+        icon: '⚠️',
+        iconBg: '#FEE2E2',
+        iconColor: '#DC2626',
+        title: 'Connection Error',
+        message: 'Could not connect to the authentication server. Please check your network.',
+        btnText: 'OK'
+      });
+    }
+  };
+
+  // Step 2: Verify OTP
+  window.handleDrawerVerifyOtp = async function() {
+    const email = (document.getElementById('drawerForgotEmail')?.value || '').trim();
+    const otpInput = document.getElementById('drawerForgotOtpDigits');
+    const verifyBtn = document.getElementById('btnDrawerVerifyOtp');
+    const errorMsg = document.getElementById('drawerOtpErrorMsg');
+    const step3 = document.getElementById('drawerForgotStep3');
+
+    const otp = (otpInput?.value || '').trim();
+    if (!otp || otp.length !== 6) {
+      window.showDrawerActionModal({
+        icon: '⚠️',
+        iconBg: '#FEE2E2',
+        iconColor: '#DC2626',
+        title: 'OTP is wrong',
+        message: 'Please enter the 6-digit verification code sent to your email.',
+        btnText: 'OK',
+        onConfirm: () => otpInput?.focus()
+      });
+      return;
+    }
+
+    if (verifyBtn) {
+      verifyBtn.disabled = true;
+      verifyBtn.textContent = 'Verifying...';
+    }
+    if (errorMsg) errorMsg.style.display = 'none';
+
+    try {
+      const res = await fetch('/api/customer/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, otp })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        if (otpInput) otpInput.disabled = true;
+        if (verifyBtn) {
+          verifyBtn.textContent = '✅ Verified';
+          verifyBtn.style.background = '#15803D';
+        }
+        if (step3) {
+          step3.style.display = 'block';
+          const newPassInput = document.getElementById('drawerForgotNewPass');
+          if (newPassInput) newPassInput.focus();
+        }
+      } else {
+        if (verifyBtn) {
+          verifyBtn.disabled = false;
+          verifyBtn.textContent = 'Verify OTP';
+        }
+        if (errorMsg) {
+          errorMsg.style.display = 'block';
+          errorMsg.textContent = '❌ ' + (data.message || 'OTP is wrong. Please enter the valid OTP sent to your email.');
+        }
+        window.showDrawerActionModal({
+          icon: '⚠️',
+          iconBg: '#FEE2E2',
+          iconColor: '#DC2626',
+          title: 'OTP is wrong',
+          message: data.message || 'The OTP you entered is wrong. Please enter the valid OTP sent to your email.',
+          btnText: 'Try Again',
+          onConfirm: () => {
+            if (otpInput) {
+              otpInput.focus();
+              otpInput.select();
+            }
+          }
+        });
+      }
+    } catch (e) {
+      if (verifyBtn) {
+        verifyBtn.disabled = false;
+        verifyBtn.textContent = 'Verify OTP';
+      }
+      alert('Verification network error: ' + e.message);
+    }
+  };
+
+  // Step 3: Final Password Update and Auto Sign-In
+  window.handleDrawerFinalPasswordReset = async function() {
+    const email = (document.getElementById('drawerForgotEmail')?.value || '').trim();
+    const otp = (document.getElementById('drawerForgotOtpDigits')?.value || '').trim();
+    const newPassInput = document.getElementById('drawerForgotNewPass');
+    const confirmPassInput = document.getElementById('drawerForgotConfirmPass');
+    const btn = document.getElementById('btnDrawerUpdatePass');
+
+    const newPassword = (newPassInput?.value || '').trim();
+    const confirmPassword = (confirmPassInput?.value || '').trim();
+
+    if (!newPassword || newPassword.length < 4) {
+      alert('New password must be at least 4 characters.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      alert('Passwords do not match. Please re-enter.');
+      return;
+    }
+
+    if (btn) btn.disabled = true;
+
+    try {
+      const res = await fetch('/api/customer/verify-otp-reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, otp, newPassword })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        // Password updated in DB! Now auto sign in the customer seamlessly
+        try {
+          const loginRes = await fetch('/api/customer/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password: newPassword })
+          });
+          const loginData = await loginRes.json();
+          if (loginData.success && loginData.customer) {
+            syncCustomerLoginState(loginData.customer, loginData.token);
+          }
+        } catch (le) {}
+
+        window.showDrawerActionModal({
+          icon: '🎉',
+          iconBg: '#DCFCE7',
+          iconColor: '#15803D',
+          title: 'User password is updated!',
+          message: 'Your account password has been successfully updated in the database. You are now securely signed in.',
+          btnText: 'Continue to Account →',
+          onConfirm: () => {
+            window.toggleDrawerForgotPassword(false);
+            initCustomerAccountDrawer();
+            if (window.location.pathname.includes('account')) {
+              window.location.reload();
+            }
+          }
+        });
+      } else {
+        if (btn) btn.disabled = false;
+        alert(data.message || 'Could not update password. Please try again.');
+      }
+    } catch (e) {
+      if (btn) btn.disabled = false;
+      alert('Error updating password: ' + e.message);
+    }
+  };
+
+  // Universal Drawer Modal Dialog Popup
+  window.showDrawerActionModal = function({ icon = 'ℹ️', iconBg = '#F3E8FF', iconColor = '#7C5AAB', title, message, btnText = 'OK', onConfirm = null }) {
+    let modal = document.getElementById('drawerUniversalActionModal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'drawerUniversalActionModal';
+      modal.style.cssText = 'position:fixed; inset:0; background:rgba(30,12,38,0.7); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); z-index:999999; display:flex; align-items:center; justify-content:center; padding:20px;';
+      document.body.appendChild(modal);
+    }
+
+    modal.innerHTML = `
+      <div style="background:#FFFFFF; border-radius:24px; max-width:400px; width:100%; padding:32px 24px; text-align:center; box-shadow:0 20px 50px rgba(45,24,50,0.3); border:1.5px solid #F0E8F8; animation:popIn 0.3s cubic-bezier(0.34,1.56,0.64,1);">
+        <div style="width:68px; height:68px; border-radius:50%; background:${iconBg}; color:${iconColor}; display:flex; align-items:center; justify-content:center; font-size:2rem; margin:0 auto 16px; box-shadow:0 4px 14px rgba(0,0,0,0.08);">
+          ${icon}
+        </div>
+        <h3 style="font-size:1.3rem; font-weight:800; color:#1E0C26; margin:0 0 8px 0; font-family:var(--font-display, inherit);">${title}</h3>
+        <p style="font-size:0.9rem; color:#6B5E74; line-height:1.55; margin:0 0 22px 0;">${message}</p>
+        <button type="button" id="btnDrawerModalAction" style="width:100%; height:46px; background:linear-gradient(135deg, #7C2A72 0%, #4D1847 60%, #2D1832 100%); color:#FFFFFF; border:none; border-radius:999px; font-weight:800; font-size:0.92rem; cursor:pointer; box-shadow:0 4px 14px rgba(45,24,50,0.25);">
+          ${btnText}
+        </button>
+      </div>
+    `;
+
+    modal.style.display = 'flex';
+    document.getElementById('btnDrawerModalAction').onclick = () => {
+      modal.style.display = 'none';
+      if (typeof onConfirm === 'function') onConfirm();
+    };
   };
 
   window.handleDrawerRegister = async function() {

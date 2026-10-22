@@ -110,20 +110,130 @@ app.get(['/nimda-login', '/nimda-login/'], (req, res) => {
 });
 
 // =========================================================================
-// CLEAN STOREFRONT PAGE ROUTES (e.g. /shop/ without .html)
+// CLEAN STOREFRONT PAGE ROUTES & DYNAMIC SITEMAP ENGINE
+// User-facing only - Automatically discovers any new .html page added to project!
 // =========================================================================
-const cleanPages = ['shop', 'about', 'contact', 'checkout', 'account', 'order-status', 'yearsbeer', 'privacy', 'terms', 'shipping-policy'];
-cleanPages.forEach((page) => {
-  app.get([`/${page}`, `/${page}/`], (req, res) => {
-    res.setHeader('Cache-Control', 'no-cache, must-revalidate');
-    res.sendFile(path.join(projectRoot, `${page}.html`));
-  });
-});
+
+function getUserFacingPages() {
+  const excludedFiles = new Set([
+    'admin.html',
+    'admin-login.html',
+    'nimda.html',
+    'nimda-login.html',
+    'index.html',
+    'product.html'
+  ]);
+
+  try {
+    const files = fs.readdirSync(projectRoot);
+    const pages = [];
+    for (const file of files) {
+      if (file.toLowerCase().endsWith('.html') && !excludedFiles.has(file.toLowerCase())) {
+        const slug = file.replace(/\.html$/i, '');
+        let lastmod = new Date().toISOString().split('T')[0];
+        try {
+          const stat = fs.statSync(path.join(projectRoot, file));
+          lastmod = stat.mtime.toISOString().split('T')[0];
+        } catch (e) {}
+
+        // Friendly title formatting: e.g. "shipping-policy" -> "Shipping Policy"
+        const title = slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+
+        pages.push({ slug, file, title, lastmod });
+      }
+    }
+    return pages;
+  } catch (e) {
+    return [
+      { slug: 'shop', file: 'shop.html', title: 'Shop Rituals', lastmod: '2026-10-22' },
+      { slug: 'about', file: 'about.html', title: 'About Us', lastmod: '2026-10-22' },
+      { slug: 'contact', file: 'contact.html', title: 'Contact', lastmod: '2026-10-22' },
+      { slug: 'account', file: 'account.html', title: 'Customer Account', lastmod: '2026-10-22' },
+      { slug: 'order-status', file: 'order-status.html', title: 'Order Tracking', lastmod: '2026-10-22' },
+      { slug: 'checkout', file: 'checkout.html', title: 'Checkout', lastmod: '2026-10-22' },
+      { slug: 'privacy', file: 'privacy.html', title: 'Privacy Policy', lastmod: '2026-10-22' },
+      { slug: 'terms', file: 'terms.html', title: 'Terms of Service', lastmod: '2026-10-22' },
+      { slug: 'shipping-policy', file: 'shipping-policy.html', title: 'Shipping & Returns', lastmod: '2026-10-22' },
+      { slug: 'sitemap', file: 'sitemap.html', title: 'Sitemap', lastmod: '2026-10-22' }
+    ];
+  }
+}
 
 // Dedicated product page route with slug parameter support
 app.get(['/product', '/product/', '/product/:slug', '/product/:slug/'], (req, res) => {
   res.setHeader('Cache-Control', 'no-cache, must-revalidate');
   res.sendFile(path.join(projectRoot, 'product.html'));
+});
+
+// Dynamic Clean Route Handler: Automatically routes ANY user-facing .html file dropped into project!
+app.get(['/:page', '/:page/'], (req, res, next) => {
+  const page = (req.params.page || '').toLowerCase();
+  const blocked = ['nimda', 'nimda-login', 'admin', 'admin-login', 'api', 'uploads'];
+  if (blocked.includes(page) || path.extname(req.path)) {
+    return next();
+  }
+  const filePath = path.join(projectRoot, `${page}.html`);
+  if (fs.existsSync(filePath)) {
+    res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+    return res.sendFile(filePath);
+  }
+  next();
+});
+
+// API for sitemap.html to dynamically receive all discovered user pages
+app.get('/api/sitemap/pages', (req, res) => {
+  const pages = getUserFacingPages();
+  res.json({ success: true, count: pages.length, pages });
+});
+
+// =========================================================================
+// SITEMAP.XML & ROBOTS.TXT (User-facing only - Strictly no admin URLs)
+// Automatically updates with all new products & any new user HTML pages!
+// =========================================================================
+app.get('/robots.txt', (req, res) => {
+  res.setHeader('Content-Type', 'text/plain');
+  res.sendFile(path.join(projectRoot, 'robots.txt'));
+});
+
+app.get('/sitemap.xml', async (req, res) => {
+  res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+  try {
+    const { query } = require('./config/db');
+    const prodsResult = await query("SELECT slug, updated_at FROM products WHERE status = 'active' ORDER BY id ASC");
+    const activeProducts = prodsResult.rows || [];
+    const today = new Date().toISOString().split('T')[0];
+
+    const pages = getUserFacingPages();
+
+    const priorityMap = {
+      shop: '0.9',
+      about: '0.8',
+      contact: '0.8',
+      account: '0.7',
+      'order-status': '0.7',
+      checkout: '0.6',
+      sitemap: '0.6',
+      privacy: '0.5',
+      terms: '0.5',
+      'shipping-policy': '0.5'
+    };
+
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Homepage -->
+  <url><loc>https://nachiyarherbals.com/</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>1.0</priority></url>
+
+  <!-- Auto-Discovered User Storefront Pages (Always in Sync) -->
+${pages.map(p => `  <url><loc>https://nachiyarherbals.com/${p.slug}/</loc><lastmod>${p.lastmod || today}</lastmod><changefreq>${priorityMap[p.slug] >= '0.8' ? 'daily' : 'weekly'}</changefreq><priority>${priorityMap[p.slug] || '0.7'}</priority></url>`).join('\n')}
+
+  <!-- Botanical Formulations & Active Database Products (Always in Sync) -->
+${activeProducts.map(p => `  <url><loc>https://nachiyarherbals.com/product/?slug=${p.slug}</loc><lastmod>${p.updated_at ? new Date(p.updated_at).toISOString().split('T')[0] : today}</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>`).join('\n')}
+</urlset>`;
+
+    return res.send(xml);
+  } catch (err) {
+    return res.sendFile(path.join(projectRoot, 'sitemap.xml'));
+  }
 });
 
 // Health check with environment diagnostics

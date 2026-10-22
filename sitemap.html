@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base href="/">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Website Sitemap & Botanical Directory | Nachiyar Herbals & Cosmetics</title>
+  <meta name="description" content="Complete user-facing sitemap and directory for Nachiyar Herbals. Browse our pure Ayurvedic hair oils, shampoos, ritual sets, customer care, and policies.">
+  <!-- Nachiyar Royal Brand Favicon -->
+  <link rel="icon" type="image/png" href="assets/nachiyar-logo.png">
+  <link rel="shortcut icon" type="image/png" href="assets/nachiyar-logo.png">
+  <link rel="apple-touch-icon" href="assets/nachiyar-logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="customer-account.css">
+  <style>
+    .sitemap-hero {
+      padding: 60px 24px 40px;
+      text-align: center;
+      background: radial-gradient(circle at 50% 20%, rgba(236, 229, 248, 0.7) 0%, rgba(249, 248, 245, 0) 70%);
+      border-bottom: 1px solid var(--color-border);
+    }
+    .sitemap-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 50px 24px 80px;
+    }
+    .sitemap-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 32px;
+    }
+    .sitemap-card {
+      background: #FFFFFF;
+      border-radius: 20px;
+      padding: 32px 28px;
+      border: 1px solid #EADEF7;
+      box-shadow: 0 4px 20px rgba(45, 24, 50, 0.05);
+      transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+      display: flex;
+      flex-direction: column;
+    }
+    .sitemap-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 30px rgba(124, 42, 114, 0.12);
+      border-color: #D4AF37;
+    }
+    .sitemap-card-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 1.5px solid #F5EEFC;
+    }
+    .sitemap-card-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: #FAF5FF;
+      color: #7C2A72;
+      border: 1px solid #E9D5FF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.35rem;
+      flex-shrink: 0;
+    }
+    .sitemap-card-title {
+      font-family: var(--font-display, 'Cinzel', serif);
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #2D1832;
+      margin: 0;
+    }
+    .sitemap-links-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .sitemap-link-item a {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #4A3A52;
+      text-decoration: none;
+      font-size: 0.92rem;
+      font-weight: 600;
+      padding: 8px 12px;
+      border-radius: 8px;
+      background: transparent;
+      transition: all 0.2s ease;
+    }
+    .sitemap-link-item a:hover {
+      background: #FAF5FF;
+      color: #7C2A72;
+      padding-left: 16px;
+    }
+    .sitemap-link-item a span.arrow {
+      color: #C9A84C;
+      font-size: 0.85rem;
+      transition: transform 0.2s ease;
+    }
+    .sitemap-link-item a:hover span.arrow {
+      transform: translateX(4px);
+    }
+    .sitemap-search-wrap {
+      max-width: 540px;
+      margin: 24px auto 0;
+      position: relative;
+    }
+    .sitemap-search-input {
+      width: 100%;
+      height: 52px;
+      border-radius: 999px;
+      border: 1.5px solid #D4AF37;
+      padding: 0 24px 0 50px;
+      font-size: 0.95rem;
+      box-shadow: 0 4px 16px rgba(212, 175, 55, 0.15);
+      outline: none;
+      box-sizing: border-box;
+      background: #FFFFFF;
+    }
+    .sitemap-search-icon {
+      position: absolute;
+      left: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #8E7F99;
+      font-size: 1.1rem;
+    }
+  </style>
+</head>
+<body class="page-body">
+
+  <!-- ==================== ANNOUNCEMENT TICKER ==================== -->
+  <aside class="announcement-bar" role="complementary" aria-label="Store Announcement">
+    <div class="announcement-ticker">
+      <div class="ticker-track" id="headerTickerTrack">
+        <span>ROYAL BOTANICAL CARE ✦ FREE PAN-INDIA SHIPPING OVER ₹599</span>
+        <span>•</span>
+        <span>COLD-PRESSED IN SMALL BATCHES ✦ 100% PURE ACTIVE HERBS</span>
+        <span>•</span>
+        <span>USE CODE <strong class="code-highlight">ROYAL10</strong> FOR 10% OFF YOUR FIRST RITUAL</span>
+        <span>•</span>
+        <span>ROYAL BOTANICAL CARE ✦ FREE PAN-INDIA SHIPPING OVER ₹599</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ==================== SITE HEADER ==================== -->
+  <header class="site-header" id="siteHeader">
+    <div class="header-container">
+      <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Toggle navigation menu">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+
+      <a href="/" class="brand-link">
+        <div class="brand-crest">
+          <img src="assets/nachiyar-logo.png" alt="Nachiyar Logo" class="brand-logo-img">
+        </div>
+        <div class="brand-text-lockup">
+          <span class="brand-name">NACHIYAR</span>
+          <span class="brand-sub">HERBALS & COSMETICS</span>
+        </div>
+      </a>
+
+      <nav class="desktop-nav">
+        <ul class="nav-links">
+          <li><a href="/" class="nav-link">Home</a></li>
+          <li><a href="/shop/" class="nav-link">Shop Rituals</a></li>
+          <li><a href="/about/" class="nav-link">About Us</a></li>
+          <li><a href="/contact/" class="nav-link">Contact</a></li>
+        </ul>
+      </nav>
+
+      <div class="header-actions">
+        <a href="/account/" class="account-trigger-btn" id="accountTriggerBtn" aria-label="Customer Account">
+          <svg class="user-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== SITEMAP HERO ==================== -->
+  <main>
+    <section class="sitemap-hero">
+      <span class="section-tag" style="display:inline-block; margin-bottom:12px; background:#FAF5FF; color:#7C2A72; border:1px solid #E9D5FF; padding:4px 14px; border-radius:999px; font-size:0.75rem; font-weight:800; letter-spacing:1px; text-transform:uppercase;">
+        ✦ BOTANICAL SITEMAP & DIRECTORY ✦
+      </span>
+      <h1 style="font-family:var(--font-display, 'Cinzel', serif); font-size:clamp(1.8rem, 4vw, 2.6rem); color:#2D1832; margin:0 0 12px 0;">
+        Explore All Pages & Formulations
+      </h1>
+      <p style="font-size:1rem; color:#6B5E74; max-width:640px; margin:0 auto; line-height:1.6;">
+        Welcome to the complete storefront directory of Nachiyar Herbals. Easily discover our authentic Ayurvedic hair care, ritual sets, order tracking, and store policies.
+      </p>
+
+      <!-- Search Input Filter -->
+      <div class="sitemap-search-wrap">
+        <span class="sitemap-search-icon">🔍</span>
+        <input type="text" id="sitemapFilterInput" class="sitemap-search-input" placeholder="Search pages, oils, shampoo, policies..." oninput="filterSitemapLinks(this.value)">
+      </div>
+    </section>
+
+    <!-- ==================== SITEMAP CONTENT GRID ==================== -->
+    <section class="sitemap-container">
+      <div class="sitemap-grid" id="sitemapGrid">
+
+        <!-- CARD 1: CORE STOREFRONT PAGES -->
+        <div class="sitemap-card">
+          <div class="sitemap-card-header">
+            <div class="sitemap-card-icon">🌿</div>
+            <h2 class="sitemap-card-title">Core Storefront</h2>
+          </div>
+          <ul class="sitemap-links-list">
+            <li class="sitemap-link-item">
+              <a href="/"><span>Home (The Royal Apothecary)</span><span class="arrow">→</span></a>
+            </li>
+            <li class="sitemap-link-item">
+              <a href="/shop/"><span>Shop All Botanical Rituals</span><span class="arrow">→</span></a>
+            </li>
+            <li class="sitemap-link-item">
+              <a href="/about/"><span>Our Heritage &amp; Craft</span><span class="arrow">→</span></a>
+            </li>
+            <li class="sitemap-link-item">
+              <a href="/contact/"><span>Contact Customer Care</span><span class="arrow">→</span></a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- CARD 2: BOTANICAL PRODUCTS -->
+        <div class="sitemap-card">
+          <div class="sitemap-card-header">
+            <div class="sitemap-card-icon">🧴</div>
+            <h2 class="sitemap-card-title">Products &amp; Rituals</h2>
+          </div>
+          <ul class="sitemap-links-list" id="sitemapProductLinks">
+            <li class="sitemap-link-item">
+              <a href="/product/?slug=herbal-hair-oil"><span>Herbal Hair Oil (18-Herb Ritual)</span><span class="arrow">→</span></a>
+            </li>
+            <li class="sitemap-link-item">
+              <a href="/product/?slug=hibiscus-flower-shampoo"><span>Hibiscus Flower Shampoo</span><span class="arrow">→</span></a>
+            </li>
+            <li class="sitemap-link-item">
+              <a href="/product/?slug=royal-hair-ritual-duo"><span>Royal Hair Ritual Duo (Combo Set)</span><span class="arrow">→</span></a>
+            </li>
+            <li class="sitemap-link-item">
+              <a href="/product/?slug=herbal-hair-oil-3927"><span>Herbal Hair Oil (Special Edition)</span><span class="arrow">→</span></a>
+            </li>
+            <li class="sitemap-link-item">
+              <a href="/product/?slug=herbal-hair-oil-9673"><span>Herbal Hair Oil (Classic Edition)</span><span class="arrow">→</span></a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- CARD 3: CUSTOMER PORTAL & ORDERS -->
+        <div class="sitemap-card">
+          <div class="sitemap-card-header">
+            <div class="sitemap-card-icon">👤</div>
+            <h2 class="sitemap-card-title">Customer Care &amp; Orders</h2>
+          </div>
+          <ul class="sitemap-links-list">
+            <li class="sitemap-link-item">
+              <a href="/account/"><span>Customer Account Dashboard</span><span class="arrow">→</span></a>
+            </li>
+            <li class="sitemap-link-item">
+              <a href="/order-status/"><span>Live Order &amp; Courier Tracking</span><span class="arrow">→</span></a>
+            </li>
+            <li class="sitemap-link-item">
+              <a href="/checkout/"><span>Express Secure Checkout</span><span class="arrow">→</span></a>
+            </li>
+            <li class="sitemap-link-item">
+              <a href="/account/#security"><span>Password &amp; Security Controls</span><span class="arrow">→</span></a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- CARD 4: POLICIES & COMPLIANCE -->
+        <div class="sitemap-card">
+          <div class="sitemap-card-header">
+            <div class="sitemap-card-icon">📜</div>
+            <h2 class="sitemap-card-title">Policies &amp; Legal</h2>
+          </div>
+          <ul class="sitemap-links-list">
+            <li class="sitemap-link-item">
+              <a href="/privacy/"><span>Privacy Policy &amp; Data Protection</span><span class="arrow">→</span></a>
+            </li>
+            <li class="sitemap-link-item">
+              <a href="/terms/"><span>Terms of Service &amp; Store Agreement</span><span class="arrow">→</span></a>
+            </li>
+            <li class="sitemap-link-item">
+              <a href="/shipping-policy/"><span>Shipping, Delivery &amp; Returns</span><span class="arrow">→</span></a>
+            </li>
+            <li class="sitemap-link-item">
+              <a href="/sitemap.xml" target="_blank"><span>XML Sitemap (Search Engine Feed)</span><span class="arrow">↗</span></a>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- Live Search Empty State -->
+      <div id="sitemapEmptyState" style="display:none; text-align:center; padding:60px 20px;">
+        <span style="font-size:2.5rem; display:block; margin-bottom:12px;">🔍</span>
+        <h3 style="font-size:1.2rem; font-weight:700; color:#2D1832; margin-bottom:6px;">No Matching Pages Found</h3>
+        <p style="font-size:0.875rem; color:#8E7F99; margin:0;">Try searching for "oil", "shampoo", "orders", or "policy".</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- ==================== FOOTER ==================== -->
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-legal-bar">
+        <p>© 2026 NACHIYAR HERBALS & COSMETICS. ALL RIGHTS RESERVED.</p>
+        <p class="footer-developer-credit">Developed by <a href="https://digitechzo.com" target="_blank" rel="noopener noreferrer" class="developer-link">Digitechzo</a></p>
+        <p class="legal-links"><a href="/">Home</a> • <a href="/shop/">Shop Rituals</a> • <a href="/about/">About Us</a> • <a href="/contact/">Contact</a> • <a href="/privacy/">Privacy Policy</a> • <a href="/terms/">Terms of Service</a> • <a href="/shipping-policy/">Shipping & Returns</a> • <a href="/sitemap/" style="color:#D4AF37; font-weight:700;">Sitemap</a></p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="customer-account.js"></script>
+  <script>
+    // Live filter logic
+    function filterSitemapLinks(query) {
+      const q = (query || '').trim().toLowerCase();
+      const items = document.querySelectorAll('.sitemap-link-item');
+      let visibleCount = 0;
+
+      items.forEach(item => {
+        const text = item.textContent.toLowerCase();
+        if (!q || text.includes(q)) {
+          item.style.display = 'block';
+          visibleCount++;
+        } else {
+          item.style.display = 'none';
+        }
+      });
+
+      // Show/hide parent cards if all items are hidden
+      document.querySelectorAll('.sitemap-card').forEach(card => {
+        const visibleInCard = card.querySelectorAll('.sitemap-link-item[style*="display: block"], .sitemap-link-item:not([style*="display: none"])');
+        card.style.display = (visibleInCard.length > 0 || !q) ? 'flex' : 'none';
+      });
+
+      const emptyEl = document.getElementById('sitemapEmptyState');
+      if (emptyEl) {
+        emptyEl.style.display = (visibleCount === 0 && q) ? 'block' : 'none';
+      }
+    }
+
+    // Auto-fetch dynamic products & auto-discovered pages to keep sitemap 100% in sync
+    document.addEventListener('DOMContentLoaded', async () => {
+      // 1. Auto-fetch active products from PostgreSQL
+      try {
+        const res = await fetch('/api/products');
+        const json = await res.json();
+        const prods = (json.data || json || []).filter(p => p && p.status !== 'archived');
+        if (prods && prods.length > 0) {
+          const list = document.getElementById('sitemapProductLinks');
+          if (list) {
+            list.innerHTML = prods.map(p => `
+              <li class="sitemap-link-item">
+                <a href="/product/?slug=${p.slug}">
+                  <span>${p.name} ${p.subtitle ? `(${p.subtitle})` : ''}</span>
+                  <span class="arrow">→</span>
+                </a>
+              </li>
+            `).join('');
+          }
+        }
+      } catch (e) {
+        console.warn('Could not load dynamic products for sitemap:', e);
+      }
+
+      // 2. Auto-discover any newly added .html pages dropped into the project
+      try {
+        const pageRes = await fetch('/api/sitemap/pages');
+        const pageData = await pageRes.json();
+        if (pageData.success && pageData.pages) {
+          const defaultSlugs = new Set(['shop', 'about', 'contact', 'account', 'order-status', 'checkout', 'privacy', 'terms', 'shipping-policy', 'sitemap', 'yearsbeer']);
+          const customPages = pageData.pages.filter(p => !defaultSlugs.has(p.slug.toLowerCase()));
+          if (customPages.length > 0) {
+            let customCard = document.getElementById('sitemapCustomPagesCard');
+            if (!customCard) {
+              const grid = document.getElementById('sitemapGrid');
+              const cardDiv = document.createElement('div');
+              cardDiv.className = 'sitemap-card';
+              cardDiv.id = 'sitemapCustomPagesCard';
+              cardDiv.innerHTML = `
+                <div class="sitemap-card-header">
+                  <div class="sitemap-card-icon">📄</div>
+                  <h2 class="sitemap-card-title">Additional Pages</h2>
+                </div>
+                <ul class="sitemap-links-list" id="sitemapCustomLinks"></ul>
+              `;
+              grid.appendChild(cardDiv);
+            }
+            const customList = document.getElementById('sitemapCustomLinks');
+            if (customList) {
+              customList.innerHTML = customPages.map(p => `
+                <li class="sitemap-link-item">
+                  <a href="/${p.slug}/">
+                    <span>${p.title}</span>
+                    <span class="arrow">→</span>
+                  </a>
+                </li>
+              `).join('');
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('Could not load custom pages for sitemap:', e);
+      }
+    });
+  </script>
+</body>
+</html>
