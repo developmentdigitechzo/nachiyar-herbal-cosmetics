@@ -693,18 +693,25 @@ router.post('/send-otp', async (req, res) => {
 
     otpStore.set(cleanEmail, { otp, expiresAt, customerId: customer.id, verified: false });
 
-    // Send email via mailer
+    // Send email via mailer with automatic retry
     const mailResult = await sendOtpEmail({
       to: cleanEmail,
       name: customer.name || 'Valued Customer',
       otp
     });
 
+    if (!mailResult.sent) {
+      return res.status(500).json({
+        success: false,
+        message: 'Could not deliver OTP email: ' + (mailResult.error || 'SMTP delivery failed. Please retry.')
+      });
+    }
+
     res.json({
       success: true,
       message: 'Verification OTP has been sent to ' + cleanEmail,
       maskedEmail: maskEmail(cleanEmail),
-      mailSent: mailResult.sent
+      mailSent: true
     });
   } catch (err) {
     console.error('Send OTP error:', err);

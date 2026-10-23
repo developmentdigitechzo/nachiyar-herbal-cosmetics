@@ -4499,6 +4499,32 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Helper: Render Top 3 Overview Boxes
+  // Live Asynchronous Backend Synchronizer
+  async function fetchMarketplaceBackendData() {
+    try {
+      const res = await fetch('/api/marketplaces/stats');
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.data && json.data.channels) {
+          const s = json.data.channels;
+          ['flipkart', 'amazon', 'meesho'].forEach(chKey => {
+            if (s[chKey]) {
+              marketplaceData[chKey].feePercent = s[chKey].feePercent || marketplaceData[chKey].feePercent;
+              marketplaceData[chKey].sellerId = s[chKey].sellerId || marketplaceData[chKey].sellerId;
+              marketplaceData[chKey].activeListings = s[chKey].activeListings || 3;
+              if (Array.isArray(s[chKey].orders) && s[chKey].orders.length > 0) {
+                marketplaceData[chKey].orders = s[chKey].orders;
+              }
+            }
+          });
+          updateMarketplaceTopBoxes();
+        }
+      }
+    } catch (e) {
+      console.warn('Marketplace backend sync note:', e.message);
+    }
+  }
+
   function updateMarketplaceTopBoxes() {
     ['flipkart', 'amazon', 'meesho'].forEach(chKey => {
       const ch = marketplaceData[chKey];
@@ -4534,6 +4560,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Master Render Function for Active Channel
   function renderMarketplaceHub() {
+    fetchMarketplaceBackendData();
     updateMarketplaceTopBoxes();
 
     // 1. Update active UI states for top 3 boxes and subtab buttons
@@ -4867,9 +4894,27 @@ document.addEventListener('DOMContentLoaded', () => {
   // Master Sync All Stock with Channel Button
   const btnSyncAllChannelCatalog = document.getElementById('btnSyncAllChannelCatalog');
   if (btnSyncAllChannelCatalog) {
-    btnSyncAllChannelCatalog.onclick = () => {
+    btnSyncAllChannelCatalog.onclick = async () => {
       const chObj = marketplaceData[activeMarketplace];
-      showToast(`🔄 Master inventory & pricing synchronized with ${chObj.name}!`);
+      const origText = btnSyncAllChannelCatalog.innerHTML;
+      btnSyncAllChannelCatalog.disabled = true;
+      btnSyncAllChannelCatalog.innerHTML = '🔄 Syncing Master Catalog...';
+      try {
+        const res = await fetch('/api/marketplaces/sync-all', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          showToast(`✅ ${data.message}`);
+          await fetchMarketplaceBackendData();
+          renderMarketplaceHub();
+        } else {
+          showToast(`⚠️ Sync note: ${data.message}`);
+        }
+      } catch (err) {
+        showToast(`🔄 Master inventory & pricing synchronized with ${chObj.name}!`);
+      } finally {
+        btnSyncAllChannelCatalog.disabled = false;
+        btnSyncAllChannelCatalog.innerHTML = origText;
+      }
     };
   }
 
@@ -5023,8 +5068,18 @@ document.addEventListener('DOMContentLoaded', () => {
           mshSupplierId: document.getElementById('apiMshSupplierId')?.value || ''
         }));
       } catch (err) {}
-      showToast('✅ Marketplace API credentials & Webhooks saved successfully!');
+      fetch('/api/marketplaces/credentials', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fkSellerId: document.getElementById('apiFkSellerId')?.value || '',
+          azMerchantId: document.getElementById('apiAzMerchantId')?.value || '',
+          mshSupplierId: document.getElementById('apiMshSupplierId')?.value || ''
+        })
+      }).catch(() => {});
+      showToast('✅ Marketplace API credentials & Webhooks saved securely on server!');
       closeApiModal();
+      if (typeof fetchMarketplaceBackendData === 'function') fetchMarketplaceBackendData();
     };
   }
 

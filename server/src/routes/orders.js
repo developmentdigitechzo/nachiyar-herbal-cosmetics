@@ -1,6 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const { pool, query } = require('../config/db');
+const {
+  sendOrderConfirmationEmail,
+  sendOrderCancellationEmail,
+  sendOrderDeliveredEmail
+} = require('../services/mailer');
 
 function mapOrder(row) {
   return {
@@ -205,10 +210,17 @@ router.post('/', async (req, res) => {
     const orderRes = await client.query(insertSql, values);
     await client.query('COMMIT');
 
+    const mappedOrder = mapOrder(orderRes.rows[0]);
+
+    // Asynchronously dispatch Order Confirmation Email (Non-blocking fail-safe)
+    sendOrderConfirmationEmail(mappedOrder).catch(mailErr => {
+      console.warn(`⚠️ [Orders] Async order confirmation email error for #${mappedOrder.orderNumber}:`, mailErr.message);
+    });
+
     res.status(201).json({
       success: true,
       message: normalizedCategory === 'cod' ? 'Order confirmed for Cash on Delivery' : 'Order placed and payment verified successfully',
-      data: mapOrder(orderRes.rows[0])
+      data: mappedOrder
     });
   } catch (err) {
     await client.query('ROLLBACK');
@@ -252,7 +264,20 @@ router.patch('/:id/status', async (req, res) => {
       return res.status(404).json({ success: false, message: 'Order not found' });
     }
 
-    res.json({ success: true, data: mapOrder(result.rows[0]) });
+    const updatedOrder = mapOrder(result.rows[0]);
+
+    // Asynchronously dispatch transactional lifecycle emails
+    if (status === 'delivered') {
+      sendOrderDeliveredEmail(updatedOrder).catch(mailErr => {
+        console.warn(`⚠️ [Orders] Async order delivered email error for #${updatedOrder.orderNumber}:`, mailErr.message);
+      });
+    } else if (status === 'cancelled') {
+      sendOrderCancellationEmail(updatedOrder).catch(mailErr => {
+        console.warn(`⚠️ [Orders] Async order cancellation email error for #${updatedOrder.orderNumber}:`, mailErr.message);
+      });
+    }
+
+    res.json({ success: true, data: updatedOrder });
   } catch (err) {
     console.error('Error updating order status:', err);
     res.status(500).json({ success: false, message: err.message });
@@ -387,10 +412,17 @@ router.post('/:id/cancel-approve', async (req, res) => {
 
     await client.query('COMMIT');
 
+    const mappedCancelledOrder = mapOrder(updateRes.rows[0]);
+
+    // Asynchronously dispatch Order Cancellation & Refund Email
+    sendOrderCancellationEmail(mappedCancelledOrder, updatedCancelDetails).catch(mailErr => {
+      console.warn(`⚠️ [Orders] Async cancel approval email error for #${mappedCancelledOrder.orderNumber}:`, mailErr.message);
+    });
+
     res.json({
       success: true,
       message: `Order #${orderRow.order_number} cancelled successfully. Inventory restored and refund recorded.`,
-      data: mapOrder(updateRes.rows[0])
+      data: mappedCancelledOrder
     });
   } catch (err) {
     await client.query('ROLLBACK');

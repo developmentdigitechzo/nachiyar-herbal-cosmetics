@@ -190,6 +190,67 @@ ON CONFLICT (id) DO NOTHING;
 -- FIX FOR TAGS COLUMN (Idempotent check)
 ALTER TABLE products ADD COLUMN IF NOT EXISTS tags JSONB DEFAULT '[]'::jsonb;
 
+-- 10. MARKETPLACE CHANNELS CONFIGURATION TABLE
+CREATE TABLE IF NOT EXISTS marketplace_channels (
+  id VARCHAR(50) PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  seller_id VARCHAR(100),
+  api_credentials JSONB DEFAULT '{}'::jsonb,
+  fee_percent NUMERIC(5, 2) DEFAULT 15.00,
+  theme_color VARCHAR(50) DEFAULT '#2874F0',
+  mode VARCHAR(50) DEFAULT 'SANDBOX',
+  is_active BOOLEAN DEFAULT TRUE,
+  last_sync_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 11. MARKETPLACE SKU MAPPING TABLE
+CREATE TABLE IF NOT EXISTS marketplace_skus (
+  id VARCHAR(100) PRIMARY KEY,
+  product_id VARCHAR(100) NOT NULL,
+  channel VARCHAR(50) NOT NULL,
+  channel_sku VARCHAR(100) NOT NULL,
+  external_id VARCHAR(100),
+  listing_price NUMERIC(10, 2),
+  sync_status VARCHAR(50) DEFAULT 'SYNCED',
+  last_synced_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(product_id, channel)
+);
+
+-- 12. UNIFIED MARKETPLACE ORDERS TABLE
+CREATE TABLE IF NOT EXISTS marketplace_orders (
+  id VARCHAR(100) PRIMARY KEY,
+  external_order_id VARCHAR(100) UNIQUE NOT NULL,
+  channel VARCHAR(50) NOT NULL,
+  customer_name VARCHAR(255) NOT NULL,
+  city VARCHAR(100),
+  state VARCHAR(100),
+  items JSONB NOT NULL,
+  gross_amount NUMERIC(10, 2) NOT NULL DEFAULT 0,
+  commission_fee NUMERIC(10, 2) NOT NULL DEFAULT 0,
+  shipping_fee NUMERIC(10, 2) NOT NULL DEFAULT 0,
+  net_amount NUMERIC(10, 2) NOT NULL DEFAULT 0,
+  status VARCHAR(50) DEFAULT 'NEW',
+  awb VARCHAR(100),
+  dispatch_slip_url TEXT,
+  order_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_mkt_skus_prod ON marketplace_skus (product_id);
+CREATE INDEX IF NOT EXISTS idx_mkt_skus_channel ON marketplace_skus (channel);
+CREATE INDEX IF NOT EXISTS idx_mkt_orders_channel ON marketplace_orders (channel);
+CREATE INDEX IF NOT EXISTS idx_mkt_orders_date ON marketplace_orders (order_date);
+
+-- SEED DEFAULT MARKETPLACE CHANNELS
+INSERT INTO marketplace_channels (id, name, seller_id, fee_percent, theme_color, mode, is_active)
+VALUES
+  ('flipkart', 'Flipkart Marketplace', 'FK_NACHIYAR_77', 15.00, '#2874F0', 'SANDBOX', TRUE),
+  ('amazon', 'Amazon India', 'AZ_NACH_IND_90', 17.00, '#FF9900', 'SANDBOX', TRUE),
+  ('meesho', 'Meesho Supplier Hub', 'MSH_NACH_44', 10.00, '#F43397', 'SANDBOX', TRUE)
+ON CONFLICT (id) DO NOTHING;
+
 -- PERMISSIONS AND OWNERSHIP SYNCHRONIZATION
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO nachiyarherbals;
 GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO nachiyarherbals;

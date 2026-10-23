@@ -143,10 +143,10 @@
 .account-drawer-body {
   flex: 1;
   overflow-y: auto;
-  padding: 24px;
+  padding: 20px 24px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
   background-color: #FAF9F6;
 }
 
@@ -541,14 +541,30 @@
 }
 
 /* Google Sign-In Divider & Button */
+.drawer-guest-auth-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+#drawerGoogleBtnWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: 48px;
+  margin: 0;
+}
+
 .drawer-auth-divider {
   display: flex;
   align-items: center;
   text-align: center;
-  margin: 16px 0;
+  margin: 2px 0;
   color: #8C828B;
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: 0.72rem;
+  font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -562,6 +578,14 @@
 
 .drawer-auth-divider span {
   padding: 0 12px;
+}
+
+.drawer-auth-card {
+  background: #FFFFFF;
+  border: 1.5px solid #E4DCEF;
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 4px 16px rgba(124, 90, 171, 0.08);
 }
 
 .btn-google-signin {
@@ -624,8 +648,8 @@
   }
 
   .account-drawer-body {
-    padding: 18px 16px;
-    gap: 18px;
+    padding: 16px 14px;
+    gap: 14px;
   }
 
   .profile-details-grid {

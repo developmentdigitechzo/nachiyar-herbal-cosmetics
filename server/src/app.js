@@ -16,6 +16,7 @@ const settingsRouter = require('./routes/settings');
 const customersRouter = require('./routes/customers');
 const reviewsRouter = require('./routes/reviews');
 const messagesRouter = require('./routes/messages');
+const marketplacesRouter = require('./routes/marketplaces');
 const { router: authRouter, verifyToken, requireAdminAuth } = require('./routes/auth');
 
 const app = express();
@@ -619,22 +620,13 @@ app.get('/api/coupon/active', async (req, res) => {
   }
 });
 
-// Marketplace Webhook Receiver (Flipkart, Amazon SP-API, Meesho)
-app.post('/api/webhooks/marketplace', async (req, res) => {
-  try {
-    const { channel, orderId, sku, qty, customer } = req.body;
-    console.log(`[Marketplace Webhook] Received sale event from ${channel || 'External Channel'}: Order ${orderId || 'N/A'}`);
-    res.json({
-      success: true,
-      message: 'Marketplace inventory deduction event processed',
-      timestamp: new Date().toISOString()
-    });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
+// Real Marketplace Webhook & Multi-Channel API Routes
+app.use('/api/marketplaces', marketplacesRouter);
+app.post('/api/webhooks/marketplace', (req, res, next) => {
+  req.url = '/webhook';
+  marketplacesRouter(req, res, next);
 });
 
-// Mount Protected Admin-Only REST API Routes
 app.use('/api/invoices', requireAdminAuth, invoicesRouter);
 app.use('/api/inventory', requireAdminAuth, inventoryRouter);
 app.use('/api/analytics', requireAdminAuth, analyticsRouter);

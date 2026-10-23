@@ -2882,7 +2882,11 @@
         return;
       }
 
-      if (btn) btn.disabled = true;
+      if (btn) {
+        btn.disabled = true;
+        btn.dataset.originalHtml = btn.innerHTML;
+        btn.innerHTML = '⏳ Sending OTP...';
+      }
       if (errorMsg) errorMsg.style.display = 'none';
       if (passFields) passFields.style.display = 'none';
 
@@ -2893,6 +2897,10 @@
           body: JSON.stringify({ email })
         });
         const data = await res.json();
+
+        if (btn && btn.dataset.originalHtml) {
+          btn.innerHTML = btn.dataset.originalHtml;
+        }
 
         if (data.success) {
           if (banner) {

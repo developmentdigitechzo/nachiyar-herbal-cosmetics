@@ -623,18 +623,9 @@
       drawerUserSubtitle.textContent = 'Choose your preferred sign-in method';
 
       drawerBody.innerHTML = `
-        <!-- METHOD 1: SIGN IN WITH GOOGLE -->
-        <div style="background:#FFFFFF; border:1.5px solid #E4DCEF; border-radius:18px; padding:20px; box-shadow:0 4px 16px rgba(124,90,171,0.08); margin-bottom:20px;">
-          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
-            <span style="background:#F3E8FF; color:#7C5AAB; font-size:0.72rem; font-weight:800; padding:4px 10px; border-radius:999px; text-transform:uppercase; letter-spacing:0.04em;">Method 1 • 1-Click Access</span>
-            <span style="font-size:0.75rem; color:#15803D; font-weight:700;">⚡ Instant</span>
-          </div>
-          <h4 style="font-size:1.05rem; margin:0 0 6px; color:#191319; font-weight:700;">Sign in with Google</h4>
-          <p style="font-size:0.8125rem; color:#6B626A; margin:0 0 16px; line-height:1.5;">
-            Choose any Google account on your device to sign in or create an account instantly.
-          </p>
-
-          <div id="drawerGoogleBtnWrapper" style="display:flex; justify-content:center; width:100%; min-height:48px;">
+        <div class="drawer-guest-auth-wrap">
+          <!-- SIGN IN WITH GOOGLE (BUTTON ONLY - NO BULKY BOX) -->
+          <div id="drawerGoogleBtnWrapper">
             <button type="button" class="btn-google-signin" id="btnGoogleSignIn" onclick="window.handleGoogleSignIn()">
               <svg viewBox="0 0 24 24" width="20" height="20">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -645,18 +636,14 @@
               <span>Sign in with Google</span>
             </button>
           </div>
-        </div>
 
-        <div class="drawer-auth-divider">
-          <span>OR</span>
-        </div>
-
-        <!-- METHOD 2: CREATE ACCOUNT -->
-        <div style="background:#FFFFFF; border:1.5px solid #E4DCEF; border-radius:18px; padding:20px; box-shadow:0 4px 16px rgba(124,90,171,0.08);">
-          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
-            <span style="background:#EDE8F2; color:#4A306D; font-size:0.72rem; font-weight:800; padding:4px 10px; border-radius:999px; text-transform:uppercase; letter-spacing:0.04em;">Method 2 • Manual Registration</span>
+          <div class="drawer-auth-divider">
+            <span>OR</span>
           </div>
-          <h4 style="font-size:1.05rem; margin:0 0 6px; color:#191319; font-weight:700;">Create Account</h4>
+
+          <!-- CREATE ACCOUNT FORM -->
+          <div class="drawer-auth-card">
+            <h4 style="font-size:1.05rem; margin:0 0 6px; color:#191319; font-weight:700;">Create Account</h4>
           <p style="font-size:0.8125rem; color:#6B626A; margin:0 0 16px; line-height:1.5;">
             Enter your mobile number and password to track deliveries live.
           </p>
@@ -750,6 +737,7 @@
             </div>
           </div>
         </div>
+      </div>
       `;
 
       drawerFooter.innerHTML = `
@@ -1079,7 +1067,11 @@
       return;
     }
 
-    if (btn) btn.disabled = true;
+    if (btn) {
+      btn.disabled = true;
+      btn.dataset.originalHtml = btn.innerHTML;
+      btn.innerHTML = '⏳ Sending OTP...';
+    }
     if (errorMsg) errorMsg.style.display = 'none';
 
     try {
@@ -1089,6 +1081,10 @@
         body: JSON.stringify({ email })
       });
       const data = await res.json();
+
+      if (btn && btn.dataset.originalHtml) {
+        btn.innerHTML = btn.dataset.originalHtml;
+      }
 
       if (data.success) {
         if (banner) {
