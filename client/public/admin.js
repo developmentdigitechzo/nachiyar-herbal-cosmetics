@@ -4512,7 +4512,7 @@ document.addEventListener('DOMContentLoaded', () => {
               marketplaceData[chKey].feePercent = s[chKey].feePercent || marketplaceData[chKey].feePercent;
               marketplaceData[chKey].sellerId = s[chKey].sellerId || marketplaceData[chKey].sellerId;
               marketplaceData[chKey].activeListings = s[chKey].activeListings || 3;
-              if (Array.isArray(s[chKey].orders) && s[chKey].orders.length > 0) {
+              if (Array.isArray(s[chKey].orders)) {
                 marketplaceData[chKey].orders = s[chKey].orders;
               }
             }
@@ -5263,9 +5263,16 @@ document.addEventListener('DOMContentLoaded', () => {
       updateNotificationBadges();
     }
 
+    // Reset scroll to top on tab switch
+    const workspace = document.querySelector('.admin-workspace');
+    if (workspace) workspace.scrollTop = 0;
+
     // Close mobile sidebar on navigation
     closeSidebar();
   }
+
+  // Expose switchTab globally for inline onclick handlers across the dashboard
+  window.switchTab = switchTab;
 
   navTabs.forEach(t => {
     t.onclick = () => switchTab(t.dataset.tab, true, true);
