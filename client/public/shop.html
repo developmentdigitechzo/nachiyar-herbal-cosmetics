@@ -164,6 +164,7 @@
     <div class="footer-container">
       <div class="footer-legal-bar">
         <p>© 2026 NACHIYAR HERBALS & COSMETICS. ALL RIGHTS RESERVED.</p>
+        <p class="footer-developer-credit">Developed by <a href="https://digitechzo.com" target="_blank" rel="noopener noreferrer" class="developer-link">Digitechzo</a></p>
         <p class="legal-links"><a href="/">Home</a> • <a href="/shop/">Shop</a> • <a href="/contact/">Contact</a> • <a href="/privacy/">Privacy Policy</a> • <a href="/terms/">Terms of Service</a> • <a href="/shipping-policy/">Shipping & Returns</a> • <a href="/sitemap/">Sitemap</a></p>
       </div>
     </div>
@@ -250,11 +251,11 @@
           if (res && res.success && Array.isArray(res.data)) {
             allProducts = res.data;
           } else {
-            allProducts = DEFAULT_PRODUCTS;
+            allProducts = [];
           }
         } catch (e) {
-          console.warn('API unavailable, rendering catalog from default catalog:', e);
-          allProducts = DEFAULT_PRODUCTS;
+          console.warn('API unavailable, rendering empty catalog:', e);
+          allProducts = [];
         }
         renderCatalog(document.querySelector('.filter-btn.active')?.dataset.cat || 'all');
       }
@@ -268,9 +269,49 @@
         }
       });
 
+      function matchesCategory(p, filter) {
+        if (!filter || filter === 'all') return true;
+
+        const cat = (p.category || '').toLowerCase().trim();
+        const catId = (p.categoryId || '').toLowerCase().trim();
+        const name = (p.name || '').toLowerCase();
+        const slug = (p.slug || '').toLowerCase();
+        const tag = (p.tagline || '').toLowerCase();
+        const f = filter.toLowerCase().trim();
+
+        // 1. SCALP & CLEANSING (Shampoos, gentle cleansing washes)
+        if (f.includes('scalp') || f.includes('cleans')) {
+          if (name.includes('combo') || name.includes('duo') || name.includes('set')) return false;
+          return cat === 'scalp & cleansing' || cat.includes('scalp') || cat.includes('cleans') ||
+                 catId.includes('scalp') || name.includes('shampoo') || slug.includes('shampoo') || tag.includes('cleans');
+        }
+
+        // 2. RITUAL SETS & COMBOS (Complete routine sets, duo combos, gift boxes)
+        if (f.includes('set') || f.includes('combo')) {
+          return cat === 'ritual sets' || cat === 'ritual combos' || cat.includes('set') || cat.includes('combo') ||
+                 catId.includes('set') || catId.includes('combo') ||
+                 name.includes('combo') || name.includes('duo') || name.includes('set') ||
+                 slug.includes('combo') || slug.includes('duo') || slug.includes('set');
+        }
+
+        // 3. ROYAL GIFTING (Gift boxes, luxury kits)
+        if (f.includes('gift')) {
+          return cat === 'royal gifting' || cat.includes('gift') || name.includes('gift') || name.includes('luxury box');
+        }
+
+        // 4. HAIR CARE (Herbal hair oil, hair growth vitalizer)
+        if (f.includes('hair')) {
+          if (name.includes('combo') || name.includes('duo') || name.includes('set')) return false;
+          if (name.includes('shampoo') && !name.includes('oil')) return false;
+          return cat === 'hair care' || catId.includes('hair') || name.includes('oil') || slug.includes('oil');
+        }
+
+        return cat === f || cat.includes(f);
+      }
+
       function renderCatalog(filter) {
         catalogGrid.innerHTML = '';
-        const list = filter === 'all' ? allProducts : allProducts.filter(p => p.category === filter);
+        const list = allProducts.filter(p => matchesCategory(p, filter));
 
         if (list.length === 0) {
           catalogGrid.innerHTML = `

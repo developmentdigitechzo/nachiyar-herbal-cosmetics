@@ -46,6 +46,33 @@ function mapProduct(row) {
   };
 }
 
+// Self-healing: ensure product categories are accurately categorized in database
+async function healProductCategories() {
+  try {
+    // 1. Shampoos -> Scalp & Cleansing
+    await query(`
+      UPDATE products 
+      SET category = 'Scalp & Cleansing', category_id = 'cat_scalp' 
+      WHERE (LOWER(name) LIKE '%shampoo%' OR LOWER(slug) LIKE '%shampoo%')
+        AND LOWER(name) NOT LIKE '%combo%' 
+        AND LOWER(name) NOT LIKE '%duo%' 
+        AND LOWER(name) NOT LIKE '%set%' 
+        AND (category IS NULL OR category = 'Hair Care');
+    `);
+
+    // 2. Combos / Sets -> Ritual Sets
+    await query(`
+      UPDATE products 
+      SET category = 'Ritual Sets', category_id = 'cat_sets' 
+      WHERE (LOWER(name) LIKE '%combo%' OR LOWER(name) LIKE '%duo%' OR LOWER(name) LIKE '%set%' OR LOWER(slug) LIKE '%combo%' OR LOWER(slug) LIKE '%duo%')
+        AND (category IS NULL OR category = 'Hair Care' OR category = 'Ritual Combos');
+    `);
+  } catch (err) {
+    // Non-fatal if DB not yet initialized
+  }
+}
+healProductCategories();
+
 // 1. GET /api/products
 router.get('/', async (req, res) => {
   try {
@@ -130,8 +157,19 @@ router.post('/', async (req, res) => {
     const tagline = body.tagline || '100% Pure Botanical Infusion';
     const metricBadge = body.metricBadge || '100% PURE';
     const badge = body.badge || 'New';
-    const category = body.category || 'Hair Care';
-    const categoryId = body.categoryId || 'cat_hair_care';
+    let category = body.category || 'Hair Care';
+    let categoryId = body.categoryId || 'cat_hair_care';
+    const nameLower = (body.name || '').toLowerCase();
+    if (category === 'Hair Care') {
+      if (nameLower.includes('shampoo') && !nameLower.includes('combo') && !nameLower.includes('set')) {
+        category = 'Scalp & Cleansing';
+        categoryId = 'cat_scalp';
+      } else if (nameLower.includes('combo') || nameLower.includes('duo') || nameLower.includes('set')) {
+        category = 'Ritual Sets';
+        categoryId = 'cat_sets';
+      }
+    }
+
 
     const insertSql = `
       INSERT INTO products (
